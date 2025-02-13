@@ -10,7 +10,7 @@ const config = {//Objeto global que viene en archivo min de Phaser
         default: 'arcade',
         arcade: {
             gravity: { y: 0 },
-            debug: false
+            debug: true
         }
 
     },
