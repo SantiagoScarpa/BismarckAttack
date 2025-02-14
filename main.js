@@ -1,5 +1,4 @@
 import { gameScene } from './modules/game.js'
-import PlasmaPost2FX from "./modules/PlasmaPost2FX.js";
 
 const config = {//Objeto global que viene en archivo min de Phaser 
     type: Phaser.AUTO, // tipo de renderizado para el juego

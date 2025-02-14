@@ -1,40 +1,43 @@
-import settings from '../../settings.json' with {type: 'json'};
-
 //seteo controles para el barco
 export function checkControlsBismarck({ bismarck, keys }) {
+    let speed = bismarck.velocity;
 
-    if (keys.LEFT.isDown) {
-        if (bismarck.angle > -90 && bismarck.angle <= 91) {
+    if (keys.UP.isDown) {
+        if (bismarck.angle > 0)
             bismarck.angle -= 1;
-        } else {
+        else
             bismarck.angle += 1;
-        }
-        bismarck.x -= settings.bismarckVelocity
+
+        bismarck.setVelocityY(-speed);
+    } else if (keys.DOWN.isDown) {
+        if (bismarck.angle > 0)
+            bismarck.angle -= 1;
+        else
+            bismarck.angle += 1;
+
+        bismarck.setVelocityY(speed);
+    } else {
+        //si no apreto nada, me quedo quieto 
+        bismarck.setVelocityY(0);
+
+    }
+    if (keys.LEFT.isDown) {
+        bismarck.setVelocityX(-speed);
+        if (bismarck.angle > -90)
+            bismarck.angle -= 1;
 
     } else if (keys.RIGHT.isDown) {
-        bismarck.x += settings.bismarckVelocity
-        if (bismarck.angle < 90 && bismarck.angle >= -90) {
+        if (bismarck.angle < 90)
             bismarck.angle += 1;
-        } else {
-            bismarck.angle -= 1;
-        }
 
-    } else if (keys.UP.isDown) {
-        bismarck.y -= settings.bismarckVelocity
-        if (bismarck.angle > 0 && bismarck.angle < 180) {// si esta apuntando hacia la derecha
-            bismarck.angle -= 1;
-        } else if (bismarck.angle < 0) {
-            bismarck.angle += 1;
-        }
-    } else if (keys.DOWN.isDown) {
-        bismarck.y += settings.bismarckVelocity
-
-        if (bismarck.angle < 0 && bismarck.angle > -180) {
-            bismarck.angle -= 1;
-        } else if (bismarck.angle >= 0 && bismarck.angle < 180) {
-            bismarck.angle += 1;
-        }
+        bismarck.setVelocityX(speed);
+    } else {
+        bismarck.setVelocityX(0);
     }
+    if (bismarck.body.velocity.x !== 0 && bismarck.body.velocity.y !== 0) {
+        const diagonalSpeed = Math.sqrt(speed * speed / 2);
+        bismarck.setVelocityX(diagonalSpeed * Math.sign(bismarck.body.velocity.x));
+        bismarck.setVelocityY(diagonalSpeed * Math.sign(bismarck.body.velocity.y));
 
-
+    }
 }

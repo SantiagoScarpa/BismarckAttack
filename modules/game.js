@@ -14,21 +14,27 @@ export class gameScene extends Phaser.Scene {
         );
 
 
-
+        //esto va para el agua pero aun no lo pude hacer bien
         this.load.image('waterImg', './assets/imgs/tiles/water5.png');
-        // this.load.tilemapTiledJSON('map', 'assets/tilemaps/maps/water5.json');
 
+
+        this.load.image('francia', './assets/imgs/sprites/franciaTransparente.png')
     }
     create() {
-        // const map = this.make.tilemap({ width: 1600, height: 768, tileWidth: 16, tileHeight: 16 });
-        // const tiles = map.addTilesetImage('waterImg', null, 16, 16);
-        // const layer = map.createBlankLayer('layerWater', tiles);
-        // layer.randomize(0, 0, map.width, map.height, [0, 1, 2, 3, 4]);
+        //obtengo coordinada x de inicio para que sea aleatorio, de la mitad del mapa hacia arriba/derecha
+        let coordenadaInicio = Math.floor(Math.random() * (960 - 1 + 1)) + 1;
 
-        this.bismarck = this.matter.add.sprite(500, 500, 'bismarck');
+        const francia = this.matter.add.image(600 + coordenadaInicio, 50, 'francia')
+        francia.setScale(0.5)
+        francia.setStatic(true)
+
+        //la seteo de nuevo para el bismarck
+        coordenadaInicio = Math.floor(Math.random() * (760 - 1 + 1)) + 1;
+
+        this.bismarck = this.matter.add.sprite(800 + coordenadaInicio, 760, 'bismarck');
         this.bismarck.setScale(0.10)
             .setOrigin(0.5, 0.5)
-        //.setCollideWorldBounds(true);
+        this.bismarck.velocity = settings.bismarckVelocity;
 
         //cargo teclas a usar
         this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT,SPACE,SHIFT,P,W,A,S,D');
