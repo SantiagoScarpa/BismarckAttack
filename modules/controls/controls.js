@@ -23,7 +23,7 @@ export function checkControlsBismarck({ bismarck, keys }) {
         bismarck.y -= settings.bismarckVelocity
         if (bismarck.angle > 0 && bismarck.angle < 180) {// si esta apuntando hacia la derecha
             bismarck.angle -= 1;
-        } else if (bismarck.angle >= -91 && bismarck.angle < 0) {
+        } else if (bismarck.angle < 0) {
             bismarck.angle += 1;
         }
     } else if (keys.DOWN.isDown) {

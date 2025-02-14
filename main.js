@@ -1,18 +1,24 @@
 import { gameScene } from './modules/game.js'
+import PlasmaPost2FX from "./modules/PlasmaPost2FX.js";
 
 const config = {//Objeto global que viene en archivo min de Phaser 
     type: Phaser.AUTO, // tipo de renderizado para el juego
-    width: 1920,
-    height: 1080,
+    width: 1600,
+    height: 768,
     backgroundColor: '#8AC4FF',
     parent: 'game', //contenedor donde se va a renderizar el juego, es el div que esta en el html
     physics: {
-        default: 'arcade',
-        arcade: {
+        default: 'matter',
+        matter: {
             gravity: { y: 0 },
-            debug: true
+            setBounds: {
+                left: true, right: true, bottom: true, top: true
+            },
+            debug: {
+                showBody: true,
+                showStaticBody: true
+            }
         }
-
     },
     scale: {
         // Fit to window

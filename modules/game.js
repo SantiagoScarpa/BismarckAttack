@@ -12,19 +12,30 @@ export class gameScene extends Phaser.Scene {
             './assets/imgs/sprites/bismarckTransparente.PNG',
             { frameWidth: 828, frameHeight: 145 }
         );
+
+
+
+        this.load.image('waterImg', './assets/imgs/tiles/water5.png');
+        // this.load.tilemapTiledJSON('map', 'assets/tilemaps/maps/water5.json');
+
     }
     create() {
-        this.bismarck = this.physics.add.sprite(500, 500, 'bismarck');
+        // const map = this.make.tilemap({ width: 1600, height: 768, tileWidth: 16, tileHeight: 16 });
+        // const tiles = map.addTilesetImage('waterImg', null, 16, 16);
+        // const layer = map.createBlankLayer('layerWater', tiles);
+        // layer.randomize(0, 0, map.width, map.height, [0, 1, 2, 3, 4]);
+
+        this.bismarck = this.matter.add.sprite(500, 500, 'bismarck');
         this.bismarck.setScale(0.10)
             .setOrigin(0.5, 0.5)
-            .setCollideWorldBounds(true);
+        //.setCollideWorldBounds(true);
 
         //cargo teclas a usar
         this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT,SPACE,SHIFT,P,W,A,S,D');
 
 
         //seteo de las camaras, aun tenemos que ver como hacerlos
-        this.physics.world.setBounds(0, 0, 1920, 1080);
+        // this.physics.world.setBounds(0, 0, 1920, 1080);
         // this.cameras.main.setBounds(0, 0, 1920, 1440);
         // this.cameras.main.startFollow(this.bismarck);
 
