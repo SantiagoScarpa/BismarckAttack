@@ -16,10 +16,10 @@ export class gameScene extends Phaser.Scene {
 
         //esto va para el agua pero aun no lo pude hacer bien
         this.load.image('waterImg', './assets/imgs/tiles/water5.png');
-
-
         this.load.image('francia', './assets/imgs/sprites/franciaTransparente.png')
     }
+
+
     create() {
         //obtengo coordinada x de inicio para que sea aleatorio, de la mitad del mapa hacia arriba/derecha
         let coordenadaInicio = Math.floor(Math.random() * (960 - 1 + 1)) + 1;
@@ -39,6 +39,17 @@ export class gameScene extends Phaser.Scene {
         //cargo teclas a usar
         this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT,SPACE,SHIFT,P,W,A,S,D');
 
+        this.matter.world.on('collisionstart', (event) => {
+            const { bodyA, bodyB } = event.pairs[0];
+
+            if ((bodyA === this.bismarck.body && bodyB === francia.body) ||
+                (bodyA === francia.body && bodyB === this.bismarck.body)) {
+                console.log("¡Los objetos se están tocando!");
+                // Por ejemplo, puedes cambiar el color de uno de los objetos
+                this.bismarck.setTint(0x0000FF); // Rojo
+                this.scene.start('ganaBismarck');
+            }
+        })
 
         //seteo de las camaras, aun tenemos que ver como hacerlos
         // this.physics.world.setBounds(0, 0, 1920, 1080);
@@ -46,6 +57,9 @@ export class gameScene extends Phaser.Scene {
         // this.cameras.main.startFollow(this.bismarck);
 
     }
+
+
+
     update() {
         const { bismarck } = this; //guardo el bismarck en una variable para que sea mas legible
         checkControlsBismarck(this) //seteo controles 
