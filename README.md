@@ -30,10 +30,15 @@ http://localhost:3000
 Abre otra pestaña para simular un segundo jugador.
 🎮 Controles
 Flechas del teclado ⬆️⬇️⬅️➡️ para mover el Bismarck.
+
 🚀 Funcionalidades
+
 ✔ Multijugador en tiempo real con Socket.IO
+
 ✔ Mapa sincronizado para todos los jugadores
+
 ✔ Colisión con Francia para ganar
+
 ✔ Sincronización de jugadores en el mapa
 
 🔧 Estructura del Proyecto
