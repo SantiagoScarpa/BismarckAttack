@@ -69,7 +69,6 @@ export class gameScene extends Phaser.Scene {
             if (player.id !== this.socket.id) {
                 if (!this.players[player.id]) {
                     this.createBismarck(player.id, player.x, player.y);
-                    this.keys = this.input.keyboard.addKeys('a,w,s,d');
                 }
             }
         });
