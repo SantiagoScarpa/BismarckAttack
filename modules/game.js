@@ -24,7 +24,7 @@ export class gameScene extends Phaser.Scene {
         //obtengo coordinada x de inicio para que sea aleatorio, de la mitad del mapa hacia arriba/derecha
         let coordenadaInicio = Math.floor(Math.random() * (960 - 1 + 1)) + 1;
 
-        const francia = this.matter.add.image(600 + coordenadaInicio, 50, 'francia')
+        const francia = this.matter.add.image(600 + coordenadaInicio, 40, 'francia')
         francia.setScale(0.5)
         francia.setStatic(true)
 
@@ -37,16 +37,14 @@ export class gameScene extends Phaser.Scene {
         this.bismarck.velocity = settings.bismarckVelocity;
 
         //cargo teclas a usar
-        this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT,SPACE,SHIFT,P,W,A,S,D');
+        this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT');
 
         this.matter.world.on('collisionstart', (event) => {
             const { bodyA, bodyB } = event.pairs[0];
 
             if ((bodyA === this.bismarck.body && bodyB === francia.body) ||
                 (bodyA === francia.body && bodyB === this.bismarck.body)) {
-                console.log("¡Los objetos se están tocando!");
-                // Por ejemplo, puedes cambiar el color de uno de los objetos
-                this.bismarck.setTint(0x0000FF); // Rojo
+
                 this.scene.start('ganaBismarck');
             }
         })

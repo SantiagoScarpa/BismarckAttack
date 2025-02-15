@@ -1,7 +1,7 @@
 import { gameScene } from './modules/game.js'
 import { ganaBismarck } from './modules/scene/ganaBismarck.js';
 
-const config = {//Objeto global que viene en archivo min de Phaser 
+const config = {
     type: Phaser.AUTO, // tipo de renderizado para el juego
     width: 1600,
     height: 768,
