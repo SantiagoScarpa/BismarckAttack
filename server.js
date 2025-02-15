@@ -16,7 +16,7 @@ let franciaPosition = null; // ✅ Guardamos la posición de Francia
 io.on('connection', (socket) => {
     console.log(`🎮 Jugador conectado: ${socket.id}`);
     
-    // ✅ Si `franciaPosition` no está definida, la creamos al conectar el primer jugador
+    //Si `franciaPosition` no está definida, la creamos al conectar el primer jugador
     if (!franciaPosition) {
         franciaPosition = {
             x: Math.floor(Math.random() * (960 - 1 + 1)) + 600, // 🔹 Asegurar posición en el mapa
@@ -27,15 +27,15 @@ io.on('connection', (socket) => {
 
     players[socket.id] = { id: socket.id };
 
-    // ✅ Enviar la cantidad de jugadores conectados a todos
+    //Enviar la cantidad de jugadores conectados a todos
     io.emit('playerCount', Object.keys(players).length);
 
-    // ✅ Enviar la posición de Francia al nuevo jugador
+    //Enviar la posición de Francia al nuevo jugador
     socket.emit('setFranciaPosition', franciaPosition);
 
     socket.on('newPlayer', (player) => {
         players[socket.id] = player;
-        console.log(`✅ Jugadores conectados: ${Object.keys(players).length}`);
+        console.log(`jugadores conectados: ${Object.keys(players).length}`);
         io.emit('newPlayer', player);
     });
 
@@ -48,10 +48,10 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log(`🚫 Jugador desconectado: ${socket.id}`);
+        console.log(`jugador desconectado: ${socket.id}`);
         delete players[socket.id];
 
-        console.log(`🔻 Jugadores restantes: ${Object.keys(players).length}`);
+        console.log(`jugadores restantes: ${Object.keys(players).length}`);
         io.emit('playerCount', Object.keys(players).length);
     });
 });
