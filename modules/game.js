@@ -24,23 +24,24 @@ export class gameScene extends Phaser.Scene {
 
         console.log("🎮 Iniciando escena...");
 
-        let coordenadaInicio = Math.floor(Math.random() * (960 - 1 + 1)) + 1;
-        this.francia = this.matter.add.image(600 + coordenadaInicio, 40, 'francia');
-        this.francia.setScale(0.5);
-        this.francia.setStatic(true);
-
         this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT');
 
         this.matter.world.on('collisionstart', (event) => {
             const { bodyA, bodyB } = event.pairs[0];
 
-            if (this.bismarck && ((bodyA === this.bismarck.body && bodyB === this.francia.body) ||
+            if (this.bismarck && this.francia && ((bodyA === this.bismarck.body && bodyB === this.francia.body) ||
                 (bodyA === this.francia.body && bodyB === this.bismarck.body))) {
                 this.scene.start('ganaBismarck');
             }
         });
 
-        // ✅ Crear el barco del jugador local (como antes)
+        // ✅ Esperar la posición de Francia desde el servidor
+        this.socket.on('setFranciaPosition', (position) => {
+            console.log(`🌍 Recibida posición de Francia: (${position.x}, ${position.y})`);
+            this.createFrancia(position.x, position.y);
+        });
+
+        // ✅ Crear el barco del jugador local (sin cambios)
         let coordenadaInicioLocal = Math.floor(Math.random() * (760 - 1 + 1)) + 1;
         let posX = 800 + coordenadaInicioLocal;
         let posY = 760;
@@ -64,8 +65,6 @@ export class gameScene extends Phaser.Scene {
         // ✅ Agregar nuevos jugadores cuando se conectan
         this.socket.on('newPlayer', (player) => {
             console.log(`🆕 Nuevo jugador conectado: ${player.id}`);
-
-            // ✅ Evitamos agregar el jugador local dos veces
             if (player.id !== this.socket.id) {
                 if (!this.players[player.id]) {
                     this.createBismarck(player.id, player.x, player.y);
@@ -116,6 +115,18 @@ export class gameScene extends Phaser.Scene {
     }
 
     /**
+     * ✅ Crea Francia en una posición sincronizada desde el servidor.
+     * @param {number} x - Posición X de Francia.
+     * @param {number} y - Posición Y de Francia.
+     */
+    createFrancia(x, y) {
+        console.log("🇫🇷 Creando Francia en posición sincronizada...");
+        this.francia = this.matter.add.image(x, y, 'francia');
+        this.francia.setScale(0.5);
+        this.francia.setStatic(true);
+    }
+
+    /**
      * ✅ Crea un barco Bismarck en la escena.
      * @param {string} playerId - ID del jugador.
      * @param {number} x - Posición X.
@@ -128,6 +139,6 @@ export class gameScene extends Phaser.Scene {
         bismarck.setScale(0.10).setOrigin(0.5, 0.5);
         bismarck.velocity = settings.bismarckVelocity;
 
-        this.players[playerId] = bismarck; // ✅ Guardamos el barco en la lista de jugadores
+        this.players[playerId] = bismarck;
     }
 }
