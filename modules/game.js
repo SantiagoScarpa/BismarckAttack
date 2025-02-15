@@ -21,7 +21,7 @@ export class gameScene extends Phaser.Scene {
 
     create() {
         // Crear la imagen del radar en la esquina inferior derecha
-        const radar = this.add.image(1120, 540, 'radar'); 
+        const radar = this.add.image(1140, 515, 'radar'); 
         radar.setScrollFactor(0); // Hace que la imagen no se mueva con la cámara
         radar.setScale(0.2); 
 
@@ -54,14 +54,14 @@ export class gameScene extends Phaser.Scene {
 
 
         const minimapCamera = this.cameras
-        .add(1280,600,320,180,false,'minimap')
-        .setOrigin(0)
-        .setZoom(0.16);
-        //minimapCamera.ignore([this.bismarck])
-        //minimapCamera.ignore([radar]);
-        const bismarckIcon = this.add.circle(francia.x, francia.y, 20, 0xff0000, 1).setOrigin(0.5,0.5);
-        //this.cameras.main.ignore([bismarckIcon])
-        //minimapCamera.startFollow(this.bismarck, true, 0.1, 0.1);
+        .add(1315,560,320,180,false,'minimap')
+        .setOrigin(0.5,0.5)
+        .setZoom(0.05);
+        minimapCamera.ignore([this.bismarck])
+        minimapCamera.ignore([radar]);
+        const bismarckIcon = this.add.circle(francia.x, francia.y, 60, 0xff0000, 1).setOrigin(0.5,0.5);
+        this.cameras.main.ignore([bismarckIcon])
+        minimapCamera.startFollow(this.bismarck, true, 0.1, 0.1);
         
         this.matter.world.on('collisionstart', (event) => {
             const { bodyA, bodyB } = event.pairs[0];
