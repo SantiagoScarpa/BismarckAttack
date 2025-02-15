@@ -1,12 +1,12 @@
-import { gameScene } from './modules/game.js'
+import { gameScene } from './modules/game.js';
 import { ganaBismarck } from './modules/scene/ganaBismarck.js';
 
 const config = {
-    type: Phaser.AUTO, // tipo de renderizado para el juego
+    type: Phaser.AUTO,
     width: 1600,
     height: 768,
     backgroundColor: '#98D8EF',
-    parent: 'game', //contenedor donde se va a renderizar el juego, es el div que esta en el html
+    parent: 'game',
     physics: {
         default: 'matter',
         matter: {
@@ -21,13 +21,11 @@ const config = {
         }
     },
     scale: {
-        // Fit to window
         mode: Phaser.Scale.FIT,
-        // Center vertically and horizontally
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
-    scene:
-        [gameScene, ganaBismarck]
+    scene: [gameScene, ganaBismarck]
+};
 
-}
 const game = new Phaser.Game(config);
+console.log("⚡ Phaser ha sido inicializado correctamente");
