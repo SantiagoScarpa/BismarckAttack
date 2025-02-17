@@ -1,43 +1,77 @@
 //seteo controles para el barco
-export function checkControlsBismarck({ bismarck, keys }) {
+export function checkControlsBismarck({ bismarck, keys, anyKeyDown }) {
     let speed = bismarck.velocity;
 
-    if (keys.UP.isDown) {
-        if (bismarck.angle > 0)
+    let diagonalArIz = keys.UP.isDown && keys.LEFT.isDown
+    let diagnolaArDe = keys.UP.isDown && keys.RIGHT.isDown
+    let diagnolaAbIz = keys.DOWN.isDown && keys.LEFT.isDown
+    let diagonalAbDe = keys.DOWN.isDown && keys.RIGHT.isDown
+
+    if (diagonalArIz) {
+        if (bismarck.angle > -45)
             bismarck.angle -= 1;
         else
             bismarck.angle += 1;
-
-        bismarck.setVelocityY(-speed);
-    } else if (keys.DOWN.isDown) {
-        if (bismarck.angle > 0)
+        setVelocidadDiagonal(bismarck, -speed, -speed)
+    }
+    else if (diagnolaArDe) {
+        if (bismarck.angle < 45)
+            bismarck.angle += 1;
+        else
+            bismarck.angle -= 1;
+        setVelocidadDiagonal(bismarck, speed, -speed)
+    } else if (diagnolaAbIz) {
+        if (bismarck.angle < 45)
+            bismarck.angle += 1;
+        else
+            bismarck.angle -= 1;
+        setVelocidadDiagonal(bismarck, -speed, speed)
+    } else if (diagonalAbDe) {
+        if (bismarck.angle > -45)
             bismarck.angle -= 1;
         else
             bismarck.angle += 1;
-
-        bismarck.setVelocityY(speed);
-    } else {
-        //si no apreto nada, me quedo quieto 
-        bismarck.setVelocityY(0);
-
+        setVelocidadDiagonal(bismarck, speed, speed)
     }
-    if (keys.LEFT.isDown) {
-        bismarck.setVelocityX(-speed);
-        if (bismarck.angle > -90)
-            bismarck.angle -= 1;
+    else {
 
-    } else if (keys.RIGHT.isDown) {
-        if (bismarck.angle < 90)
-            bismarck.angle += 1;
+        if (keys.UP.isDown) {
+            if (bismarck.angle > 0)
+                bismarck.angle -= 1;
+            else
+                bismarck.angle += 1;
 
-        bismarck.setVelocityX(speed);
-    } else {
-        bismarck.setVelocityX(0);
+            bismarck.setVelocityY(-speed);
+        } else if (keys.DOWN.isDown) {
+            if (bismarck.angle > 0)
+                bismarck.angle -= 1;
+            else
+                bismarck.angle += 1;
+
+            bismarck.setVelocityY(speed);
+        } else {
+            //si no apreto nada, me quedo quieto 
+            bismarck.setVelocityY(0);
+
+        }
+        if (keys.LEFT.isDown) {
+            bismarck.setVelocityX(-speed);
+            if (bismarck.angle > -90)
+                bismarck.angle -= 1;
+
+        } else if (keys.RIGHT.isDown) {
+            if (bismarck.angle < 90)
+                bismarck.angle += 1;
+
+            bismarck.setVelocityX(speed);
+        } else {
+            bismarck.setVelocityX(0);
+        }
     }
-    if (bismarck.body.velocity.x !== 0 && bismarck.body.velocity.y !== 0) {
-        const diagonalSpeed = Math.sqrt(speed * speed / 2);
-        bismarck.setVelocityX(diagonalSpeed * Math.sign(bismarck.body.velocity.x));
-        bismarck.setVelocityY(diagonalSpeed * Math.sign(bismarck.body.velocity.y));
+}
 
-    }
+
+function setVelocidadDiagonal(bismarck, velX, velY) {
+    bismarck.setVelocityX(velX);
+    bismarck.setVelocityY(velY);
 }
