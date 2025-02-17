@@ -43,6 +43,7 @@ io.on('connection', (socket) => {
         if (players[socket.id]) {
             players[socket.id].x = player.x;
             players[socket.id].y = player.y;
+			players[socket.id].angle = player.angle;
         }
         io.emit('updatePlayers', players);
     });
