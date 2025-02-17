@@ -20,7 +20,7 @@ io.on('connection', (socket) => {
     if (!franciaPosition) {
         franciaPosition = {
             x: Math.floor(Math.random() * (960 - 1 + 1)) + 600, // 🔹 Asegurar posición en el mapa
-            y: 40
+            y: 20
         };
         console.log(`🌍 Posición de Francia generada en: (${franciaPosition.x}, ${franciaPosition.y})`);
     }
