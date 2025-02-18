@@ -62,15 +62,15 @@ export class gameScene extends Phaser.Scene {
         this.objects = [];
 
         // Imagen con Niebla
-        const fog = this.add.image(800, 383, 'fog');
+        const fog = this.add.image(800, 450, 'fog');
         fog.setScrollFactor(0);
-        fog.setScale(0.366);
+        fog.setScale(0.430);
         fog.setDepth(1);
 
         // Imagen del radar
-        const radar = this.add.image(1140, 515, 'radar');
+        const radar = this.add.image(1140, 550, 'radar');
         radar.setScrollFactor(0);
-        radar.setScale(0.2);
+        radar.setScale(0.15);
         radar.setDepth(2);
 
         // Configurar límites y cámara

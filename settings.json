@@ -1,5 +1,5 @@
 {
     "volumeMenu": "0.4",
-    "bismarckVelocity": 2,
+    "bismarckVelocity": 1,
     "serverPort": 3000
 }
