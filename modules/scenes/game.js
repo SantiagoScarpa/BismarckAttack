@@ -1,5 +1,5 @@
-import settings from './../settings.json' with {type: 'json'};
-import { checkControlsBismarck } from './controls/controls.js';
+import settings from '../../settings.json' with {type: 'json'};
+import { checkControlsBismarck } from '../controls/controls.js';
 
 export class gameScene extends Phaser.Scene {
     constructor() {
@@ -7,7 +7,6 @@ export class gameScene extends Phaser.Scene {
     }
 
     preload() {
-        console.log(`version ${settings.version}`);
 
         this.load.spritesheet('bismarck',
             './assets/imgs/sprites/bismarckTransparente.PNG',
@@ -20,7 +19,7 @@ export class gameScene extends Phaser.Scene {
 
     create() {
         this.socket = io();
-        this.players = {}; 
+        this.players = {};
 
         console.log("🎮 Iniciando escena...");
 
@@ -58,7 +57,9 @@ export class gameScene extends Phaser.Scene {
             this.socket.emit('newPlayer', {
                 id: this.socket.id,
                 x: posX,
-                y: posY
+                y: posY,
+                angle: 0
+
             });
         });
 
@@ -75,11 +76,12 @@ export class gameScene extends Phaser.Scene {
         //Sincronizar solo los otros jugadores
         this.socket.on('updatePlayers', (players) => {
             Object.keys(players).forEach((id) => {
-                if (id !== this.socket.id) { 
+                if (id !== this.socket.id) {
                     if (!this.players[id]) {
                         this.createBismarck(id, players[id].x, players[id].y);
                     } else {
                         this.players[id].setPosition(players[id].x, players[id].y);
+
                     }
                 }
             });
@@ -106,6 +108,7 @@ export class gameScene extends Phaser.Scene {
         checkControlsBismarck(this);
 
         if (this.bismarck) {  //Asegurar que el jugador local existe
+
             this.socket.emit('playerMove', {
                 id: this.socket.id,
                 x: this.bismarck.x,

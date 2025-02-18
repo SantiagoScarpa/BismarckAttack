@@ -1,10 +1,11 @@
-import { gameScene } from './modules/game.js';
-import { ganaBismarck } from './modules/scene/ganaBismarck.js';
-
+import { gameScene } from './modules/scenes/game.js';
+import { ganaBismarck } from './modules/scenes/ganaBismarck.js';
+import { menuScene } from './modules/scenes/menu.js';
+import { settingsScene } from './modules/scenes/settings.js';
 const config = {
     type: Phaser.AUTO,
     width: 1600,
-    height: 768,
+    height: 900,
     backgroundColor: '#98D8EF',
     parent: 'game',
     physics: {
@@ -22,10 +23,16 @@ const config = {
     },
     scale: {
         mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        max: {
+            width: 1600,
+            height: 900,
+        }
     },
-    scene: [gameScene, ganaBismarck]
+    scene: [menuScene, gameScene, ganaBismarck, settingsScene]
 };
 
 const game = new Phaser.Game(config);
 console.log("⚡ Phaser ha sido inicializado correctamente");
+
+
