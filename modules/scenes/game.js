@@ -1,5 +1,5 @@
-import settings from './../settings.json' with {type: 'json'};
-import { checkControlsBismarck } from './controls/controls.js';
+import settings from '../../settings.json' with {type: 'json'};
+import { checkControlsBismarck } from '../controls/controls.js';
 
 export class gameScene extends Phaser.Scene {
     constructor() {
@@ -7,7 +7,6 @@ export class gameScene extends Phaser.Scene {
     }
 
     preload() {
-        console.log(`version ${settings.version}`);
 
         this.load.spritesheet('bismarck',
             './assets/imgs/sprites/bismarckTransparente.PNG',
@@ -22,7 +21,7 @@ export class gameScene extends Phaser.Scene {
 
     create() {
         this.socket = io();
-        this.players = {}; 
+        this.players = {};
 
         console.log("🎮 Iniciando escena...");
 
@@ -41,7 +40,7 @@ export class gameScene extends Phaser.Scene {
         this.socket.on('setFranciaPosition', (position) => {
             console.log(`recibida posicion Francia: (${position.x}, ${position.y})`);
             this.createFrancia(position.x, position.y);
-            const franciaIcon = this.add.circle(position.x, position.y, 60, 0xff0000, 1).setOrigin(0.5,0.5);
+            const franciaIcon = this.add.circle(position.x, position.y, 60, 0xff0000, 1).setOrigin(0.5, 0.5);
             this.cameras.main.ignore([franciaIcon])
         });
 
@@ -59,32 +58,32 @@ export class gameScene extends Phaser.Scene {
         this.visionMask.fillStyle(0x000000, 0);
         this.visionMask.fillCircle(this.bismarck.x, this.bismarck.y, this.visionRadius); // Crear un círculo de vision
 
-         // Crear el array de objetos para ocultar segun el rango de vision
+        // Crear el array de objetos para ocultar segun el rango de vision
         this.objects = [];
 
         // Imagen con Niebla
-        const fog = this.add.image(800, 383, 'fog'); 
+        const fog = this.add.image(800, 383, 'fog');
         fog.setScrollFactor(0);
         fog.setScale(0.366);
         fog.setDepth(1);
-        
+
         // Imagen del radar
-        const radar = this.add.image(1140, 515, 'radar'); 
-        radar.setScrollFactor(0); 
+        const radar = this.add.image(1140, 515, 'radar');
+        radar.setScrollFactor(0);
         radar.setScale(0.2);
         radar.setDepth(2);
-        
+
         // Configurar límites y cámara
-        this.matter.world.setBounds(0, 0, 1920, 1080); 
+        this.matter.world.setBounds(0, 0, 1920, 1080);
         this.cameras.main.setBounds(0, 0, 1920, 1080);
         this.cameras.main.startFollow(this.bismarck, true, 0.1, 0.1); // Cámara sigue el Bismarck
         this.cameras.main.setZoom(2);  // Zoom para acercar la vista al Bismarck
 
         // Creacion y configuracion de Minimapa
         const minimapCamera = this.cameras
-        .add(1315,560,320,180,false,'minimap')
-        .setOrigin(0.5,0.5)
-        .setZoom(0.05);
+            .add(1315, 560, 320, 180, false, 'minimap')
+            .setOrigin(0.5, 0.5)
+            .setZoom(0.05);
         minimapCamera.ignore([this.bismarck])
         minimapCamera.ignore([radar]);
         minimapCamera.ignore([fog]);
@@ -100,7 +99,9 @@ export class gameScene extends Phaser.Scene {
             this.socket.emit('newPlayer', {
                 id: this.socket.id,
                 x: posX,
-                y: posY
+                y: posY,
+                angle: 0
+
             });
         });
 
@@ -117,7 +118,7 @@ export class gameScene extends Phaser.Scene {
         //Sincronizar solo los otros jugadores
         this.socket.on('updatePlayers', (players) => {
             Object.keys(players).forEach((id) => {
-                if (id !== this.socket.id) { 
+                if (id !== this.socket.id) {
                     if (!this.players[id]) {
                         this.createBismarck(id, players[id].x, players[id].y, players[id].angle);
                     } else {
@@ -149,6 +150,7 @@ export class gameScene extends Phaser.Scene {
         checkControlsBismarck(this);
 
         if (this.bismarck) {  //Asegurar que el jugador local existe
+
             this.socket.emit('playerMove', {
                 id: this.socket.id,
                 x: this.bismarck.x,
@@ -166,8 +168,8 @@ export class gameScene extends Phaser.Scene {
                     obj.setAlpha(0);  // Hace el objeto invisible 
                 }
             });
-          }
-        
+        }
+
     }
 
     /**

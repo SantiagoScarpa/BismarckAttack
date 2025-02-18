@@ -1,6 +1,5 @@
 {
-    "version": "0.0.1",
-    "volume": "0.75",
+    "volumeMenu": "0.4",
     "bismarckVelocity": 2,
-    "franceRange": 200
+    "serverPort": 3000
 }
