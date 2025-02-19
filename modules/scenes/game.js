@@ -7,16 +7,6 @@ export class gameScene extends Phaser.Scene {
     }
 
     preload() {
-
-        this.load.spritesheet('bismarck',
-            './assets/imgs/sprites/bismarckTransparente.PNG',
-            { frameWidth: 828, frameHeight: 145 }
-        );
-
-        this.load.image('waterImg', './assets/imgs/tiles/water5.png');
-        this.load.image('francia', './assets/imgs/sprites/franciaTransparente.png');
-        this.load.image('radar', './assets/imgs/sprites/radar.png');
-        this.load.image('fog', './assets/imgs/tiles/fog.png');
     }
 
     create() {
@@ -52,18 +42,18 @@ export class gameScene extends Phaser.Scene {
         this.bismarck = this.matter.add.sprite(posX, posY, 'bismarck');
         this.bismarck.setScale(0.10).setOrigin(0.5, 0.5);
         this.bismarck.velocity = settings.bismarckVelocity;
-        
+
         // Campo de vision
         // Añadir la niebla: Cubrir todo el mapa
         const overlay = this.add.graphics();
         overlay.fillStyle(0x000000, 0.8).fillRect(0, 0, 1920, 1080).setDepth(1);
-        
+
         this.visionObjets = 210; // Radio de vision de objetos
         this.visionRadius = 200; // Radio de vision
         this.visionMask = this.make.graphics();
         this.visionMask.fillStyle(0xffffff);
         this.visionMask.fillCircle(this.bismarck.x, this.bismarck.y, this.visionRadius); // Crear un círculo de vision
-  
+
         this.mask = new Phaser.Display.Masks.BitmapMask(this, this.visionMask);
         this.mask.invertAlpha = true;
         overlay.setMask(this.mask);
