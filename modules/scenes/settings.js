@@ -6,20 +6,7 @@ export class settingsScene extends Phaser.Scene {
         super("settingsScene")
     }
 
-    preload() {
-        this.load.spritesheet('returnBtn', './assets/imgs/buttons/return.png',
-            { frameWidth: 42, frameHeight: 58 }
-        );
-
-        this.load.spritesheet('spriteVol', './assets/imgs/sprites/bars.png',
-            { frameWidth: 48, frameHeight: 20 });
-
-        this.load.image('flechaIzq', './assets/imgs/buttons/flechaIzq.png');
-        this.load.image('flechaDer', './assets/imgs/buttons/flechaDer.png');
-
-
-        loadAudios(this);
-    }
+    preload() { }
     create() {
         const width = this.game.config.width;
         const height = this.game.config.height;

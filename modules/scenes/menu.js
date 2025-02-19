@@ -1,5 +1,4 @@
 import { loadAudios, playAudios } from "../audios.js";
-import { loadfont } from "../globals.js";
 import settings from './../../settings.json' with {type: 'json'};
 
 const menuOptions = { 'INICIO': 0, 'CONFIG': 1, 'PUREBA': 3 };
@@ -11,18 +10,7 @@ export class menuScene extends Phaser.Scene {
         super("menuScene")
     }
     preload() {
-        loadfont(this);
-        this.load.image('bismarckMenu', './assets/imgs/bismarckMenu.png');
 
-
-        this.load.spritesheet('PlayBtn', './assets/imgs/buttons/playSprite.png',
-            { frameWidth: 160, frameHeight: 85 });
-        this.load.spritesheet('ConfigBtn', './assets/imgs/buttons/configSprite.png',
-            { frameWidth: 160, frameHeight: 84 });
-
-
-
-        loadAudios(this);
     }
 
 
@@ -112,9 +100,7 @@ export class menuScene extends Phaser.Scene {
     }
 
 
-    update() {
-
-    }
+    update() { }
 }
 
 

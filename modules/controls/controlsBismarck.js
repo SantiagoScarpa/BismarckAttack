@@ -1,4 +1,15 @@
-//seteo controles para el barco
+//ARCHIVO PARA CREACION DE BISMARCK Y SUS CONTROLES 
+
+export function creacionBismarck(game, posX, posY, settings) {
+    let bismarck = game.matter.add.sprite(posX, posY, 'bismarck');
+    bismarck.setScale(0.10).setOrigin(0.5, 0.5);
+    bismarck.vida = 3;
+    bismarck.isOnFire = false;
+
+    bismarck.velocity = settings.bismarckVelocity;
+    return bismarck;
+}
+
 export function checkControlsBismarck({ bismarck, keys, anyKeyDown }) {
     let speed = bismarck.velocity;
 
@@ -40,25 +51,19 @@ export function checkControlsBismarck({ bismarck, keys, anyKeyDown }) {
                 bismarck.angle -= 1;
             else
                 bismarck.angle += 1;
-
             bismarck.setVelocityY(-speed);
         } else if (keys.DOWN.isDown) {
             if (bismarck.angle > 0)
                 bismarck.angle -= 1;
             else
                 bismarck.angle += 1;
-
             bismarck.setVelocityY(speed);
-        } else {
-            //si no apreto nada, me quedo quieto 
-            bismarck.setVelocityY(0);
+        } else if (keys.LEFT.isDown) {
 
-        }
-        if (keys.LEFT.isDown) {
-            bismarck.setVelocityX(-speed);
             if (bismarck.angle > -90)
                 bismarck.angle -= 1;
-
+            //            if (bismarck.angle >= -95 && bismarck.angle <= -85)
+            bismarck.setVelocityX(-speed);
         } else if (keys.RIGHT.isDown) {
             if (bismarck.angle < 90)
                 bismarck.angle += 1;

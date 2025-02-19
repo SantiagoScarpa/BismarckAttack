@@ -1,9 +1,66 @@
 import settings from '../../settings.json' with {type: 'json'};
-import { checkControlsBismarck } from '../controls/controls.js';
+import { checkControlsBismarck, creacionBismarck } from '../controls/controlsBismarck.js';
+import { playAudios } from './../audios.js';
+import { creacionArkRoyale } from '../controls/controlsArkRoyale.js';
+import { createAnimations } from '../globals.js'
 
 export class gameScene extends Phaser.Scene {
     constructor() {
         super("gameScene");
+    }
+
+    activateFire(x, y, scale) {
+        if (this.bismarck.isOnFire) return;
+
+        this.bismarck.isOnFire = true;
+        this.fireSprite = this.add.sprite(x, y, 'fire0').setScale(scale);
+        this.fireSprite.play('fire');
+        this.fireSprite.setDepth(1);
+
+        this.fireSprite.setPosition(this.bismarck.x, this.bismarck.y);
+    }
+    shootBullet() {
+        let bullet = this.matter.add.sprite(this.bismarck.x, this.bismarck.y - 40, 'bismarckMisil');
+        bullet.setScale(0.3);
+        bullet.setCircle(3);
+        bullet.setVelocity(0, -10);
+        bullet.body.label = 'bullet';
+
+        let bulletTail = this.add.image(this.bismarck.x, this.bismarck.y - 56, 'bismarckMisilCola')
+        bulletTail.setScale(0.5)
+        playAudios('bismarckShoot', this, settings.volumeBismarckShoot)
+        setTimeout(() => {
+            bulletTail.destroy();
+        }, 100);
+
+
+        bullet.setSensor(true);
+        this.bullets.push(bullet);
+        this.time.delayedCall(2000, () => bullet?.destroy());
+    }
+
+    onBulletHit(bullet) {
+        let explosion = this.add.sprite(bullet.x, bullet.y, 'explosion_0').setScale(0.5);
+        let bulletX = bullet.x;
+        let bulletY = bullet.y;
+
+        explosion.play('explode');
+        explosion.on('animationcomplete', () => explosion.destroy());
+        bullet.destroy();
+        playAudios('explotion', this, settings.volumeBismarckShoot)
+
+        if (this.bismarck.vida < 4) {
+            this.bismarck.vida++;
+        }
+
+
+        if (this.bismarck.vida === 2 && !this.bismarck.isOnFire) {
+            this.activateFire(bulletX, bulletY, 0.9);
+        }
+        // Al recibir 3 balas, agranda la escala del fuego
+        else if (this.bismarck.vida === 3 && this.fireSprite) {
+            this.fireSprite.setScale(1.5);
+        }
     }
 
     preload() {
@@ -15,14 +72,18 @@ export class gameScene extends Phaser.Scene {
 
         console.log("🎮 Iniciando escena...");
 
-        this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT');
+        this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT,W,A,S,D,SPACE');
 
         this.matter.world.on('collisionstart', (event) => {
             const { bodyA, bodyB } = event.pairs[0];
 
-            if (this.bismarck && this.francia && ((bodyA === this.bismarck.body && bodyB === this.francia.body) ||
+            if (((bodyA === this.bismarck.body && bodyB === this.francia.body) ||
                 (bodyA === this.francia.body && bodyB === this.bismarck.body))) {
                 this.scene.start('ganaBismarck');
+            } else if (((bodyA.label === 'bullet' && bodyB === this.arkRoyale.body) ||
+                (bodyA === this.arkRoyale.body && bodyB.label === 'bullet'))) {
+                let bullet = bodyA.label === 'bullet' ? bodyA.gameObject : bodyB.gameObject;
+                this.onBulletHit(bullet);
             }
         });
 
@@ -39,9 +100,11 @@ export class gameScene extends Phaser.Scene {
         let posX = 800 + coordenadaInicioLocal;
         let posY = 760;
 
-        this.bismarck = this.matter.add.sprite(posX, posY, 'bismarck');
-        this.bismarck.setScale(0.10).setOrigin(0.5, 0.5);
-        this.bismarck.velocity = settings.bismarckVelocity;
+        this.bismarck = creacionBismarck(this, posX, posY, settings);
+        this.arkRoyale = creacionArkRoyale(this, posX, posY, settings);
+
+        this.bullets = [];
+        this.fireSprite = null;
 
         // Campo de vision
         // Añadir la niebla: Cubrir todo el mapa
@@ -64,7 +127,7 @@ export class gameScene extends Phaser.Scene {
         // Imagen del radar
         const radar = this.add.image(1140, 610, 'radar');
         radar.setScrollFactor(0);
-        radar.setScale(0.2);
+        radar.setScale(0.15);
         radar.setDepth(2);
 
         // Configurar límites y cámara
@@ -136,6 +199,8 @@ export class gameScene extends Phaser.Scene {
                 console.log(" dos jugadores están en la partida");
             }
         });
+
+        createAnimations(this)
     }
 
     update() {
@@ -164,6 +229,10 @@ export class gameScene extends Phaser.Scene {
                     obj.setAlpha(0);  // Hace el objeto invisible 
                 }
             });
+        }
+
+        if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
+            this.shootBullet();
         }
 
     }
