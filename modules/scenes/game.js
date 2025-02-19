@@ -16,7 +16,7 @@ export class gameScene extends Phaser.Scene {
         this.load.image('waterImg', './assets/imgs/tiles/water5.png');
         this.load.image('francia', './assets/imgs/sprites/franciaTransparente.png');
         this.load.image('radar', './assets/imgs/sprites/radar.png');
-        this.load.image('fog', './assets/imgs/tiles/fog2.png');
+        this.load.image('fog', './assets/imgs/tiles/fog.png');
     }
 
     create() {
@@ -52,23 +52,27 @@ export class gameScene extends Phaser.Scene {
         this.bismarck = this.matter.add.sprite(posX, posY, 'bismarck');
         this.bismarck.setScale(0.10).setOrigin(0.5, 0.5);
         this.bismarck.velocity = settings.bismarckVelocity;
+        
         // Campo de vision
+        // Añadir la niebla: Cubrir todo el mapa
+        const overlay = this.add.graphics();
+        overlay.fillStyle(0x000000, 0.8).fillRect(0, 0, 1920, 1080).setDepth(1);
+        
+        this.visionObjets = 210; // Radio de vision de objetos
         this.visionRadius = 200; // Radio de vision
-        this.visionMask = this.add.graphics();
-        this.visionMask.fillStyle(0x000000, 0);
+        this.visionMask = this.make.graphics();
+        this.visionMask.fillStyle(0xffffff);
         this.visionMask.fillCircle(this.bismarck.x, this.bismarck.y, this.visionRadius); // Crear un círculo de vision
+  
+        this.mask = new Phaser.Display.Masks.BitmapMask(this, this.visionMask);
+        this.mask.invertAlpha = true;
+        overlay.setMask(this.mask);
 
         // Crear el array de objetos para ocultar segun el rango de vision
         this.objects = [];
 
-        // Imagen con Niebla
-        const fog = this.add.image(800, 383, 'fog');
-        fog.setScrollFactor(0);
-        fog.setScale(0.366);
-        fog.setDepth(1);
-
         // Imagen del radar
-        const radar = this.add.image(1140, 515, 'radar');
+        const radar = this.add.image(1140, 610, 'radar');
         radar.setScrollFactor(0);
         radar.setScale(0.2);
         radar.setDepth(2);
@@ -81,14 +85,12 @@ export class gameScene extends Phaser.Scene {
 
         // Creacion y configuracion de Minimapa
         const minimapCamera = this.cameras
-            .add(1315, 560, 320, 180, false, 'minimap')
+            .add(1315, 685, 320, 180, false, 'minimap')
             .setOrigin(0.5, 0.5)
             .setZoom(0.05);
         minimapCamera.ignore([this.bismarck])
         minimapCamera.ignore([radar]);
-        minimapCamera.ignore([fog]);
-        //const franciaIcon = this.add.circle(francia.x, francia.y, 60, 0xff0000, 1).setOrigin(0.5,0.5);
-        //this.cameras.main.ignore([franciaIcon])
+        minimapCamera.ignore([overlay]);
         minimapCamera.startFollow(this.bismarck, true, 0.1, 0.1);
 
         this.players[this.socket.id] = this.bismarck;
@@ -151,6 +153,10 @@ export class gameScene extends Phaser.Scene {
 
         if (this.bismarck) {  //Asegurar que el jugador local existe
 
+            this.visionMask.clear();
+            this.visionMask.fillStyle(0xffffff); // Color transparente para la zona de visión
+            this.visionMask.fillCircle(this.bismarck.x, this.bismarck.y, this.visionRadius); // Círculo donde no habrá niebla
+
             this.socket.emit('playerMove', {
                 id: this.socket.id,
                 x: this.bismarck.x,
@@ -162,7 +168,7 @@ export class gameScene extends Phaser.Scene {
         if (this.objects.length > 0) {
             this.objects.forEach((obj) => {
                 const distance = Phaser.Math.Distance.Between(this.bismarck.x, this.bismarck.y, obj.x, obj.y);
-                if (distance <= this.visionRadius) {
+                if (distance <= this.visionObjets) {
                     obj.setAlpha(1);  // Hace el objeto visible 
                 } else {
                     obj.setAlpha(0);  // Hace el objeto invisible 
