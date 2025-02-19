@@ -23,6 +23,12 @@ export class loaderScene extends Phaser.Scene {
             { frameWidth: 48, frameHeight: 20 });
 
         //JUEGO
+        this.load.image('radar', './assets/imgs/sprites/radar.png');
+        this.load.image('fog', './assets/imgs/tiles/fog.png');
+        this.load.image('francia', './assets/imgs/sprites/franciaTransparente.png');
+        this.load.image('bismarckGana', './assets/imgs/bismarckGana.png');
+
+
         //ROJO
         this.load.spritesheet('bismarck',
             './assets/imgs/sprites/bismarckTransparente.PNG',
@@ -33,8 +39,6 @@ export class loaderScene extends Phaser.Scene {
         this.load.spritesheet('bismarckMisilCola', './assets/imgs/sprites/bismarckBulletTail.png',
             { frameWidth: 53, frameHeight: 71 });
 
-        this.load.image('radar', './assets/imgs/sprites/radar.png');
-        this.load.image('fog', './assets/imgs/tiles/fog2.png');
 
         for (let i = 0; i < 32; i++) {
             this.load.image(`explosion_${i}`, `./assets/imgs/sprites/explotion/frames/1_${i}.png`);
@@ -50,8 +54,7 @@ export class loaderScene extends Phaser.Scene {
 
 
 
-        this.load.image('francia', './assets/imgs/sprites/franciaTransparente.png');
-        this.load.image('bismarckGana', './assets/imgs/bismarckGana.png');
+
 
         loadAudios(this);
 
