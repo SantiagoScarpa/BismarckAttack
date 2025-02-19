@@ -2,6 +2,7 @@ import { gameScene } from './modules/scenes/game.js';
 import { ganaBismarck } from './modules/scenes/ganaBismarck.js';
 import { menuScene } from './modules/scenes/menu.js';
 import { settingsScene } from './modules/scenes/settings.js';
+import { loaderScene } from './modules/scenes/loader.js'
 const config = {
     type: Phaser.AUTO,
     width: 1600,
@@ -16,8 +17,8 @@ const config = {
                 left: true, right: true, bottom: true, top: true
             },
             debug: {
-                showBody: true,
-                showStaticBody: true
+                showBody: false,
+                showStaticBody: false
             }
         }
     },
@@ -29,7 +30,7 @@ const config = {
             height: 900,
         }
     },
-    scene: [menuScene, gameScene, ganaBismarck, settingsScene]
+    scene: [loaderScene, menuScene, gameScene, ganaBismarck, settingsScene]
 };
 
 const game = new Phaser.Game(config);

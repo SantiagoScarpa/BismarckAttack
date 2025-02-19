@@ -1,13 +1,11 @@
-import { loadfont } from "../globals.js";
+
 
 export class ganaBismarck extends Phaser.Scene {
     constructor() {
         super("ganaBismarck")
     }
-    preload() {
-        this.load.image('bismarckGana', './assets/imgs/bismarckGana.png');
-        loadfont(this);
-    }
+    preload() { }
+
     create() {
         const width = this.game.config.width;
         const height = this.game.config.height;
