@@ -70,6 +70,13 @@ export class gameScene extends Phaser.Scene {
         this.socket = io();
         this.players = {};
 
+        this.socket.on('playerCount', (count) => {
+            console.log(`👥 Jugadores conectados: ${count}`);
+            if (count > 2) {
+                alert("⚠️ Límite de jugadores alcanzado. No puedes unirte a la partida en este momento.");
+            }
+            return;
+        });
         console.log("🎮 Iniciando escena...");
 
         this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT,W,A,S,D,SPACE');
