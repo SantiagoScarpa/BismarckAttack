@@ -9,6 +9,10 @@ export class gameScene extends Phaser.Scene {
         super("gameScene");
     }
 
+    init(data) {
+        this.team = data.team;
+    }
+
     activateFire(x, y, scale) {
         if (this.bismarck.isOnFire) return;
 
@@ -67,182 +71,212 @@ export class gameScene extends Phaser.Scene {
     }
 
     create() {
-        this.socket = io();
-        this.players = {};
+    // Conexión y manejo de jugadores vía socket
+    this.socket = io();
+    this.players = {};
 
-        this.socket.on('playerCount', (count) => {
-            console.log(`👥 Jugadores conectados: ${count}`);
-            if (count > 2) {
-                alert("⚠️ Límite de jugadores alcanzado. No puedes unirte a la partida en este momento.");
-            }
-            return;
-        });
-        console.log("🎮 Iniciando escena...");
+    // Contador de jugadores
+    this.socket.on('playerCount', (count) => {
+        console.log(`👥 Jugadores conectados: ${count}`);
+        if (count > 2) {
+            alert("⚠️ Límite de jugadores alcanzado. No puedes unirte a la partida en este momento.");
+        }
+        return;
+    });
 
-        this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT,W,A,S,D,SPACE');
+    // Configurar controles
+    this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT,W,A,S,D,SPACE');
 
-        this.matter.world.on('collisionstart', (event) => {
-            const { bodyA, bodyB } = event.pairs[0];
+    // Manejar colisiones del mundo
+    this.matter.world.on('collisionstart', (event) => {
+        const { bodyA, bodyB } = event.pairs[0];
 
-            if (((bodyA === this.bismarck.body && bodyB === this.francia.body) ||
-                (bodyA === this.francia.body && bodyB === this.bismarck.body))) {
+        // Si colisiona el jugador (this.playerShip) con Francia, se dispara la escena de victoria (o derrota) según corresponda
+        if (
+            (bodyA === this.playerShip.body && bodyB === this.francia.body) ||
+            (bodyA === this.francia.body && bodyB === this.playerShip.body)
+        ) {
+            // Por ejemplo, si el jugador rojo es el Bismarck, se dispara 'ganaBismarck'
+            if (this.team === 'red') {
                 this.scene.start('ganaBismarck');
-            } else if (((bodyA.label === 'bullet' && bodyB === this.arkRoyale.body) ||
-                (bodyA === this.arkRoyale.body && bodyB.label === 'bullet'))) {
-                let bullet = bodyA.label === 'bullet' ? bodyA.gameObject : bodyB.gameObject;
-                this.onBulletHit(bullet);
+            } else {
+                // Aquí podrías definir otra escena o lógica para el equipo azul
+                this.scene.start('ganaArkRoyale');
             }
-        });
+        }
+        // Si colisiona una bala contra el jugador, se ejecuta la función onBulletHit
+        else if (
+            ((bodyA.label === 'bullet' && bodyB === this.playerShip.body) ||
+            (bodyA === this.playerShip.body && bodyB.label === 'bullet'))
+        ) {
+            let bullet = bodyA.label === 'bullet' ? bodyA.gameObject : bodyB.gameObject;
+            this.onBulletHit(bullet);
+        }
+    });
 
-        //Esperar la posición de Francia desde el servidor
-        this.socket.on('setFranciaPosition', (position) => {
-            console.log(`recibida posicion Francia: (${position.x}, ${position.y})`);
-            this.createFrancia(position.x, position.y);
-            const franciaIcon = this.add.circle(position.x, position.y, 60, 0xff0000, 1).setOrigin(0.5, 0.5);
-            this.cameras.main.ignore([franciaIcon])
-        });
+    // Esperar la posición de Francia desde el servidor
+    this.socket.on('setFranciaPosition', (position) => {
+        console.log(`Recibida posición de Francia: (${position.x}, ${position.y})`);
+        this.createFrancia(position.x, position.y);
+        const franciaIcon = this.add.circle(position.x, position.y, 60, 0xff0000, 1).setOrigin(0.5, 0.5);
+        this.cameras.main.ignore([franciaIcon]);
+    });
 
-        //Crear el barco del jugador local (sin cambios)
-        let coordenadaInicioLocal = Math.floor(Math.random() * (760 - 1 + 1)) + 1;
-        let posX = 800 + coordenadaInicioLocal;
-        let posY = 760;
+    // Definir posición inicial aleatoria
+    let coordenadaInicioLocal = Math.floor(Math.random() * (760 - 1 + 1)) + 1;
+    let posX = 800 + coordenadaInicioLocal;
+    let posY = 760;
 
-        this.bismarck = creacionBismarck(this, posX, posY, settings);
-        this.arkRoyale = creacionArkRoyale(this, posX, posY, settings);
-
-        this.bullets = [];
-        this.fireSprite = null;
-
-        // Campo de vision
-        // Añadir la niebla: Cubrir todo el mapa
-        const overlay = this.add.graphics();
-        overlay.fillStyle(0x000000, 0.8).fillRect(0, 0, 1920, 1080).setDepth(1);
-
-        this.visionObjets = 210; // Radio de vision de objetos
-        this.visionRadius = 200; // Radio de vision
-        this.visionMask = this.make.graphics();
-        this.visionMask.fillStyle(0xffffff);
-        this.visionMask.fillCircle(this.bismarck.x, this.bismarck.y, this.visionRadius); // Crear un círculo de vision
-
-        this.mask = new Phaser.Display.Masks.BitmapMask(this, this.visionMask);
-        this.mask.invertAlpha = true;
-        overlay.setMask(this.mask);
-
-        // Crear el array de objetos para ocultar segun el rango de vision
-        this.objects = [];
-
-        // Imagen del radar
-        const radar = this.add.image(1140, 610, 'radar');
-        radar.setScrollFactor(0);
-        radar.setScale(0.15);
-        radar.setDepth(2);
-
-        // Configurar límites y cámara
-        this.matter.world.setBounds(0, 0, 1920, 1080);
-        this.cameras.main.setBounds(0, 0, 1920, 1080);
-        this.cameras.main.startFollow(this.bismarck, true, 0.1, 0.1); // Cámara sigue el Bismarck
-        this.cameras.main.setZoom(2);  // Zoom para acercar la vista al Bismarck
-
-        // Creacion y configuracion de Minimapa
-        const minimapCamera = this.cameras
-            .add(1315, 685, 320, 180, false, 'minimap')
-            .setOrigin(0.5, 0.5)
-            .setZoom(0.05);
-        minimapCamera.ignore([this.bismarck])
-        minimapCamera.ignore([radar]);
-        minimapCamera.ignore([overlay]);
-        minimapCamera.startFollow(this.bismarck, true, 0.1, 0.1);
-
-        this.players[this.socket.id] = this.bismarck;
-
-        //Emitimos al servidor que este jugador se unió
-        this.socket.on("connect", () => {
-            console.log(`conectado con ID ${this.socket.id}, enviano al server`);
-            this.socket.emit('newPlayer', {
-                id: this.socket.id,
-                x: posX,
-                y: posY,
-                angle: 0
-
-            });
-        });
-
-        //Agregar nuevos jugadores cuando se conectan
-        this.socket.on('newPlayer', (player) => {
-            console.log(`nuevo jugador conectado: ${player.id}`);
-            if (player.id !== this.socket.id) {
-                if (!this.players[player.id]) {
-                    this.createBismarck(player.id, player.x, player.y);
-                }
-            }
-        });
-
-        //Sincronizar solo los otros jugadores
-        this.socket.on('updatePlayers', (players) => {
-            Object.keys(players).forEach((id) => {
-                if (id !== this.socket.id) {
-                    if (!this.players[id]) {
-                        this.createBismarck(id, players[id].x, players[id].y, players[id].angle);
-                    } else {
-                        this.players[id].setPosition(players[id].x, players[id].y);
-                        this.players[id].setAngle(players[id].angle);
-                    }
-                }
-            });
-        });
-
-        this.socket.on('playerDisconnected', (id) => {
-            console.log(`jugador ${id} se desconecto`);
-            if (this.players[id]) {
-                this.players[id].destroy();
-                delete this.players[id];
-            }
-        });
-
-        //Mostrar el número de jugadores conectados
-        this.socket.on('playerCount', (count) => {
-            console.log(`👥 Jugadores conectados: ${count}`);
-            if (count === 2) {
-                console.log(" dos jugadores están en la partida");
-            }
-        });
-
-        createAnimations(this)
+    // Crear la nave del jugador según el bando seleccionado
+    if (this.team === 'red') {
+        // Jugador rojo obtiene el Bismarck
+        this.playerShip = creacionBismarck(this, posX, posY, settings);
+    } else if (this.team === 'blue') {
+        // Jugador azul obtiene el ArkRoyale
+        this.playerShip = creacionArkRoyale(this, posX, posY, settings);
     }
 
-    update() {
-        checkControlsBismarck(this);
+    // Guardar el jugador local en el objeto players
+    this.players[this.socket.id] = this.playerShip;
 
-        if (this.bismarck) {  //Asegurar que el jugador local existe
+    // Inicializar balas y fuego
+    this.bullets = [];
+    this.fireSprite = null;
 
-            this.visionMask.clear();
-            this.visionMask.fillStyle(0xffffff); // Color transparente para la zona de visión
-            this.visionMask.fillCircle(this.bismarck.x, this.bismarck.y, this.visionRadius); // Círculo donde no habrá niebla
+    // Campo de visión: Se añade la niebla sobre el mapa
+    const overlay = this.add.graphics();
+    overlay.fillStyle(0x000000, 0.8).fillRect(0, 0, 1920, 1080).setDepth(1);
 
-            this.socket.emit('playerMove', {
-                id: this.socket.id,
-                x: this.bismarck.x,
-                y: this.bismarck.y,
-                angle: this.bismarck.angle // no se si esta bien esto
-            });
+    // Configuración de la zona de visión
+    this.visionObjets = 210; // Radio para objetos
+    this.visionRadius = 200;  // Radio de visión
+    this.visionMask = this.make.graphics();
+    this.visionMask.fillStyle(0xffffff);
+    this.visionMask.fillCircle(this.playerShip.x, this.playerShip.y, this.visionRadius); // Círculo de visión
+
+    this.mask = new Phaser.Display.Masks.BitmapMask(this, this.visionMask);
+    this.mask.invertAlpha = true;
+    overlay.setMask(this.mask);
+
+    // Array de objetos para controlar la visibilidad según la distancia
+    this.objects = [];
+
+    // Imagen del radar
+    const radar = this.add.image(1140, 610, 'radar');
+    radar.setScrollFactor(0);
+    radar.setScale(0.15);
+    radar.setDepth(2);
+
+    // Configuración de límites y cámara
+    this.matter.world.setBounds(0, 0, 1920, 1080);
+    this.cameras.main.setBounds(0, 0, 1920, 1080);
+    this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
+    this.cameras.main.setZoom(2);
+
+    // Configurar la cámara del minimapa
+    const minimapCamera = this.cameras
+        .add(1315, 685, 320, 180, false, 'minimap')
+        .setOrigin(0.5, 0.5)
+        .setZoom(0.05);
+    minimapCamera.ignore([this.playerShip, radar, overlay]);
+    minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
+
+    // Emitir al servidor que este jugador se unió
+    this.socket.on("connect", () => {
+        console.log(`Conectado con ID ${this.socket.id}, enviando al server`);
+        this.socket.emit('newPlayer', {
+            id: this.socket.id,
+            x: posX,
+            y: posY,
+            angle: 0
+        });
+    });
+
+    // Agregar nuevos jugadores al conectarse
+    this.socket.on('newPlayer', (player) => {
+        console.log(`Nuevo jugador conectado: ${player.id}`);
+        if (player.id !== this.socket.id) {
+            if (!this.players[player.id]) {
+                this.createBismarck(player.id, player.x, player.y);
+            }
         }
-        // Mostrar o ocultar objetos si si estn o no en el radio de vision
-        if (this.objects.length > 0) {
-            this.objects.forEach((obj) => {
-                const distance = Phaser.Math.Distance.Between(this.bismarck.x, this.bismarck.y, obj.x, obj.y);
-                if (distance <= this.visionObjets) {
-                    obj.setAlpha(1);  // Hace el objeto visible 
+    });
+
+    // Sincronizar la posición de los otros jugadores
+    this.socket.on('updatePlayers', (players) => {
+        Object.keys(players).forEach((id) => {
+            if (id !== this.socket.id) {
+                if (!this.players[id]) {
+                    this.createBismarck(id, players[id].x, players[id].y, players[id].angle);
                 } else {
-                    obj.setAlpha(0);  // Hace el objeto invisible 
+                    this.players[id].setPosition(players[id].x, players[id].y);
+                    this.players[id].setAngle(players[id].angle);
                 }
-            });
-        }
+            }
+        });
+    });
 
-        if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
-            this.shootBullet();
+    // Manejar la desconexión de jugadores
+    this.socket.on('playerDisconnected', (id) => {
+        console.log(`Jugador ${id} se desconectó`);
+        if (this.players[id]) {
+            this.players[id].destroy();
+            delete this.players[id];
         }
+    });
 
+    // Mostrar el número de jugadores conectados (evento duplicado en el ejemplo original)
+    this.socket.on('playerCount', (count) => {
+        console.log(`👥 Jugadores conectados: ${count}`);
+        if (count === 2) {
+            console.log("Dos jugadores están en la partida");
+        }
+    });
+
+    // Crear las animaciones definidas globalmente
+    createAnimations(this);
+}
+
+
+update() {
+    // Ejecuta controles según el equipo
+    if (this.team === 'red') {
+        checkControlsBismarck({ bismarck: this.playerShip, keys: this.keys });
     }
+    
+    // Actualiza el campo de visión y emite la posición del jugador
+    if (this.playerShip) {  // Asegura que la nave del jugador existe
+        this.visionMask.clear();
+        this.visionMask.fillStyle(0xffffff); // Color para definir la zona visible
+        this.visionMask.fillCircle(this.playerShip.x, this.playerShip.y, this.visionRadius); // Actualiza el círculo de visión
+
+        // Emitir la posición actualizada del jugador al servidor
+        this.socket.emit('playerMove', {
+            id: this.socket.id,
+            x: this.playerShip.x,
+            y: this.playerShip.y,
+            angle: this.playerShip.angle
+        });
+    }
+    
+    // Mostrar u ocultar objetos según estén dentro del rango de visión
+    if (this.objects.length > 0) {
+        this.objects.forEach((obj) => {
+            const distance = Phaser.Math.Distance.Between(this.playerShip.x, this.playerShip.y, obj.x, obj.y);
+            if (distance <= this.visionObjets) {
+                obj.setAlpha(1);  // Objeto visible
+            } else {
+                obj.setAlpha(0);  // Objeto invisible
+            }
+        });
+    }
+    
+    // Disparar bala al presionar SPACE
+    if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
+        this.shootBullet();
+    }
+}
+
 
     /**
      ** Crea Francia en una posición sincronizada desde el servidor.
