@@ -6,8 +6,9 @@
 
 ### **1️⃣ Requisitos Previos**
 Antes de ejecutar el proyecto, asegúrate de tener instalado:
-- [Node.js](https://nodejs.org/) (versión 14 o superior)
+- [Node.js](https://nodejs.org/) (versión 20 o superior)
 - Un navegador web moderno (Google Chrome, Firefox, Edge)
+- Mongo DB instalada version 2.3 o superior
 
 ### **2️⃣ Instalación**
 1. **Clona este repositorio** en tu máquina local:
@@ -58,5 +59,5 @@ Flechas del teclado ⬆️⬇️⬅️➡️ para mover el Bismarck.
 │── README.md              # Documentación
 
 📜 Licencia
-Proyecto desarrollado por [Tu Nombre]. Puedes modificarlo y mejorarlo libremente. 🚢🔥
+Proyecto desarrollado por Nicolas Mauber, Nicolsa Laurenzano, Juan Pablo Correa y Santiago Scarpa. 🚢🔥
 
