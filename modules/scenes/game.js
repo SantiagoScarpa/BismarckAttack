@@ -1,8 +1,10 @@
 import settings from '../../settings.json' with {type: 'json'};
 import { checkControlsBismarck, creacionBismarck } from '../controls/controlsBismarck.js';
 import { playAudios } from './../audios.js';
-import { creacionArkRoyale } from '../controls/controlsArkRoyale.js';
+import { creacionArkRoyal } from '../controls/controlsArkRoyal.js';
 import { createAnimations } from '../globals.js'
+
+
 
 export class gameScene extends Phaser.Scene {
     constructor() {
@@ -80,8 +82,8 @@ export class gameScene extends Phaser.Scene {
             if (((bodyA === this.bismarck.body && bodyB === this.francia.body) ||
                 (bodyA === this.francia.body && bodyB === this.bismarck.body))) {
                 this.scene.start('ganaBismarck');
-            } else if (((bodyA.label === 'bullet' && bodyB === this.arkRoyale.body) ||
-                (bodyA === this.arkRoyale.body && bodyB.label === 'bullet'))) {
+            } else if (((bodyA.label === 'bullet' && bodyB === this.arkRoyal.body) ||
+                (bodyA === this.arkRoyal.body && bodyB.label === 'bullet'))) {
                 let bullet = bodyA.label === 'bullet' ? bodyA.gameObject : bodyB.gameObject;
                 this.onBulletHit(bullet);
             }
@@ -101,7 +103,7 @@ export class gameScene extends Phaser.Scene {
         let posY = 760;
 
         this.bismarck = creacionBismarck(this, posX, posY, settings);
-        this.arkRoyale = creacionArkRoyale(this, posX, posY, settings);
+        this.arkRoyal = creacionArkRoyal(this, posX, posY, settings);
 
         this.bullets = [];
         this.fireSprite = null;
@@ -120,6 +122,12 @@ export class gameScene extends Phaser.Scene {
         this.mask = new Phaser.Display.Masks.BitmapMask(this, this.visionMask);
         this.mask.invertAlpha = true;
         overlay.setMask(this.mask);
+
+        const save = this.add.sprite(1150, 250, 'save')
+        save.setScrollFactor(0)
+            .setOrigin(0.5, 0.5)
+            .setInteractive()
+            .setDepth(2)
 
         // Crear el array de objetos para ocultar segun el rango de vision
         this.objects = [];
@@ -200,10 +208,21 @@ export class gameScene extends Phaser.Scene {
             }
         });
 
+
+
+        save.on('pointerdown', () => {
+            save.play('saving')
+            guardarPartida('test1a', 'test1r', this)
+        })
+        save.on('animationcomplete', () => { save.setFrame(0) });
+
+
+
         createAnimations(this)
     }
 
     update() {
+
         checkControlsBismarck(this);
 
         if (this.bismarck) {  //Asegurar que el jugador local existe
@@ -267,4 +286,37 @@ export class gameScene extends Phaser.Scene {
         this.players[playerId] = bismarck;
         this.objects.push(bismarck);
     }
+}
+
+function guardarPartida(codigoAzul, codigoRojo, { bismarck, arkRoyal }) {
+
+    let vBismarck = {
+        x: bismarck.x,
+        y: bismarck.y,
+        vida: bismarck.vida
+    }
+
+    let vArkRoyal = {
+        x: arkRoyal.x,
+        y: arkRoyal.y,
+        avionesRestantes: arkRoyal.avionesRestantes
+    }
+
+    fetch('/guardarPartida', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ codigoAzul, codigoRojo, vBismarck, vArkRoyal })
+
+    })
+        .then(response => response.json()) // Esperar respuesta en JSON
+        .then(data => {
+            console.log(data.mensaje); // Mostrar mensaje del servidor
+            // (Opcional) Mostrar mensaje en el juego
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // (Opcional) Mostrar mensaje de error en el juego
+        });
 }

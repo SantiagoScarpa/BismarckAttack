@@ -14,4 +14,13 @@ export function createAnimations(game) {
         frameRate: 24,
         repeat: -1 // Repite infinitamente
     });
+
+    game.anims.create({
+        key: 'saving',
+        frames: game.anims.generateFrameNumbers(
+            'save',
+            { start: 0, end: 17 }),
+        repeat: 0,
+        frameRate: 30
+    })
 }
