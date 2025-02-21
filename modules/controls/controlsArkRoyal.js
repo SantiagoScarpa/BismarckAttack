@@ -10,13 +10,10 @@ export function creacionArkRoyal(game, posX, posY, settings) {
     return arkRoyal
 }
 
-export function crearAvion(game, posX, posY, settings) {
+export function crearAvion(game, posX, posY, obs, ope, settings) {
     let avion = game.matter.add.sprite(posX - 100, posY - 100, 'avion')
-    arkRoyal
-        .setScale(0.20)
-        .setOrigin(0.5, 0.5)
-        .avionesRestantes = 10;
-    arkRoyal.velocity = settings.arkRoyalVelocity
-    arkRoyal.avionesRestantes = 10
-    return arkRoyal
+    avion.observador = obs
+    avion.operador = ope
+    avion.velocity = settings.avionVelocity
+    return avion
 }

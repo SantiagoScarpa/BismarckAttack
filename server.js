@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
 import settings from './settings.json' with { type: 'json' };
-import { inicioConexionDB } from './modules/creoPersistencia.js';
+import { inicioConexionDB } from './modules/persistencia/creoPersistencia.js';
 
 const app = express();
 const server = createServer(app);

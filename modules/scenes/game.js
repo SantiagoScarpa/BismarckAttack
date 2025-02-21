@@ -3,7 +3,7 @@ import { checkControlsBismarck, creacionBismarck } from '../controls/controlsBis
 import { playAudios } from './../audios.js';
 import { creacionArkRoyal } from '../controls/controlsArkRoyal.js';
 import { createAnimations } from '../globals.js'
-
+import { guardarPartida } from '../persistencia/obtengoPersistencia.js';
 
 
 export class gameScene extends Phaser.Scene {
@@ -65,14 +65,17 @@ export class gameScene extends Phaser.Scene {
         }
     }
 
-    preload() {
-    }
+    preload() { }
 
     create() {
         this.socket = io();
         this.players = {};
 
         console.log("🎮 Iniciando escena...");
+
+        //ACA PONEMOS EL CODIGO QUE GENERMOS AL INICIAR PARTIDA
+        this.codigoAzul = 'B1A'
+        this.codigoRojo = 'B1R'
 
         this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT,W,A,S,D,SPACE');
 
@@ -122,6 +125,13 @@ export class gameScene extends Phaser.Scene {
         this.mask = new Phaser.Display.Masks.BitmapMask(this, this.visionMask);
         this.mask.invertAlpha = true;
         overlay.setMask(this.mask);
+
+        const homeBtn = this.add.sprite(1120, 250, 'home')
+        homeBtn.setScrollFactor(0)
+            .setOrigin(0.5, 0.5)
+            .setInteractive()
+            .setDepth(2)
+            .setScale(0.3)
 
         const save = this.add.sprite(1150, 250, 'save')
         save.setScrollFactor(0)
@@ -212,10 +222,13 @@ export class gameScene extends Phaser.Scene {
 
         save.on('pointerdown', () => {
             save.play('saving')
-            guardarPartida('test1a', 'test1r', this)
+            guardarPartida(this)
         })
         save.on('animationcomplete', () => { save.setFrame(0) });
 
+        homeBtn.on('pointerdown', () => {
+            this.scene.start('menuScene')
+        })
 
 
         createAnimations(this)
@@ -288,35 +301,3 @@ export class gameScene extends Phaser.Scene {
     }
 }
 
-function guardarPartida(codigoAzul, codigoRojo, { bismarck, arkRoyal }) {
-
-    let vBismarck = {
-        x: bismarck.x,
-        y: bismarck.y,
-        vida: bismarck.vida
-    }
-
-    let vArkRoyal = {
-        x: arkRoyal.x,
-        y: arkRoyal.y,
-        avionesRestantes: arkRoyal.avionesRestantes
-    }
-
-    fetch('/guardarPartida', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ codigoAzul, codigoRojo, vBismarck, vArkRoyal })
-
-    })
-        .then(response => response.json()) // Esperar respuesta en JSON
-        .then(data => {
-            console.log(data.mensaje); // Mostrar mensaje del servidor
-            // (Opcional) Mostrar mensaje en el juego
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // (Opcional) Mostrar mensaje de error en el juego
-        });
-}

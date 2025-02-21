@@ -51,17 +51,22 @@ export function inicioConexionDB(app) {
                 y: arkRoyal.y,
                 avionesRestantes: arkRoyal.avionesRestantes,
                 avionActual: {
-                    x: arkRoyal.avion.x,
-                    y: arkRoyal.avion.y,
-                    observador: arkRoyal.avion.observador,
-                    operador: arkRoyal.avion.operador
+                    x: arkRoyal.avionActual.x,
+                    y: arkRoyal.avionActual.y,
+                    observador: arkRoyal.avionActual.observador,
+                    operador: arkRoyal.avionActual.operador
                 }
             }
         });
-        console.log(nuevaPartida)
         nuevaPartida.save()
             .then(() => res.json({ mensaje: 'Datos guardados' })) // Enviar respuesta en JSON
             .catch(err => res.status(500).json({ error: 'Error al guardar datos' }));
     });
+
+    app.get('/retomarPartida', (req, res) => {
+        const { codigoAzul, codigoRojo } = req.budy;
+        const vPartida = partida.find($or[{ codigoAzul: codigoAzul }, { codigoRojo: codigoRojo }])
+        return vPartida;
+    })
 
 }

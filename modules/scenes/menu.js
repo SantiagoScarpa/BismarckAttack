@@ -52,6 +52,18 @@ export class menuScene extends Phaser.Scene {
             .setOrigin(0.5, 0.5)
             .depth = 2
 
+        const replayBtn = this.add.sprite(width / 3 * 1.5, height / 2, 'replayBtn')
+        replayBtn.setInteractive()
+        replayBtn.depth = 1
+        this.add.text(width / 3 * 1.5, height / 2 + 55, 'CONTINUAR PARTIDA',
+            {
+                fontFamily: 'Rockwell',
+                fontSize: 22,
+                color: '#e1f4b1'
+            })
+            .setOrigin(0.5, 0.5)
+            .depth = 2
+
         const configBtn = this.add.sprite(width / 3 * 2, height / 2, 'ConfigBtn')
         configBtn.setInteractive()
             .depth = 1
@@ -78,7 +90,6 @@ export class menuScene extends Phaser.Scene {
             playBtn.setFrame(2);
             playAudios('menuSelection', this, settings.volumeMenu);
             this.scene.start('gameScene')
-            this.scene.remove('menuScene')
         });
 
         configBtn.on('pointerover', function () {
@@ -95,6 +106,21 @@ export class menuScene extends Phaser.Scene {
             this.scene.start('settingsScene')
 
         });
+
+        replayBtn.on('pointerover', function () {
+            replayBtn.setFrame(1)
+        });
+
+        replayBtn.on('pointerout', function () {
+            replayBtn.setFrame(0);
+        })
+
+
+        replayBtn.on('pointerdown', () => {
+            replayBtn.setFrame(0)
+            playAudios('menuSelection', this, settings.volumeMenu)
+
+        })
 
 
     }

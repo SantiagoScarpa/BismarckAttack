@@ -13,7 +13,9 @@ export class loaderScene extends Phaser.Scene {
             { frameWidth: 160, frameHeight: 85 });
         this.load.spritesheet('ConfigBtn', './assets/imgs/buttons/configSprite.png',
             { frameWidth: 160, frameHeight: 84 });
-
+        this.load.spritesheet('replayBtn', './assets/imgs/buttons/replay.png',
+            { frameWidth: 160, frameHeight: 85 }
+        );
         //SETTINGS
         this.load.image('flechaIzq', './assets/imgs/buttons/flechaIzq.png');
         this.load.image('flechaDer', './assets/imgs/buttons/flechaDer.png');
@@ -30,7 +32,8 @@ export class loaderScene extends Phaser.Scene {
         this.load.image('bismarckGana', './assets/imgs/bismarckGana.png');
         this.load.spritesheet('save', './assets/imgs/sprites/save.png',
             { frameWidth: 16, frameHeight: 16 })
-
+        this.load.spritesheet('home', './assets/imgs/buttons/home.png',
+            { frameWidth: 56, frameHeight: 58 })
         //ROJO
         this.load.spritesheet('bismarck',
             './assets/imgs/sprites/bismarckTransparente.PNG',
