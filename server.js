@@ -73,3 +73,8 @@ app.get('/getPlayersCount', (req, res) => {
 server.listen(settings.serverPort, () => {
     console.log('🚀 Servidor escuchando en http://localhost:3000');
 });
+
+app.get('/getPlayerConnections', (req, res) => {
+    res.json( Object.keys(players).length)
+})
+
