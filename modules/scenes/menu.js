@@ -70,17 +70,6 @@ export class menuScene extends Phaser.Scene {
             playAudios('menuSelection', this, settings.volumeMenu);
             this.scene.start('settingsScene');
         });
-
-
-        // this.socket.on('playerCount', (count) => {
-        //     console.log(`👥 Jugadores conectados: ${count}`);
-        //     if (count >= 2) {
-        //         alert("⚠️ Límite de jugadores alcanzado. No puedes unirte a la partida en este momento.");
-        //     }
-        // });
-
-
-
     }
 
     async getPlayers() {
