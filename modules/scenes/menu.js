@@ -7,7 +7,6 @@ let actualMenuSel = menuOptions.PUREBA;
 export class menuScene extends Phaser.Scene {
     constructor() {
         super("menuScene");
-        //this.socket = io();
     }
 
     create() {
@@ -55,10 +54,10 @@ export class menuScene extends Phaser.Scene {
             const cantidadJugadores = await this.getPlayers();
             playBtn.setFrame(2);
             playAudios('menuSelection', this, settings.volumeMenu);
-            if(cantidadJugadores < 2){
+            if (cantidadJugadores < 2) {
                 this.showTeamSelectionMenu();
             }
-            else{
+            else {
                 alert("La cantidad de jugadores ha alcanzado su maximo ✌✔")
             }
         });
@@ -79,16 +78,16 @@ export class menuScene extends Phaser.Scene {
         //         alert("⚠️ Límite de jugadores alcanzado. No puedes unirte a la partida en este momento.");
         //     }
         // });
-       
+
 
 
     }
 
     async getPlayers() {
-       const res = await fetch("/getPlayerConnections")
-       const resJSON = await res.json();
-       console.log(resJSON)
-       return resJSON;
+        const res = await fetch("/getPlayerConnections")
+        const resJSON = await res.json();
+        console.log(resJSON)
+        return resJSON;
     }
 
     showTeamSelectionMenu() {
