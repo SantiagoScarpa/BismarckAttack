@@ -50,6 +50,11 @@ export class menuScene extends Phaser.Scene {
         playBtn.on('pointerover', () => playBtn.setFrame(1));
         playBtn.on('pointerout', () => playBtn.setFrame(0));
 
+        playBtn.on('pointerdown', () => {
+            playBtn.setFrame(2);
+            playAudios('menuSelection', game, settings.volumeMenu);
+            game.scene.start('gameScene')
+        });
         playBtn.on('pointerdown', async () => {
             const cantidadJugadores = await this.getPlayers();
             playBtn.setFrame(2);
@@ -62,6 +67,13 @@ export class menuScene extends Phaser.Scene {
             }
         });
 
+        configBtn.on('pointerover', function () {
+            configBtn.setFrame(1)
+        });
+
+        configBtn.on('pointerout', function () {
+            configBtn.setFrame(0);
+        })
         configBtn.on('pointerover', () => configBtn.setFrame(1));
         configBtn.on('pointerout', () => configBtn.setFrame(0));
 
