@@ -51,10 +51,16 @@ export class menuScene extends Phaser.Scene {
         playBtn.on('pointerover', () => playBtn.setFrame(1));
         playBtn.on('pointerout', () => playBtn.setFrame(0));
 
-        playBtn.on('pointerdown', () => {
+        playBtn.on('pointerdown', async () => {
+            const cantidadJugadores = await this.getPlayers();
             playBtn.setFrame(2);
             playAudios('menuSelection', this, settings.volumeMenu);
-            this.showTeamSelectionMenu();
+            if(cantidadJugadores < 2){
+                this.showTeamSelectionMenu();
+            }
+            else{
+                alert("La cantidad de jugadores ha alcanzado su maximo ✌✔")
+            }
         });
 
         configBtn.on('pointerover', () => configBtn.setFrame(1));
@@ -73,8 +79,16 @@ export class menuScene extends Phaser.Scene {
         //         alert("⚠️ Límite de jugadores alcanzado. No puedes unirte a la partida en este momento.");
         //     }
         // });
-        
+       
 
+
+    }
+
+    async getPlayers() {
+       const res = await fetch("/getPlayerConnections")
+       const resJSON = await res.json();
+       console.log(resJSON)
+       return resJSON;
     }
 
     showTeamSelectionMenu() {
