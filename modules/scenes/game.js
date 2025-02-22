@@ -122,6 +122,29 @@ export class gameScene extends Phaser.Scene {
             this.cameras.main.ignore([franciaIcon]);
         });
 
+        const homeBtn = this.add.sprite(1120, 250, 'home')
+        homeBtn.setScrollFactor(0)
+            .setOrigin(0.5, 0.5)
+            .setInteractive()
+            .setDepth(2)
+            .setScale(0.3)
+
+        const save = this.add.sprite(1150, 250, 'save')
+        save.setScrollFactor(0)
+            .setOrigin(0.5, 0.5)
+            .setInteractive()
+            .setDepth(2)
+
+        save.on('pointerdown', () => {
+            save.play('saving')
+            guardarPartida(this)
+        })
+        save.on('animationcomplete', () => { save.setFrame(0) });
+
+        homeBtn.on('pointerdown', () => {
+            this.scene.start('menuScene')
+        })
+
         // Definir posición inicial aleatoria
         let coordenadaInicioLocal = Math.floor(Math.random() * (760 - 1 + 1)) + 1;
         let posX = 800 + coordenadaInicioLocal;
@@ -133,7 +156,7 @@ export class gameScene extends Phaser.Scene {
             this.playerShip = creacionBismarck(this, posX, posY, settings);
         } else if (this.team === 'blue') {
             // Jugador azul obtiene el ArkRoyale
-            this.playerShip = creacionArkRoyale(this, posX, posY, settings);
+            this.playerShip = creacionArkRoyal(this, posX, posY, settings);
         }
 
         // Guardar el jugador local en el objeto players
@@ -233,7 +256,7 @@ export class gameScene extends Phaser.Scene {
             }
         });
 
-        // Crear las animaciones definidas globalmente
+        // Crear las animaciones definidas globalmente        
         createAnimations(this);
     }
 
