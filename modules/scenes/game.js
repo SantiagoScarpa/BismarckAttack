@@ -5,7 +5,6 @@ import { creacionArkRoyal } from '../controls/controlsArkRoyal.js';
 import { createAnimations } from '../globals.js'
 import { guardarPartida } from '../persistencia/obtengoPersistencia.js';
 
-
 export class gameScene extends Phaser.Scene {
     constructor() {
         super("gameScene");

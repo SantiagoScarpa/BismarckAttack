@@ -10,10 +10,11 @@ export function creacionArkRoyal(game, posX, posY, settings) {
     return arkRoyal
 }
 
-export function crearAvion(game, posX, posY, obs, ope, settings) {
+export function crearAvion(game, posX, posY, obs, ope, muni, settings) {
     let avion = game.matter.add.sprite(posX - 100, posY - 100, 'avion')
     avion.observador = obs
     avion.operador = ope
+    avion.municion = muni
     avion.velocity = settings.avionVelocity
     return avion
 }

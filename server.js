@@ -16,7 +16,7 @@ app.use(express.static('.'));
 app.use('/modules', express.static(path.join(process.cwd(), 'modules')));
 app.use(express.json());
 
-inicioConexionDB(app);
+inicioConexionDB(app, settings.dbInfo);
 
 
 const players = {}; // Guardar jugadores activos
@@ -65,6 +65,10 @@ io.on('connection', (socket) => {
         io.emit('playerCount', Object.keys(players).length);
     });
 });
+
+app.get('/getPlayersCount', (req, res) => {
+    res.json(Object.keys(players).length)
+})
 
 server.listen(settings.serverPort, () => {
     console.log('🚀 Servidor escuchando en http://localhost:3000');

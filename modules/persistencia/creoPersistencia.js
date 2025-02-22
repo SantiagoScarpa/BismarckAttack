@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
-export function inicioConexionDB(app) {
-    mongoose.connect('mongodb://127.0.0.1:27017/bismarckAttack')
+export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
+    mongoose.connect(`mongodb://${dbIp}:${dbPort}/${dbName}`)
         .then(() => { console.log('Conexion a DB completada') })
         .catch(() => { console.error('Conexion a DB fallo') });
 
@@ -13,6 +13,7 @@ export function inicioConexionDB(app) {
     const avionSchema = new mongoose.Schema({
         x: Number,
         y: Number,
+        municion: Boolean,
         observador: Boolean,
         operador: Boolean
     })
@@ -59,14 +60,32 @@ export function inicioConexionDB(app) {
             }
         });
         nuevaPartida.save()
-            .then(() => res.json({ mensaje: 'Datos guardados' })) // Enviar respuesta en JSON
-            .catch(err => res.status(500).json({ error: 'Error al guardar datos' }));
+            .then(() => res.json({ mensaje: 'Partida guardada' }))
+            .catch(err => res.status(500).json({ error: 'Error al guardar partida' }));
     });
 
     app.get('/retomarPartida', (req, res) => {
-        const { codigoAzul, codigoRojo } = req.budy;
-        const vPartida = partida.find($or[{ codigoAzul: codigoAzul }, { codigoRojo: codigoRojo }])
-        return vPartida;
+        let { codigoAzul, codigoRojo } = req.query;
+
+        if (codigoAzul)
+            codigoRojo = 'N/A'
+        else
+            codigoAzul = 'N/A'
+
+        partida.findOne({
+            $or: [
+                { codigoAzul: codigoAzul },
+                { codigoRojo: codigoRojo }]
+        })
+            .then((par) => {
+                if (!partida) {
+                    return res.status(404).json({ mensaje: 'Partida no encontrada' });
+                }
+                res.json(par)
+
+            })
+            .catch(err => res.status(500).json({ error: 'Error al retomar partida ' }))
+
     })
 
 }
