@@ -25,11 +25,17 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
         avionActual: avionSchema
     })
 
+    const franciaSchema = new mongoose.Schema({
+        x: Number,
+        y: Number
+    })
+
     const partidaSchema = new mongoose.Schema({
         codigoAzul: String,
         codigoRojo: String,
         bismarck: bismarckSchema,
-        arkRoyal: arkRoyalSchema
+        arkRoyal: arkRoyalSchema,
+        francia: franciaSchema
     })
 
     const partida = mongoose.model('Partidas', partidaSchema);
@@ -38,7 +44,7 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
 
 
     app.post('/guardarPartida', (req, res) => {
-        const { codigoAzul, codigoRojo, vBismarck: bismarck, vArkRoyal: arkRoyal } = req.body; // Datos del juego
+        const { codigoAzul, codigoRojo, vBismarck: bismarck, vArkRoyal: arkRoyal, vFrancia: francia } = req.body; // Datos del juego
 
         const nuevaPartida = new partida({
             codigoAzul: codigoAzul, codigoRojo: codigoRojo,
@@ -57,6 +63,10 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
                     observador: arkRoyal.avionActual.observador,
                     operador: arkRoyal.avionActual.operador
                 }
+            },
+            francia: {
+                x: francia.x,
+                y: francia.y
             }
         });
         nuevaPartida.save()

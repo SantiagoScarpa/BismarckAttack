@@ -5,6 +5,7 @@ import { creacionArkRoyal } from '../controls/controlsArkRoyal.js';
 import { createAnimations } from '../globals.js'
 import { guardarPartida } from '../persistencia/obtengoPersistencia.js';
 
+
 export class gameScene extends Phaser.Scene {
     constructor() {
         super("gameScene");
@@ -71,6 +72,10 @@ export class gameScene extends Phaser.Scene {
     preload() { }
 
     create() {
+        //ESTO SE TIENEN QUE PONER POR LOS CODIGOS QUE GENERMOS ANTES 
+        this.codigoRojo = 'J1RO'
+        this.codigoAzul = 'J1AZ'
+
         // Conexión y manejo de jugadores vía socket
         this.socket = io();
         this.players = {};
@@ -99,9 +104,6 @@ export class gameScene extends Phaser.Scene {
                 // Por ejemplo, si el jugador rojo es el Bismarck, se dispara 'ganaBismarck'
                 if (this.team === 'red') {
                     this.scene.start('ganaBismarck');
-                } else {
-                    // Aquí podrías definir otra escena o lógica para el equipo azul
-                    this.scene.start('ganaArkRoyale');
                 }
             }
             // Si colisiona una bala contra el jugador, se ejecuta la función onBulletHit
@@ -142,6 +144,7 @@ export class gameScene extends Phaser.Scene {
         save.on('animationcomplete', () => { save.setFrame(0) });
 
         homeBtn.on('pointerdown', () => {
+            this.socket.disconnect()
             this.scene.start('menuScene')
         })
 
@@ -154,9 +157,11 @@ export class gameScene extends Phaser.Scene {
         if (this.team === 'red') {
             // Jugador rojo obtiene el Bismarck
             this.playerShip = creacionBismarck(this, posX, posY, settings);
+            this.playerShip.label = 'bismarck'
         } else if (this.team === 'blue') {
-            // Jugador azul obtiene el ArkRoyale
+            // Jugador azul obtiene el ArkRoyal
             this.playerShip = creacionArkRoyal(this, posX, posY, settings);
+            this.playerShip.label = 'arkRoyal'
         }
 
         // Guardar el jugador local en el objeto players
@@ -258,8 +263,38 @@ export class gameScene extends Phaser.Scene {
 
         // Crear las animaciones definidas globalmente        
         createAnimations(this);
-    }
 
+        // this.socket.on('pidoGuardado', (data) => {
+        //     console.log('pidoGuardado' + this.socket.id)
+        //     if (data.label === 'bismarck') {
+
+        //         if (this.playerShip.label == 'arkRoyal') {
+        //             data.arkRoyalX = this.playerShip.x
+        //             data.arkRoyalY = this.playerShip.y
+        //             data.arkRoyalAngle = this.playerShip.angle
+        //             data.arkRoyalAvionesRestantes = this.playerShip.avionesRestantes
+
+        //             //ESTO SE TIENE QUE CARGAR CUANDO TENGAMOS EL AVION
+        //             data.avionX = 0
+        //             data.avionY = 0
+        //             data.avionMunicion = false
+        //             data.avionOperador = false
+        //             data.avionObservador = false
+        //         }
+        //     } else {
+
+        //         if (this.playerShip.label == 'bismarck') {
+        //             data.bismarckX = this.playerShip.x
+        //             data.bismarckY = this.playerShip.y
+        //             data.bismarckAngle = this.playerShip.angle
+        //             data.bismarckVida = this.playerShip.vida
+        //         }
+        //     }
+        //     data.playerId = this.socket.id
+        //     data.nroPeticion = 2
+        //     this.socket.emit('guardo', data)
+        // })
+    }
 
     update() {
         // Ejecuta controles según el equipo
