@@ -1,10 +1,10 @@
 import settings from '../../settings.json' with {type: 'json'};
 import { checkControlsBismarck, creacionBismarck } from '../controls/controlsBismarck.js';
 import { playAudios } from './../audios.js';
-import { creacionArkRoyale } from '../controls/controlsArkRoyale.js';
+import { creacionArkRoyal } from '../controls/controlsArkRoyal.js';
 import { creacionAvion, checkControlsAvion } from '../controls/controlsAvion.js';
 import { createAnimations } from '../globals.js'
-import { guardarPartida } from '../persistencia/obtengoPersistencia.js';
+//import { guardarPartida } from '../persistencia/obtengoPersistencia.js';
 
 
 export class gameScene extends Phaser.Scene {
@@ -154,8 +154,8 @@ export class gameScene extends Phaser.Scene {
             let coordenadaInicioLocalY = Math.floor(Math.random() * (460 - 1 + 1)) + 1;
             posX = 100 + coordenadaInicioLocalX;
             posY = 100 + coordenadaInicioLocalY;
-            // Jugador azul obtiene el ArkRoyale
-            this.playerShip = creacionArkRoyale(this, posX, posY, settings);
+            // Jugador azul obtiene el ArkRoyal
+            this.playerShip = creacionArkRoyal(this, posX, posY, settings);
             this.avionDesplegado = false;
         }
 
@@ -223,7 +223,7 @@ export class gameScene extends Phaser.Scene {
             if (player.id !== this.socket.id) {
                 if (!this.players[player.id]) {
                     if (player.team === 'blue') {
-                        this.createArkRoyale(player.id, player.x, player.y);
+                        this.createArkRoyal(player.id, player.x, player.y);
                     }
                     else {
                         this.createBismarck(player.id, player.x, player.y);
@@ -238,7 +238,7 @@ export class gameScene extends Phaser.Scene {
                 if (id !== this.socket.id) {
                     if (!this.players[id]) {
                         if (this.team === 'red') {
-                            this.createArkRoyale(id, players[id].x, players[id].y, players[id].angle);
+                            this.createArkRoyal(id, players[id].x, players[id].y, players[id].angle);
                         }
                         else {
                             this.createBismarck(id, players[id].x, players[id].y, players[id].angle);
@@ -398,8 +398,8 @@ export class gameScene extends Phaser.Scene {
         this.players[playerId] = bismarck;
         this.objects.push(bismarck);
     }
-    createArkRoyale(playerId, x, y) {
-        console.log(`creando ArkRoyale para ${playerId} en (${x}, ${y})`);
+    createArkRoyal(playerId, x, y) {
+        console.log(`creando ArkRoyal para ${playerId} en (${x}, ${y})`);
 
         let arkroyal = this.matter.add.sprite(x, y, 'portaAviones');
         arkroyal.setScale(0.15).setOrigin(0.5, 0.5);
