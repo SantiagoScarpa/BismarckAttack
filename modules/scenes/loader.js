@@ -55,7 +55,7 @@ export class loaderScene extends Phaser.Scene {
 
         //AZUL
         this.load.spritesheet('portaAviones', './assets/imgs/sprites/portaAvion.png',
-            { frameWidth: 350, frameHeight: 600 });
+            { frameWidth: 650, frameHeight: 800 });
 
 
 

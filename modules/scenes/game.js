@@ -3,7 +3,7 @@ import { checkControlsBismarck, creacionBismarck } from '../controls/controlsBis
 import { playAudios } from './../audios.js';
 import { creacionArkRoyal } from '../controls/controlsArkRoyal.js';
 import { createAnimations } from '../globals.js'
-import { guardarPartida } from '../persistencia/obtengoPersistencia.js';
+//import { guardarPartida } from '../persistencia/obtengoPersistencia.js';
 
 
 export class gameScene extends Phaser.Scene {
@@ -139,7 +139,7 @@ export class gameScene extends Phaser.Scene {
 
         save.on('pointerdown', () => {
             save.play('saving')
-            guardarPartida(this)
+           // guardarPartida(this)
         })
         save.on('animationcomplete', () => { save.setFrame(0) });
 
@@ -216,33 +216,44 @@ export class gameScene extends Phaser.Scene {
                 id: this.socket.id,
                 x: posX,
                 y: posY,
-                angle: 0
+                angle: 0,
+                team: this.team
             });
         });
 
         // Agregar nuevos jugadores al conectarse
         this.socket.on('newPlayer', (player) => {
-            console.log(`Nuevo jugador conectado: ${player.id}`);
             if (player.id !== this.socket.id) {
-                if (!this.players[player.id]) {
-                    this.createBismarck(player.id, player.x, player.y);
+              if (!this.players[player.id]) {
+                // Aquí verificamos el team
+                if (player.team === 'red') {
+                  this.createBismarck(player.id, player.x, player.y);
+                } else {
+                  this.createArkRoyal(player.id, player.x, player.y);
                 }
+              }
             }
-        });
+          });
 
-        // Sincronizar la posición de los otros jugadores
-        this.socket.on('updatePlayers', (players) => {
+          this.socket.on('updatePlayers', (players) => {
             Object.keys(players).forEach((id) => {
-                if (id !== this.socket.id) {
-                    if (!this.players[id]) {
-                        this.createBismarck(id, players[id].x, players[id].y, players[id].angle);
-                    } else {
-                        this.players[id].setPosition(players[id].x, players[id].y);
-                        this.players[id].setAngle(players[id].angle);
-                    }
+              if (id !== this.socket.id) {
+                if (!this.players[id]) {
+                  // Crear nave según el team
+                  if (players[id].team === 'red') {
+                    this.createBismarck(id, players[id].x, players[id].y, players[id].angle);
+                  } else {
+                    this.createArkRoyal(id, players[id].x, players[id].y, players[id].angle);
+                  }
+                } else {
+                  // Actualizar posición y ángulo
+                  this.players[id].setPosition(players[id].x, players[id].y);
+                  this.players[id].setAngle(players[id].angle);
                 }
+              }
             });
         });
+        
 
         // Manejar la desconexión de jugadores
         this.socket.on('playerDisconnected', (id) => {
@@ -313,7 +324,8 @@ export class gameScene extends Phaser.Scene {
                 id: this.socket.id,
                 x: this.playerShip.x,
                 y: this.playerShip.y,
-                angle: this.playerShip.angle
+                angle: this.playerShip.angle,
+                team: this.team
             });
         }
 
@@ -366,5 +378,24 @@ export class gameScene extends Phaser.Scene {
         this.players[playerId] = bismarck;
         this.objects.push(bismarck);
     }
+
+
+    /**
+ * Crea un barco Ark Royal en la escena.
+ * @param {string} playerId - ID del jugador.
+ * @param {number} x - Posición X.
+ * @param {number} y - Posición Y.
+ */
+createArkRoyal(playerId, x, y) {
+    console.log(`Creando Ark Royal para ${playerId} en (${x}, ${y})`);
+
+    let arkRoyal = this.matter.add.sprite(x, y, 'portaAviones');
+    arkRoyal.setScale(0.10).setOrigin(0.5, 0.5);
+    arkRoyal.velocity = settings.arkRoyalVelocity;
+
+    this.players[playerId] = arkRoyal;
+    this.objects.push(arkRoyal);
+}
+
 }
 
