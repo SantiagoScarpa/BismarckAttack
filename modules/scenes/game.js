@@ -2,6 +2,7 @@ import settings from '../../settings.json' with {type: 'json'};
 import { checkControlsBismarck, creacionBismarck } from '../controls/controlsBismarck.js';
 import { playAudios } from './../audios.js';
 import { creacionArkRoyale } from '../controls/controlsArkRoyale.js';
+import { creacionAvion, checkControlsAvion } from '../controls/controlsAvion.js';
 import { createAnimations } from '../globals.js'
 
 export class gameScene extends Phaser.Scene {
@@ -21,16 +22,16 @@ export class gameScene extends Phaser.Scene {
         this.fireSprite.play('fire');
         this.fireSprite.setDepth(1);
 
-        this.fireSprite.setPosition(this.bismarck.x, this.bismarck.y);
+        this.fireSprite.setPosition(this.playerShip.x, this.playerShip.y);
     }
     shootBullet() {
-        let bullet = this.matter.add.sprite(this.bismarck.x, this.bismarck.y - 40, 'bismarckMisil');
+        let bullet = this.matter.add.sprite(this.playerShip.x, this.playerShip.y - 40, 'bismarckMisil');
         bullet.setScale(0.3);
         bullet.setCircle(3);
         bullet.setVelocity(0, -10);
         bullet.body.label = 'bullet';
 
-        let bulletTail = this.add.image(this.bismarck.x, this.bismarck.y - 56, 'bismarckMisilCola')
+        let bulletTail = this.add.image(this.playerShip.x, this.playerShip.y - 56, 'bismarckMisilCola')
         bulletTail.setScale(0.5)
         playAudios('bismarckShoot', this, settings.volumeBismarckShoot)
         setTimeout(() => {
@@ -75,17 +76,10 @@ export class gameScene extends Phaser.Scene {
     this.socket = io();
     this.players = {};
 
-    // Contador de jugadores
-    this.socket.on('playerCount', (count) => {
-        console.log(`👥 Jugadores conectados: ${count}`);
-        if (count > 2) {
-            alert("⚠️ Límite de jugadores alcanzado. No puedes unirte a la partida en este momento.");
-        }
-        return;
-    });
 
     // Configurar controles
     this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT,W,A,S,D,SPACE');
+    this.cursors = this.input.keyboard.createCursorKeys();
 
     // Manejar colisiones del mundo
     this.matter.world.on('collisionstart', (event) => {
@@ -101,7 +95,7 @@ export class gameScene extends Phaser.Scene {
                 this.scene.start('ganaBismarck');
             } else {
                 // Aquí podrías definir otra escena o lógica para el equipo azul
-                this.scene.start('ganaArkRoyale');
+                //this.scene.start('ganaArkRoyale');
             }
         }
         // Si colisiona una bala contra el jugador, se ejecuta la función onBulletHit
@@ -112,28 +106,51 @@ export class gameScene extends Phaser.Scene {
             let bullet = bodyA.label === 'bullet' ? bodyA.gameObject : bodyB.gameObject;
             this.onBulletHit(bullet);
         }
+        // Si coliciona el avion con el ArkRoyal siempre y cuando el avion este en el aire
+        if (this.avionDesplegado){
+            if (
+                ((bodyA === this.playerShip.body && bodyB === this.portaAviones.body) ||
+                (bodyA === this.portaAviones.body && bodyB === this.playerShip.body))
+            ) {
+                this.playerShip.destroy();
+                this.playerShip = this.portaAviones;
+                this.portaAvionesIcon.destroy();
+                this.avionDesplegado = false;
+                this.playerShip.avionesRestantes += 1;
+                this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
+                this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
+            }
+        }
     });
 
     // Esperar la posición de Francia desde el servidor
     this.socket.on('setFranciaPosition', (position) => {
         console.log(`Recibida posición de Francia: (${position.x}, ${position.y})`);
         this.createFrancia(position.x, position.y);
-        const franciaIcon = this.add.circle(position.x, position.y, 60, 0xff0000, 1).setOrigin(0.5, 0.5);
-        this.cameras.main.ignore([franciaIcon]);
+        if (this.team === 'red'){
+            const franciaIcon = this.add.circle(position.x, position.y, 60, 0xff0000, 1).setOrigin(0.5, 0.5);
+            this.cameras.main.ignore([franciaIcon]);
+        }
+        
     });
 
-    // Definir posición inicial aleatoria
-    let coordenadaInicioLocal = Math.floor(Math.random() * (760 - 1 + 1)) + 1;
-    let posX = 800 + coordenadaInicioLocal;
-    let posY = 760;
-
+    // Definir posición inicial aleatoria segun el team
+    let posX, posY
     // Crear la nave del jugador según el bando seleccionado
     if (this.team === 'red') {
+        let coordenadaInicioLocal = Math.floor(Math.random() * (760 - 1 + 1)) + 1;
+        posX = 800 + coordenadaInicioLocal;
+        posY = 760;
         // Jugador rojo obtiene el Bismarck
         this.playerShip = creacionBismarck(this, posX, posY, settings);
     } else if (this.team === 'blue') {
+        let coordenadaInicioLocalX = Math.floor(Math.random() * (660 - 1 + 1)) + 1;
+        let coordenadaInicioLocalY = Math.floor(Math.random() * (460 - 1 + 1)) + 1;
+        posX = 100 + coordenadaInicioLocalX;
+        posY = 100 + coordenadaInicioLocalY;
         // Jugador azul obtiene el ArkRoyale
         this.playerShip = creacionArkRoyale(this, posX, posY, settings);
+        this.avionDesplegado = false;
     }
 
     // Guardar el jugador local en el objeto players
@@ -162,9 +179,9 @@ export class gameScene extends Phaser.Scene {
     this.objects = [];
 
     // Imagen del radar
-    const radar = this.add.image(1140, 610, 'radar');
+    const radar = this.add.image(1130, 615, 'radar');
     radar.setScrollFactor(0);
-    radar.setScale(0.15);
+    radar.setScale(0.09);
     radar.setDepth(2);
 
     // Configuración de límites y cámara
@@ -174,12 +191,12 @@ export class gameScene extends Phaser.Scene {
     this.cameras.main.setZoom(2);
 
     // Configurar la cámara del minimapa
-    const minimapCamera = this.cameras
-        .add(1315, 685, 320, 180, false, 'minimap')
+    this.minimapCamera = this.cameras
+        .add(1300, 695, 320, 180, false, 'minimap')
         .setOrigin(0.5, 0.5)
         .setZoom(0.05);
-    minimapCamera.ignore([this.playerShip, radar, overlay]);
-    minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
+    this.minimapCamera.ignore([this.playerShip, radar, overlay]); //
+    this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
 
     // Emitir al servidor que este jugador se unió
     this.socket.on("connect", () => {
@@ -188,16 +205,23 @@ export class gameScene extends Phaser.Scene {
             id: this.socket.id,
             x: posX,
             y: posY,
-            angle: 0
+            angle: 0,
+            team: this.team
         });
     });
 
     // Agregar nuevos jugadores al conectarse
     this.socket.on('newPlayer', (player) => {
         console.log(`Nuevo jugador conectado: ${player.id}`);
+        console.log(`Equipo del jugador conectado: ${player.team}`);
         if (player.id !== this.socket.id) {
             if (!this.players[player.id]) {
-                this.createBismarck(player.id, player.x, player.y);
+                if (player.team === 'blue') {
+                    this.createArkRoyale(player.id, player.x, player.y);
+                }
+                else {
+                    this.createBismarck(player.id, player.x, player.y);
+                }
             }
         }
     });
@@ -207,7 +231,12 @@ export class gameScene extends Phaser.Scene {
         Object.keys(players).forEach((id) => {
             if (id !== this.socket.id) {
                 if (!this.players[id]) {
-                    this.createBismarck(id, players[id].x, players[id].y, players[id].angle);
+                    if (this.team=== 'red') {
+                        this.createArkRoyale(id, players[id].x, players[id].y, players[id].angle);
+                    }
+                    else {
+                        this.createBismarck(id, players[id].x, players[id].y, players[id].angle);
+                    }
                 } else {
                     this.players[id].setPosition(players[id].x, players[id].y);
                     this.players[id].setAngle(players[id].angle);
@@ -240,8 +269,36 @@ export class gameScene extends Phaser.Scene {
 
 update() {
     // Ejecuta controles según el equipo
+    
+    
     if (this.team === 'red') {
         checkControlsBismarck({ bismarck: this.playerShip, keys: this.keys });
+        // Disparar bala al presionar SPACE
+        if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
+            this.shootBullet();
+        }
+    } else {
+        //checkControlsAvion({ avion: this.playerShip, keys: this.keys });
+        if (this.avionDesplegado){
+            checkControlsAvion({ avion: this.playerShip, keys: this.keys });
+        }
+        if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
+            if (!this.avionDesplegado) {
+                
+                this.portaAviones = this.playerShip;
+                this.portaAvionesIcon = this.add.circle(this.portaAviones.x, this.portaAviones.y, 60, 0x0000ff, 1).setOrigin(0.5, 0.5);
+                this.cameras.main.ignore([this.portaAvionesIcon]);
+                if(this.playerShip.angle > -10 && this.playerShip.angle < 10){
+                    this.playerShip = creacionAvion(this, (this.playerShip.x + 50), this.playerShip.y, settings);
+                } else {
+                    this.playerShip = creacionAvion(this, (this.playerShip.x + 80), this.playerShip.y, settings);
+                }
+                this.avionDesplegado = true;
+                this.portaAviones.avionesRestantes -= 1;
+                this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
+                this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
+            }
+        }
     }
     
     // Actualiza el campo de visión y emite la posición del jugador
@@ -255,7 +312,8 @@ update() {
             id: this.socket.id,
             x: this.playerShip.x,
             y: this.playerShip.y,
-            angle: this.playerShip.angle
+            angle: this.playerShip.angle,
+            team: this.team
         });
     }
     
@@ -271,10 +329,6 @@ update() {
         });
     }
     
-    // Disparar bala al presionar SPACE
-    if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
-        this.shootBullet();
-    }
 }
 
 
@@ -307,5 +361,25 @@ update() {
 
         this.players[playerId] = bismarck;
         this.objects.push(bismarck);
+    }
+    createArkRoyale(playerId, x, y) {
+        console.log(`creando ArkRoyale para ${playerId} en (${x}, ${y})`);
+
+        let arkroyal = this.matter.add.sprite(x, y, 'portaAviones');
+        arkroyal.setScale(0.15).setOrigin(0.5, 0.5);
+        arkroyal.velocity = settings.arkRoyaleVelocity;
+
+        this.players[playerId] = arkroyal;
+        this.objects.push(arkroyal);
+    }
+    createAvion(playerId, x, y) {
+        console.log(`creando Avion para ${playerId} en (${x}, ${y})`);
+
+        let avion = this.matter.add.sprite(x, y, 'avion');
+        avion.setScale(0.15).setOrigin(0.5, 0.5);
+        avion.velocity = settings.avionVelocity;
+
+        this.players[playerId] = avion;
+        this.objects.push(avion);
     }
 }

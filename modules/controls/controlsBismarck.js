@@ -10,7 +10,7 @@ export function creacionBismarck(game, posX, posY, settings) {
     return bismarck;
 }
 
-export function checkControlsBismarck({ bismarck, keys, anyKeyDown }) {
+export function checkControlsBismarck({ bismarck, keys }) {
     let speed = bismarck.velocity;
 
     let diagonalArIz = keys.UP.isDown && keys.LEFT.isDown

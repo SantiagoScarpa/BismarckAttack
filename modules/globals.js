@@ -14,4 +14,11 @@ export function createAnimations(game) {
         frameRate: 24,
         repeat: -1 // Repite infinitamente
     });
+
+    game.anims.create({
+        key: 'despegue', 
+        frames: Array.from({ length: 10 }, (_, i) => ({ key: `avion${i}` })), 
+        frameRate: 10,
+        repeat: 0
+    });
 }

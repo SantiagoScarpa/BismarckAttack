@@ -3,5 +3,6 @@
     "volumeBismarckShoot": "0.7",
     "bismarckVelocity": 4,
     "arkRoyaleVelocity": 4,
+    "avionVelocity": 2,
     "serverPort": 3000
 }
