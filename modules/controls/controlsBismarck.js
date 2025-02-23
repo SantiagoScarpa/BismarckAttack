@@ -70,7 +70,7 @@ export function checkControlsBismarck({ bismarck, keys }) {
 
             bismarck.setVelocityX(speed);
         } else {
-            bismarck.setVelocityX(0);
+            //bismarck.setVelocityX(0);
         }
     }
 }

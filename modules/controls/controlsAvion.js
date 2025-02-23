@@ -1,43 +1,66 @@
 //ARCHIVO PARA CREACION DE BISMARCK Y SUS CONTROLES 
 
 export function creacionAvion(game, posX, posY, settings) {
-    let avion = game.matter.add.sprite(posX , posY , 'avion0')
-    avion.setScale(0.15).setOrigin(0.5, 0.5).setVelocityX(1);
-    avion.velocity = settings.avionVelocity;
+    let avion = game.matter.add.sprite(posX, posY, 'avion0');
+    avion.setScale(0.15).setOrigin(0.5, 0.5).setVelocityX(1); 
     avion.anims.play('despegue');
-    return avion
+    return avion;
 }
 
 export function checkControlsAvion({ avion, keys }) {
-    let speed = avion.velocity;
+    let rotationSpeed = 0.4;
+    let maxRotationDelta = 180;
+    let topeVelocidad = 2;
+    let acceleration = 0.012;
+    let targetAngle = Math.atan2(avion.body.velocity.y, avion.body.velocity.x);
+    targetAngle = Phaser.Math.RadToDeg(targetAngle);
 
-    // Control de movimiento en el eje Y (arriba y abajo)
+    let currentAngle = avion.angle;
+    let deltaAngle = Phaser.Math.Angle.ShortestBetween(currentAngle, targetAngle);
+
+    if (Math.abs(deltaAngle) <= maxRotationDelta) {
+        let newAngle = Phaser.Math.Angle.RotateTo(currentAngle, targetAngle, rotationSpeed);
+        avion.angle = newAngle;
+    }
+
+    let speedX = avion.body.velocity.x;
+    let speedY = avion.body.velocity.y;
+
     if (keys.UP.isDown) {
-        avion.setVelocityY(-speed);
+        if (avion.body.velocity.y > 0) {
+            speedY -= 0.01;
+        } else {
+            if ((Math.abs(speedY)) < topeVelocidad){
+                speedY -= acceleration;
+            }
+        }
     } else if (keys.DOWN.isDown) {
-        avion.setVelocityY(speed);
-    } else if (keys.LEFT.isDown) {
-        avion.setVelocityX(-speed);
+        if (avion.body.velocity.y < 0) {
+            speedY += 0.01;
+        } else {
+            if ((Math.abs(speedY)) < topeVelocidad){
+                speedY += acceleration;
+            } 
+        }
+    }
+    if (keys.LEFT.isDown) {
+        if (avion.body.velocity.x > 0) {
+            speedX -= 0.01;
+        } else {
+            if ((Math.abs(speedX)) < topeVelocidad){
+                speedX -= acceleration;
+            } 
+        }
     } else if (keys.RIGHT.isDown) {
-        avion.setVelocityX(speed);
+        if (avion.body.velocity.x < 0) {
+            speedX += 0.01;
+        } else {
+            if ((Math.abs(speedX)) < topeVelocidad){
+                speedX += acceleration;
+            } 
+        }
     }
 
-    // Rote el avión en función de las teclas presionadas
-    if (keys.LEFT.isDown && keys.UP.isDown) {
-        avion.angle = -135;
-    } else if (keys.LEFT.isDown && keys.DOWN.isDown) {
-        avion.angle = 135;
-    } else if (keys.RIGHT.isDown && keys.UP.isDown) {
-        avion.angle = -45;
-    } else if (keys.RIGHT.isDown && keys.DOWN.isDown) {
-        avion.angle = 45;
-    } else if (keys.LEFT.isDown) {
-        avion.angle = 180;
-    } else if (keys.RIGHT.isDown) {
-        avion.angle = 0;
-    } else if (keys.UP.isDown) {
-        avion.angle = -90;
-    } else if (keys.DOWN.isDown) {
-        avion.angle = 90;
-    }
+    avion.setVelocityX(speedX);
+    avion.setVelocityY(speedY);
 }
