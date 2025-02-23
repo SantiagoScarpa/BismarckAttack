@@ -2,7 +2,7 @@
     "volumeMenu": "0.4",
     "volumeBismarckShoot": "0.7",
     "bismarckVelocity": 1,
-    "arkRoyaleVelocity": 0.5,
+    "arkRoyaleVelocity": 1,
     "serverPort": 3000,
     "dbInfo": {
         "dbIp": "127.0.0.1",
