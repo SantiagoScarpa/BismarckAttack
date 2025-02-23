@@ -23,9 +23,25 @@ const players = {}; // Guardar jugadores activos
 let franciaPosition = null; // ✅ Guardamos la posición de Francia
 
 io.on('connection', (socket) => {
+    socket.on('newPlayer', (player) => {
+        // Verificar si ya existe un jugador con el mismo equipo
+        const teamAlreadyTaken = Object.values(players).some(p => p.team === player.team);
+        debugger;
+        if (teamAlreadyTaken) {
+            // Si el equipo ya está ocupado, notificar al cliente con un error y no continuar
+            socket.emit('teamError', { message: `El equipo ${player.team} ya está ocupado.` });
+            console.log(`Equipo ${player.team} ya está ocupado para ${socket.id}`);
+            return;
+        }
+        
+        // Si el equipo está disponible, se actualiza el objeto del jugador
+        players[socket.id] = player;
+        console.log(`Jugadores conectados: ${Object.keys(players).length}`);
+        io.emit('newPlayer', player);
+    });
     console.log(`🎮 Jugador conectado: ${socket.id}`);
 
-    //Si `franciaPosition` no está definida, la creamos al conectar el primer jugador
+    // Si `franciaPosition` no está definida, la creamos al conectar el primer jugador
     if (!franciaPosition) {
         franciaPosition = {
             x: Math.floor(Math.random() * (960 - 1 + 1)) + 600, // 🔹 Asegurar posición en el mapa
@@ -34,19 +50,16 @@ io.on('connection', (socket) => {
         console.log(`🌍 Posición de Francia generada en: (${franciaPosition.x}, ${franciaPosition.y})`);
     }
 
+    // Inicialmente registramos al jugador con solo su ID
     players[socket.id] = { id: socket.id };
 
-    //Enviar la cantidad de jugadores conectados a todos
+    // Enviar la cantidad de jugadores conectados a todos
     io.emit('playerCount', Object.keys(players).length);
 
-    //Enviar la posición de Francia al nuevo jugador
+    // Enviar la posición de Francia al nuevo jugador
     socket.emit('setFranciaPosition', franciaPosition);
 
-    socket.on('newPlayer', (player) => {
-        players[socket.id] = player;
-        console.log(`jugadores conectados: ${Object.keys(players).length}`);
-        io.emit('newPlayer', player);
-    });
+   
 
     socket.on('playerMove', (player) => {
         if (players[socket.id]) {
@@ -59,13 +72,14 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log(`jugador desconectado: ${socket.id}`);
+        console.log(`Jugador desconectado: ${socket.id}`);
         delete players[socket.id];
 
-        console.log(`jugadores restantes: ${Object.keys(players).length}`);
+        console.log(`Jugadores restantes: ${Object.keys(players).length}`);
         io.emit('playerCount', Object.keys(players).length);
     });
 });
+
 
 server.listen(settings.serverPort, () => {
     console.log('🚀 Servidor escuchando en http://localhost:3000');
@@ -74,4 +88,9 @@ server.listen(settings.serverPort, () => {
 app.get('/getPlayerConnections', (req, res) => {
     res.json(Object.keys(players).length)
 })
+
+app.get('/getPlayers', (req, res) => {
+    res.json(players)
+})
+
 
