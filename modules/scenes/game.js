@@ -390,7 +390,7 @@ createArkRoyal(playerId, x, y) {
     console.log(`Creando Ark Royal para ${playerId} en (${x}, ${y})`);
 
     let arkRoyal = this.matter.add.sprite(x, y, 'portaAviones');
-    arkRoyal.setScale(0.10).setOrigin(0.5, 0.5);
+    arkRoyal.setScale(0.20).setOrigin(0.5, 0.5);
     arkRoyal.velocity = settings.arkRoyalVelocity;
 
     this.players[playerId] = arkRoyal;
