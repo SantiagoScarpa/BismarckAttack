@@ -79,7 +79,6 @@ export class gameScene extends Phaser.Scene {
 
     // Configurar controles
     this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT,W,A,S,D,SPACE');
-    this.cursors = this.input.keyboard.createCursorKeys();
 
     // Manejar colisiones del mundo
     this.matter.world.on('collisionstart', (event) => {

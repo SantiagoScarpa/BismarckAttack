@@ -9,47 +9,35 @@ export function creacionAvion(game, posX, posY, settings) {
 }
 
 export function checkControlsAvion({ avion, keys }) {
-    // Variables para la velocidad en los ejes X y Y
     let speed = avion.velocity;
-    let velocityX = 0;
-    let velocityY = 0;
 
     // Control de movimiento en el eje Y (arriba y abajo)
     if (keys.UP.isDown) {
-        velocityY = -speed;  // Mover hacia arriba
+        avion.setVelocityY(-speed);
     } else if (keys.DOWN.isDown) {
-        velocityY = speed;  // Mover hacia abajo
-    }
-
-    // Control de movimiento en el eje X (izquierda y derecha)
-    if (keys.LEFT.isDown) {
-        velocityX = -speed;  // Mover hacia la izquierda
+        avion.setVelocityY(speed);
+    } else if (keys.LEFT.isDown) {
+        avion.setVelocityX(-speed);
     } else if (keys.RIGHT.isDown) {
-        velocityX = speed;  // Mover hacia la derecha
+        avion.setVelocityX(speed);
     }
-
-    // Aplicar velocidad al sprite
-    avion.setVelocityX(velocityX);
-    avion.setVelocityY(velocityY);
 
     // Rote el avión en función de las teclas presionadas
     if (keys.LEFT.isDown && keys.UP.isDown) {
-        avion.angle = -135;  // Hacia arriba y a la izquierda
+        avion.angle = -135;
     } else if (keys.LEFT.isDown && keys.DOWN.isDown) {
-        avion.angle = 135;  // Hacia abajo y a la izquierda
+        avion.angle = 135;
     } else if (keys.RIGHT.isDown && keys.UP.isDown) {
-        avion.angle = -45;  // Hacia arriba y a la derecha
+        avion.angle = -45;
     } else if (keys.RIGHT.isDown && keys.DOWN.isDown) {
-        avion.angle = 45;  // Hacia abajo y a la derecha
+        avion.angle = 45;
     } else if (keys.LEFT.isDown) {
-        avion.angle = 180;  // Solo izquierda
+        avion.angle = 180;
     } else if (keys.RIGHT.isDown) {
-        avion.angle = 0;  // Solo derecha
+        avion.angle = 0;
     } else if (keys.UP.isDown) {
-        avion.angle = -90;   // Solo arriba (sin rotación, ya que mira hacia la derecha)
+        avion.angle = -90;
     } else if (keys.DOWN.isDown) {
-        avion.angle = 90; // Solo abajo
-    } else {
-        //avion.angle = 0;   // Sin rotación (cuando no se mueve)
+        avion.angle = 90;
     }
 }
