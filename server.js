@@ -3,13 +3,21 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
 import settings from './settings.json' with { type: 'json' };
+import { inicioConexionDB } from './modules/persistencia/creoPersistencia.js';
 
 const app = express();
 const server = createServer(app);
 const io = new Server(server);
 
+
+
+
 app.use(express.static('.'));
 app.use('/modules', express.static(path.join(process.cwd(), 'modules')));
+app.use(express.json());
+
+inicioConexionDB(app, settings.dbInfo);
+
 
 const players = {}; // Guardar jugadores activos
 let franciaPosition = null; // ✅ Guardamos la posición de Francia
@@ -44,7 +52,7 @@ io.on('connection', (socket) => {
         if (players[socket.id]) {
             players[socket.id].x = player.x;
             players[socket.id].y = player.y;
-			players[socket.id].angle = player.angle;
+            players[socket.id].angle = player.angle;
             players[socket.id].team = player.team;
         }
         io.emit('updatePlayers', players);
@@ -64,6 +72,6 @@ server.listen(settings.serverPort, () => {
 });
 
 app.get('/getPlayerConnections', (req, res) => {
-    res.json( Object.keys(players).length)
+    res.json(Object.keys(players).length)
 })
 

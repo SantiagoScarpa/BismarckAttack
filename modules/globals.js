@@ -16,9 +16,30 @@ export function createAnimations(game) {
     });
 
     game.anims.create({
-        key: 'despegue', 
-        frames: Array.from({ length: 10 }, (_, i) => ({ key: `avion${i}` })), 
-        frameRate: 10,
-        repeat: 0
-    });
+        key: 'saving',
+        frames: game.anims.generateFrameNumbers(
+            'save',
+            { start: 0, end: 17 }),
+        repeat: 0,
+        frameRate: 30
+    })
 }
+
+export function generarCodigoPartida() {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < 5) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        counter += 1;
+    }
+    return result;
+}
+
+game.anims.create({
+    key: 'despegue',
+    frames: Array.from({ length: 10 }, (_, i) => ({ key: `avion${i}` })),
+    frameRate: 10,
+    repeat: 0
+});
