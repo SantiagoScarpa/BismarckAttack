@@ -36,3 +36,10 @@ export function generarCodigoPartida() {
     }
     return result;
 }
+
+game.anims.create({
+    key: 'despegue',
+    frames: Array.from({ length: 10 }, (_, i) => ({ key: `avion${i}` })),
+    frameRate: 10,
+    repeat: 0
+});
