@@ -44,6 +44,7 @@ Flechas del teclado ⬆️⬇️⬅️➡️ para mover el Bismarck.
 
 🔧 Estructura del Proyecto
 /bismarck-attack
+
 │── /assets                # Recursos gráficos
 
 │── /modules               # Código fuente de Phaser
