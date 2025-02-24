@@ -1,7 +1,8 @@
 import settings from '../../settings.json' with {type: 'json'};
 import { checkControlsBismarck, creacionBismarck } from '../controls/controlsBismarck.js';
 import { playAudios } from './../audios.js';
-import { creacionArkRoyal } from '../controls/controlsArkRoyal.js';
+import { creacionArkRoyale } from '../controls/controlsArkRoyale.js';
+import { creacionAvion, checkControlsAvion } from '../controls/controlsAvion.js';
 import { createAnimations } from '../globals.js'
 //import { guardarPartida } from '../persistencia/obtengoPersistencia.js';
 
@@ -23,16 +24,16 @@ export class gameScene extends Phaser.Scene {
         this.fireSprite.play('fire');
         this.fireSprite.setDepth(1);
 
-        this.fireSprite.setPosition(this.bismarck.x, this.bismarck.y);
+        this.fireSprite.setPosition(this.playerShip.x, this.playerShip.y);
     }
     shootBullet() {
-        let bullet = this.matter.add.sprite(this.bismarck.x, this.bismarck.y - 40, 'bismarckMisil');
+        let bullet = this.matter.add.sprite(this.playerShip.x, this.playerShip.y - 40, 'bismarckMisil');
         bullet.setScale(0.3);
         bullet.setCircle(3);
         bullet.setVelocity(0, -10);
         bullet.body.label = 'bullet';
 
-        let bulletTail = this.add.image(this.bismarck.x, this.bismarck.y - 56, 'bismarckMisilCola')
+        let bulletTail = this.add.image(this.playerShip.x, this.playerShip.y - 56, 'bismarckMisilCola')
         bulletTail.setScale(0.5)
         playAudios('bismarckShoot', this, settings.volumeBismarckShoot)
         setTimeout(() => {
@@ -114,6 +115,21 @@ export class gameScene extends Phaser.Scene {
                 let bullet = bodyA.label === 'bullet' ? bodyA.gameObject : bodyB.gameObject;
                 this.onBulletHit(bullet);
             }
+            // Si coliciona el avion con el ArkRoyal siempre y cuando el avion este en el aire
+            if (this.avionDesplegado) {
+                if (
+                    ((bodyA === this.playerShip.body && bodyB === this.portaAviones.body) ||
+                        (bodyA === this.portaAviones.body && bodyB === this.playerShip.body))
+                ) {
+                    this.playerShip.destroy();
+                    this.playerShip = this.portaAviones;
+                    this.portaAvionesIcon.destroy();
+                    this.avionDesplegado = false;
+                    this.playerShip.avionesRestantes += 1;
+                    this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
+                    this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
+                }
+            }
         });
 
         // Esperar la posición de Francia desde el servidor
@@ -155,13 +171,19 @@ export class gameScene extends Phaser.Scene {
 
         // Crear la nave del jugador según el bando seleccionado
         if (this.team === 'red') {
+            let coordenadaInicioLocal = Math.floor(Math.random() * (760 - 1 + 1)) + 1;
+            posX = 800 + coordenadaInicioLocal;
+            posY = 760;
             // Jugador rojo obtiene el Bismarck
             this.playerShip = creacionBismarck(this, posX, posY, settings);
-            this.playerShip.label = 'bismarck'
         } else if (this.team === 'blue') {
-            // Jugador azul obtiene el ArkRoyal
-            this.playerShip = creacionArkRoyal(this, posX, posY, settings);
-            this.playerShip.label = 'arkRoyal'
+            let coordenadaInicioLocalX = Math.floor(Math.random() * (660 - 1 + 1)) + 1;
+            let coordenadaInicioLocalY = Math.floor(Math.random() * (460 - 1 + 1)) + 1;
+            posX = 100 + coordenadaInicioLocalX;
+            posY = 100 + coordenadaInicioLocalY;
+            // Jugador azul obtiene el ArkRoyale
+            this.playerShip = creacionArkRoyale(this, posX, posY, settings);
+            this.avionDesplegado = false;
         }
 
         // Guardar el jugador local en el objeto players
@@ -190,9 +212,9 @@ export class gameScene extends Phaser.Scene {
         this.objects = [];
 
         // Imagen del radar
-        const radar = this.add.image(1140, 610, 'radar');
+        const radar = this.add.image(1130, 615, 'radar');
         radar.setScrollFactor(0);
-        radar.setScale(0.15);
+        radar.setScale(0.09);
         radar.setDepth(2);
 
         // Configuración de límites y cámara
@@ -202,12 +224,12 @@ export class gameScene extends Phaser.Scene {
         this.cameras.main.setZoom(2);
 
         // Configurar la cámara del minimapa
-        const minimapCamera = this.cameras
-            .add(1315, 685, 320, 180, false, 'minimap')
+        this.minimapCamera = this.cameras
+            .add(1300, 695, 320, 180, false, 'minimap')
             .setOrigin(0.5, 0.5)
             .setZoom(0.05);
-        minimapCamera.ignore([this.playerShip, radar, overlay]);
-        minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
+        this.minimapCamera.ignore([this.playerShip, radar, overlay]); //
+        this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
 
         // Emitir al servidor que este jugador se unió
         this.socket.on("connect", () => {
@@ -223,6 +245,7 @@ export class gameScene extends Phaser.Scene {
 
         // Agregar nuevos jugadores al conectarse
         this.socket.on('newPlayer', (player) => {
+            console.log(`Equipo del jugador conectado: ${player.team}`);
             if (player.id !== this.socket.id) {
               if (!this.players[player.id]) {
                 // Aquí verificamos el team
@@ -309,8 +332,36 @@ export class gameScene extends Phaser.Scene {
 
     update() {
         // Ejecuta controles según el equipo
+
+
         if (this.team === 'red') {
             checkControlsBismarck({ bismarck: this.playerShip, keys: this.keys });
+            // Disparar bala al presionar SPACE
+            if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
+                this.shootBullet();
+            }
+        } else {
+            //checkControlsAvion({ avion: this.playerShip, keys: this.keys });
+            if (this.avionDesplegado) {
+                checkControlsAvion({ avion: this.playerShip, keys: this.keys });
+            }
+            if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
+                if (!this.avionDesplegado) {
+
+                    this.portaAviones = this.playerShip;
+                    this.portaAvionesIcon = this.add.circle(this.portaAviones.x, this.portaAviones.y, 60, 0x0000ff, 1).setOrigin(0.5, 0.5);
+                    this.cameras.main.ignore([this.portaAvionesIcon]);
+                    if (this.playerShip.angle > -10 && this.playerShip.angle < 10) {
+                        this.playerShip = creacionAvion(this, (this.playerShip.x + 50), this.playerShip.y, settings);
+                    } else {
+                        this.playerShip = creacionAvion(this, (this.playerShip.x + 80), this.playerShip.y, settings);
+                    }
+                    this.avionDesplegado = true;
+                    this.portaAviones.avionesRestantes -= 1;
+                    this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
+                    this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
+                }
+            }
         }
 
         // Actualiza el campo de visión y emite la posición del jugador
@@ -341,10 +392,6 @@ export class gameScene extends Phaser.Scene {
             });
         }
 
-        // Disparar bala al presionar SPACE
-        if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
-            this.shootBullet();
-        }
     }
 
 
@@ -378,24 +425,24 @@ export class gameScene extends Phaser.Scene {
         this.players[playerId] = bismarck;
         this.objects.push(bismarck);
     }
+    createArkRoyal(playerId, x, y) {
+        console.log(`creando ArkRoyale para ${playerId} en (${x}, ${y})`);
 
+        let arkroyal = this.matter.add.sprite(x, y, 'portaAviones');
+        arkroyal.setScale(0.15).setOrigin(0.5, 0.5);
+        arkroyal.velocity = settings.arkRoyaleVelocity;
 
-    /**
- * Crea un barco Ark Royal en la escena.
- * @param {string} playerId - ID del jugador.
- * @param {number} x - Posición X.
- * @param {number} y - Posición Y.
- */
-createArkRoyal(playerId, x, y) {
-    console.log(`Creando Ark Royal para ${playerId} en (${x}, ${y})`);
+        this.players[playerId] = arkroyal;
+        this.objects.push(arkroyal);
+    }
+    createAvion(playerId, x, y) {
+        console.log(`creando Avion para ${playerId} en (${x}, ${y})`);
 
-    let arkRoyal = this.matter.add.sprite(x, y, 'portaAviones');
-    arkRoyal.setScale(0.20).setOrigin(0.5, 0.5);
-    arkRoyal.velocity = settings.arkRoyalVelocity;
+        let avion = this.matter.add.sprite(x, y, 'avion');
+        avion.setScale(0.15).setOrigin(0.5, 0.5);
+        avion.velocity = settings.avionVelocity;
 
-    this.players[playerId] = arkRoyal;
-    this.objects.push(arkRoyal);
+        this.players[playerId] = avion;
+        this.objects.push(avion);
+    }
 }
-
-}
-
