@@ -23,6 +23,13 @@ export function createAnimations(game) {
         repeat: 0,
         frameRate: 30
     })
+    game.anims.create({
+        key: 'despegue',
+        frames: Array.from({ length: 10 }, (_, i) => ({ key: `avion${i}` })),
+        frameRate: 10,
+        repeat: 0
+    });
+
 }
 
 export function generarCodigoPartida() {
@@ -37,9 +44,3 @@ export function generarCodigoPartida() {
     return result;
 }
 
-game.anims.create({
-    key: 'despegue',
-    frames: Array.from({ length: 10 }, (_, i) => ({ key: `avion${i}` })),
-    frameRate: 10,
-    repeat: 0
-});

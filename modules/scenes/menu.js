@@ -9,7 +9,7 @@ export class menuScene extends Phaser.Scene {
         super("menuScene");
     }
 
-    create() {
+   async create() {
         const width = this.game.config.width;
         const height = this.game.config.height;
 
@@ -59,60 +59,79 @@ export class menuScene extends Phaser.Scene {
             .setOrigin(0.5, 0.5)
             .setDepth(2)
 
-        agregoFuncionalidadBotones(this)
+        await agregoFuncionalidadBotones(this)
     }
 
-    async getPlayers() {
+    async getPlayersCount() {
         const res = await fetch("/getPlayerConnections")
         const resJSON = await res.json();
         console.log(resJSON)
         return resJSON;
     }
 
-    showTeamSelectionMenu() {
+    async getPlayers() {
+        const res = await fetch("/getPlayers")
+        const resJSON = await res.json();
+        console.log(resJSON)
+        return resJSON;
+    }
+
+    async showTeamSelectionMenu()  {
         const width = this.game.config.width;
         const height = this.game.config.height;
-
+    
         const modalBackground = this.add.rectangle(width / 2, height / 2, 400, 200, 0x000000, 0.8).setDepth(10);
         this.add.text(width / 2, height / 2 - 50, 'Selecciona tu bando', {
             fontFamily: 'Rockwell',
             fontSize: 32,
             color: '#ffffff'
         }).setOrigin(0.5).setDepth(11);
+    
 
-        const blueBtn = this.add.text(width / 2 - 100, height / 2 + 30, 'BANDO AZUL', {
-            fontFamily: 'Rockwell',
-            fontSize: 24,
-            color: '#4d79ff',
-            backgroundColor: '#333',
-            padding: { left: 10, right: 10, top: 5, bottom: 5 }
-        }).setOrigin(0.5).setInteractive().setDepth(11);
+        const playersData = await this.getPlayers(); 
+        console.log("Información de jugadores:", playersData);
 
-        const redBtn = this.add.text(width / 2 + 100, height / 2 + 30, 'BANDO ROJO', {
-            fontFamily: 'Rockwell',
-            fontSize: 24,
-            color: '#ff4d4d',
-            backgroundColor: '#333',
-            padding: { left: 10, right: 10, top: 5, bottom: 5 }
-        }).setOrigin(0.5).setInteractive().setDepth(11);
-
-        blueBtn.on('pointerdown', () => {
-            console.log("🔵 Jugador seleccionó el BANDO AZUL");
-            this.startGame('blue');
-        });
-
-        redBtn.on('pointerdown', () => {
-            console.log("🔴 Jugador seleccionó el BANDO ROJO");
-            this.startGame('red');
-        });
+        const blueAgarrado = Object.values(playersData).some(p => p.team === 'blue');
+        const redAgarrado = Object.values(playersData).some(p => p.team === 'red');
+    
+        // Si el equipo azul está libre, creamos el botón correspondiente
+        if (!blueAgarrado) {
+            const blueBtn = this.add.text(width / 2 - 100, height / 2 + 30, 'BANDO AZUL', {
+                fontFamily: 'Rockwell',
+                fontSize: 24,
+                color: '#4d79ff',
+                backgroundColor: '#333',
+                padding: { left: 10, right: 10, top: 5, bottom: 5 }
+            }).setOrigin(0.5).setInteractive().setDepth(11);
+            blueBtn.on('pointerdown', () => {
+                console.log("🔵 Jugador seleccionó el BANDO AZUL");
+                this.startGame('blue');
+            });
+        }
+    
+        // Si el equipo rojo está libre, creamos el botón correspondiente
+        if (!redAgarrado) {
+            const redBtn = this.add.text(width / 2 + 100, height / 2 + 30, 'BANDO ROJO', {
+                fontFamily: 'Rockwell',
+                fontSize: 24,
+                color: '#ff4d4d',
+                backgroundColor: '#333',
+                padding: { left: 10, right: 10, top: 5, bottom: 5 }
+            }).setOrigin(0.5).setInteractive().setDepth(11);
+            redBtn.on('pointerdown', () => {
+                console.log("🔴 Jugador seleccionó el BANDO ROJO");
+                this.startGame('red');
+            });
+        }
     }
+    
 
     startGame(team) {
         this.scene.start('gameScene', { team });
     }
 }
 
-function agregoFuncionalidadBotones(game) {
+async function  agregoFuncionalidadBotones(game) {
     const { playBtn, configBtn, replayBtn } = game;
     playBtn.on('pointerover', function () {
         playBtn.setFrame(1)
@@ -123,11 +142,11 @@ function agregoFuncionalidadBotones(game) {
     })
 
     playBtn.on('pointerdown', async () => {
-        const cantidadJugadores = await game.getPlayers();
+        const cantidadJugadores = await game.getPlayersCount();
         playBtn.setFrame(2);
         playAudios('menuSelection', game, settings.volumeMenu);
         if (cantidadJugadores < 2) {
-            game.showTeamSelectionMenu();
+            await game.showTeamSelectionMenu();
         }
         else {
             alert("La cantidad de jugadores ha alcanzado su maximo ✌✔")

@@ -4,7 +4,7 @@ import { playAudios } from './../audios.js';
 import { creacionArkRoyale } from '../controls/controlsArkRoyale.js';
 import { creacionAvion, checkControlsAvion } from '../controls/controlsAvion.js';
 import { createAnimations } from '../globals.js'
-import { guardarPartida } from '../persistencia/obtengoPersistencia.js';
+//import { guardarPartida } from '../persistencia/obtengoPersistencia.js';
 
 
 export class gameScene extends Phaser.Scene {
@@ -140,8 +140,35 @@ export class gameScene extends Phaser.Scene {
             this.cameras.main.ignore([franciaIcon]);
         });
 
-        // Definir posición inicial aleatoria segun el team
-        let posX, posY
+        const homeBtn = this.add.sprite(1120, 250, 'home')
+        homeBtn.setScrollFactor(0)
+            .setOrigin(0.5, 0.5)
+            .setInteractive()
+            .setDepth(2)
+            .setScale(0.3)
+
+        const save = this.add.sprite(1150, 250, 'save')
+        save.setScrollFactor(0)
+            .setOrigin(0.5, 0.5)
+            .setInteractive()
+            .setDepth(2)
+
+        save.on('pointerdown', () => {
+            save.play('saving')
+           // guardarPartida(this)
+        })
+        save.on('animationcomplete', () => { save.setFrame(0) });
+
+        homeBtn.on('pointerdown', () => {
+            this.socket.disconnect()
+            this.scene.start('menuScene')
+        })
+
+        // Definir posición inicial aleatoria
+        let coordenadaInicioLocal = Math.floor(Math.random() * (760 - 1 + 1)) + 1;
+        let posX = 800 + coordenadaInicioLocal;
+        let posY = 760;
+
         // Crear la nave del jugador según el bando seleccionado
         if (this.team === 'red') {
             let coordenadaInicioLocal = Math.floor(Math.random() * (760 - 1 + 1)) + 1;
@@ -218,38 +245,38 @@ export class gameScene extends Phaser.Scene {
 
         // Agregar nuevos jugadores al conectarse
         this.socket.on('newPlayer', (player) => {
-            console.log(`Nuevo jugador conectado: ${player.id}`);
             console.log(`Equipo del jugador conectado: ${player.team}`);
             if (player.id !== this.socket.id) {
-                if (!this.players[player.id]) {
-                    if (player.team === 'blue') {
-                        this.createArkRoyale(player.id, player.x, player.y);
-                    }
-                    else {
-                        this.createBismarck(player.id, player.x, player.y);
-                    }
+              if (!this.players[player.id]) {
+                // Aquí verificamos el team
+                if (player.team === 'red') {
+                  this.createBismarck(player.id, player.x, player.y);
+                } else {
+                  this.createArkRoyal(player.id, player.x, player.y);
                 }
+              }
             }
-        });
+          });
 
-        // Sincronizar la posición de los otros jugadores
-        this.socket.on('updatePlayers', (players) => {
+          this.socket.on('updatePlayers', (players) => {
             Object.keys(players).forEach((id) => {
-                if (id !== this.socket.id) {
-                    if (!this.players[id]) {
-                        if (this.team === 'red') {
-                            this.createArkRoyale(id, players[id].x, players[id].y, players[id].angle);
-                        }
-                        else {
-                            this.createBismarck(id, players[id].x, players[id].y, players[id].angle);
-                        }
-                    } else {
-                        this.players[id].setPosition(players[id].x, players[id].y);
-                        this.players[id].setAngle(players[id].angle);
-                    }
+              if (id !== this.socket.id) {
+                if (!this.players[id]) {
+                  // Crear nave según el team
+                  if (players[id].team === 'red') {
+                    this.createBismarck(id, players[id].x, players[id].y, players[id].angle);
+                  } else {
+                    this.createArkRoyal(id, players[id].x, players[id].y, players[id].angle);
+                  }
+                } else {
+                  // Actualizar posición y ángulo
+                  this.players[id].setPosition(players[id].x, players[id].y);
+                  this.players[id].setAngle(players[id].angle);
                 }
+              }
             });
         });
+        
 
         // Manejar la desconexión de jugadores
         this.socket.on('playerDisconnected', (id) => {
@@ -398,7 +425,7 @@ export class gameScene extends Phaser.Scene {
         this.players[playerId] = bismarck;
         this.objects.push(bismarck);
     }
-    createArkRoyale(playerId, x, y) {
+    createArkRoyal(playerId, x, y) {
         console.log(`creando ArkRoyale para ${playerId} en (${x}, ${y})`);
 
         let arkroyal = this.matter.add.sprite(x, y, 'portaAviones');
