@@ -1,7 +1,7 @@
 import settings from '../../settings.json' with {type: 'json'};
 import { checkControlsBismarck, creacionBismarck } from '../controls/controlsBismarck.js';
 import { playAudios } from './../audios.js';
-import { creacionArkRoyale } from '../controls/controlsArkRoyale.js';
+import { creacionArkRoyale, checkControlsArkRoyale } from '../controls/controlsArkRoyale.js';
 import { creacionAvion, checkControlsAvion } from '../controls/controlsAvion.js';
 import { createAnimations } from '../globals.js'
 //import { guardarPartida } from '../persistencia/obtengoPersistencia.js';
@@ -344,6 +344,8 @@ export class gameScene extends Phaser.Scene {
             //checkControlsAvion({ avion: this.playerShip, keys: this.keys });
             if (this.avionDesplegado) {
                 checkControlsAvion({ avion: this.playerShip, keys: this.keys });
+            } else {
+                checkControlsArkRoyale({ ArkRoyale: this.playerShip, keys: this.keys });
             }
             if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
                 if (!this.avionDesplegado) {
