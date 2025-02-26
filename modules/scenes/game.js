@@ -3,7 +3,7 @@ import { checkControlsBismarck, creacionBismarck } from '../controls/controlsBis
 import { playAudios } from './../audios.js';
 import { creacionArkRoyale, checkControlsArkRoyale } from '../controls/controlsArkRoyale.js';
 import { creacionAvion, checkControlsAvion } from '../controls/controlsAvion.js';
-import { createAnimations } from '../globals.js'
+import { createAnimations, generarCodigoPartida } from '../globals.js'
 //import { guardarPartida } from '../persistencia/obtengoPersistencia.js';
 
 
@@ -73,9 +73,16 @@ export class gameScene extends Phaser.Scene {
     preload() { }
 
     create() {
-        //ESTO SE TIENEN QUE PONER POR LOS CODIGOS QUE GENERMOS ANTES 
-        this.codigoRojo = 'J1RO'
-        this.codigoAzul = 'J1AZ'
+        this.time.delayedCall(5000, () => {
+            alert('¡Tiempo terminado!');
+        }, [], this);
+
+        this.codigoPartida = generarCodigoPartida()
+        this.add.text(490, 240, `Codigo de partida: ${this.codigoPartida}`, {
+            fontFamily: 'Rockwell',
+            fontSize: 24,
+            color: '#ffffff'
+        }).setOrigin(0.5).setDepth(11).setScrollFactor(0).setScale(0.5);
 
         // Conexión y manejo de jugadores vía socket
         this.socket = io();
@@ -155,7 +162,7 @@ export class gameScene extends Phaser.Scene {
 
         save.on('pointerdown', () => {
             save.play('saving')
-           // guardarPartida(this)
+            // guardarPartida(this)
         })
         save.on('animationcomplete', () => { save.setFrame(0) });
 
@@ -247,36 +254,36 @@ export class gameScene extends Phaser.Scene {
         this.socket.on('newPlayer', (player) => {
             console.log(`Equipo del jugador conectado: ${player.team}`);
             if (player.id !== this.socket.id) {
-              if (!this.players[player.id]) {
-                // Aquí verificamos el team
-                if (player.team === 'red') {
-                  this.createBismarck(player.id, player.x, player.y);
-                } else {
-                  this.createArkRoyal(player.id, player.x, player.y);
+                if (!this.players[player.id]) {
+                    // Aquí verificamos el team
+                    if (player.team === 'red') {
+                        this.createBismarck(player.id, player.x, player.y);
+                    } else {
+                        this.createArkRoyal(player.id, player.x, player.y);
+                    }
                 }
-              }
             }
-          });
+        });
 
-          this.socket.on('updatePlayers', (players) => {
+        this.socket.on('updatePlayers', (players) => {
             Object.keys(players).forEach((id) => {
-              if (id !== this.socket.id) {
-                if (!this.players[id]) {
-                  // Crear nave según el team
-                  if (players[id].team === 'red') {
-                    this.createBismarck(id, players[id].x, players[id].y, players[id].angle);
-                  } else {
-                    this.createArkRoyal(id, players[id].x, players[id].y, players[id].angle);
-                  }
-                } else {
-                  // Actualizar posición y ángulo
-                  this.players[id].setPosition(players[id].x, players[id].y);
-                  this.players[id].setAngle(players[id].angle);
+                if (id !== this.socket.id) {
+                    if (!this.players[id]) {
+                        // Crear nave según el team
+                        if (players[id].team === 'red') {
+                            this.createBismarck(id, players[id].x, players[id].y, players[id].angle);
+                        } else {
+                            this.createArkRoyal(id, players[id].x, players[id].y, players[id].angle);
+                        }
+                    } else {
+                        // Actualizar posición y ángulo
+                        this.players[id].setPosition(players[id].x, players[id].y);
+                        this.players[id].setAngle(players[id].angle);
+                    }
                 }
-              }
             });
         });
-        
+
 
         // Manejar la desconexión de jugadores
         this.socket.on('playerDisconnected', (id) => {
@@ -297,37 +304,6 @@ export class gameScene extends Phaser.Scene {
 
         // Crear las animaciones definidas globalmente        
         createAnimations(this);
-
-        // this.socket.on('pidoGuardado', (data) => {
-        //     console.log('pidoGuardado' + this.socket.id)
-        //     if (data.label === 'bismarck') {
-
-        //         if (this.playerShip.label == 'arkRoyal') {
-        //             data.arkRoyalX = this.playerShip.x
-        //             data.arkRoyalY = this.playerShip.y
-        //             data.arkRoyalAngle = this.playerShip.angle
-        //             data.arkRoyalAvionesRestantes = this.playerShip.avionesRestantes
-
-        //             //ESTO SE TIENE QUE CARGAR CUANDO TENGAMOS EL AVION
-        //             data.avionX = 0
-        //             data.avionY = 0
-        //             data.avionMunicion = false
-        //             data.avionOperador = false
-        //             data.avionObservador = false
-        //         }
-        //     } else {
-
-        //         if (this.playerShip.label == 'bismarck') {
-        //             data.bismarckX = this.playerShip.x
-        //             data.bismarckY = this.playerShip.y
-        //             data.bismarckAngle = this.playerShip.angle
-        //             data.bismarckVida = this.playerShip.vida
-        //         }
-        //     }
-        //     data.playerId = this.socket.id
-        //     data.nroPeticion = 2
-        //     this.socket.emit('guardo', data)
-        // })
     }
 
     update() {

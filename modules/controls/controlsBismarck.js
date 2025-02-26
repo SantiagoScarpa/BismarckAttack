@@ -1,13 +1,19 @@
 //ARCHIVO PARA CREACION DE BISMARCK Y SUS CONTROLES 
-
 export function creacionBismarck(game, posX, posY, settings) {
-    let bismarck = game.matter.add.sprite(posX, posY, 'bismarck');
-    bismarck.setScale(0.10).setOrigin(0.5, 0.5);
-    bismarck.vida = 3;
-    bismarck.isOnFire = false;
 
-    bismarck.velocity = settings.bismarckVelocity;
-    return bismarck;
+    try {
+        let vel = sessionStorage.getItem('bismarckVelocity')
+        if (!vel)
+            vel = settings.bismarckVelocity
+        let bismarck = game.matter.add.sprite(posX, posY, 'bismarck');
+        bismarck.setScale(0.10).setOrigin(0.5, 0.5);
+        bismarck.vida = 3;
+        bismarck.isOnFire = false;
+        bismarck.velocity = vel;
+        return bismarck;
+    } catch (err) {
+        console.log(err)
+    }
 }
 
 export function checkControlsBismarck({ bismarck, keys }) {

@@ -1,5 +1,5 @@
 import { loadAudios, playAudios } from "../audios.js";
-import settings from './../../settings.json' with { type: 'json' };
+import { obtenerVolumenMenu, obtenerBismarckVelocidad } from "../persistencia/consumoServiciosSettings.js";
 
 const menuOptions = { 'INICIO': 0, 'CONFIG': 1, 'PUREBA': 3 };
 let actualMenuSel = menuOptions.PUREBA;
@@ -9,7 +9,9 @@ export class menuScene extends Phaser.Scene {
         super("menuScene");
     }
 
-   async create() {
+    async create() {
+        this.volumeMenu = await obtenerVolumenMenu()
+        cargoValoresEnSession();
         const width = this.game.config.width;
         const height = this.game.config.height;
 
@@ -76,24 +78,24 @@ export class menuScene extends Phaser.Scene {
         return resJSON;
     }
 
-    async showTeamSelectionMenu()  {
+    async showTeamSelectionMenu() {
         const width = this.game.config.width;
         const height = this.game.config.height;
-    
+
         const modalBackground = this.add.rectangle(width / 2, height / 2, 400, 200, 0x000000, 0.8).setDepth(10);
         this.add.text(width / 2, height / 2 - 50, 'Selecciona tu bando', {
             fontFamily: 'Rockwell',
             fontSize: 32,
             color: '#ffffff'
         }).setOrigin(0.5).setDepth(11);
-    
 
-        const playersData = await this.getPlayers(); 
+
+        const playersData = await this.getPlayers();
         console.log("Información de jugadores:", playersData);
 
         const blueAgarrado = Object.values(playersData).some(p => p.team === 'blue');
         const redAgarrado = Object.values(playersData).some(p => p.team === 'red');
-    
+
         // Si el equipo azul está libre, creamos el botón correspondiente
         if (!blueAgarrado) {
             const blueBtn = this.add.text(width / 2 - 100, height / 2 + 30, 'BANDO AZUL', {
@@ -108,7 +110,7 @@ export class menuScene extends Phaser.Scene {
                 this.startGame('blue');
             });
         }
-    
+
         // Si el equipo rojo está libre, creamos el botón correspondiente
         if (!redAgarrado) {
             const redBtn = this.add.text(width / 2 + 100, height / 2 + 30, 'BANDO ROJO', {
@@ -124,14 +126,14 @@ export class menuScene extends Phaser.Scene {
             });
         }
     }
-    
+
 
     startGame(team) {
         this.scene.start('gameScene', { team });
     }
 }
 
-async function  agregoFuncionalidadBotones(game) {
+async function agregoFuncionalidadBotones(game) {
     const { playBtn, configBtn, replayBtn } = game;
     playBtn.on('pointerover', function () {
         playBtn.setFrame(1)
@@ -144,7 +146,7 @@ async function  agregoFuncionalidadBotones(game) {
     playBtn.on('pointerdown', async () => {
         const cantidadJugadores = await game.getPlayersCount();
         playBtn.setFrame(2);
-        playAudios('menuSelection', game, settings.volumeMenu);
+        playAudios('menuSelection', game, game.volumeMenu);
         if (cantidadJugadores < 2) {
             await game.showTeamSelectionMenu();
         }
@@ -163,8 +165,8 @@ async function  agregoFuncionalidadBotones(game) {
 
     configBtn.on('pointerdown', () => {
         configBtn.setFrame(0);
-        playAudios('menuSelection', game, settings.volumeMenu)
-        game.scene.start('settingsScene')
+        playAudios('menuSelection', game, game.volumeMenu)
+        game.scene.start('settingsScene',)
 
     });
 
@@ -178,7 +180,7 @@ async function  agregoFuncionalidadBotones(game) {
 
     replayBtn.on('pointerdown', () => {
         replayBtn.setFrame(0)
-        playAudios('menuSelection', game, settings.volumeMenu)
+        playAudios('menuSelection', game, game.volumeMenu)
 
         playBtn.setInteractive(false);
         replayBtn.setInteractive(false);
@@ -258,3 +260,7 @@ function showReanudarPartida(game) {
 }
 
 
+function cargoValoresEnSession() {
+    let vel = obtenerBismarckVelocidad()
+    let vol = obtenerVolumenMenu()
+}

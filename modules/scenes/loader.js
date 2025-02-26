@@ -60,6 +60,8 @@ export class loaderScene extends Phaser.Scene {
             this.load.image(`avion${i}`, `./assets/imgs/sprites/despegue/avion${i}.png`);
         }
 
+        this.load.spritesheet('numeros', './assets/imgs/sprites/numbers.png',
+            { frameWidth: 128, frameHeight: 192 });
 
 
         loadAudios(this);
@@ -67,6 +69,7 @@ export class loaderScene extends Phaser.Scene {
         this.load.on("complete", () => {
             this.scene.start("menuScene");
         });
+
 
     }
     create() { }

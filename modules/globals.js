@@ -34,12 +34,12 @@ export function createAnimations(game) {
 
 export function generarCodigoPartida() {
     let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     const charactersLength = characters.length;
-    let counter = 0;
-    while (counter < 5) {
+    let i = 0;
+    while (i < 5) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
-        counter += 1;
+        i++;
     }
     return result;
 }

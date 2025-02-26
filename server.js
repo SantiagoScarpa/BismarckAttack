@@ -4,7 +4,7 @@ import { Server } from 'socket.io';
 import path from 'path';
 import settings from './settings.json' with { type: 'json' };
 import { inicioConexionDB } from './modules/persistencia/creoPersistencia.js';
-
+import { expongoWsSettings } from './modules/persistencia/serviciosSettings.js';
 const app = express();
 const server = createServer(app);
 const io = new Server(server);
@@ -17,7 +17,7 @@ app.use('/modules', express.static(path.join(process.cwd(), 'modules')));
 app.use(express.json());
 
 inicioConexionDB(app, settings.dbInfo);
-
+expongoWsSettings(app)
 
 const players = {}; // Guardar jugadores activos
 let franciaPosition = null; // ✅ Guardamos la posición de Francia
@@ -33,7 +33,7 @@ io.on('connection', (socket) => {
             console.log(`Equipo ${player.team} ya está ocupado para ${socket.id}`);
             return;
         }
-        
+
         // Si el equipo está disponible, se actualiza el objeto del jugador
         players[socket.id] = player;
         console.log(`Jugadores conectados: ${Object.keys(players).length}`);
@@ -59,7 +59,7 @@ io.on('connection', (socket) => {
     // Enviar la posición de Francia al nuevo jugador
     socket.emit('setFranciaPosition', franciaPosition);
 
-   
+
 
     socket.on('playerMove', (player) => {
         if (players[socket.id]) {
