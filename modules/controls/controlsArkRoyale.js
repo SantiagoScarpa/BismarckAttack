@@ -1,8 +1,11 @@
 //ARCHIVO PARA CREACION DE ARK ROYALE Y SUS CONTROLES
 export function creacionArkRoyale(game, posX, posY, settings) {
-    let arkRoyal = game.matter.add.sprite(posX , posY , 'portaAviones')
+    let arkRoyal = game.matter.add.sprite(posX , posY , 'portaAviones', null, { label: 'arkroyal' });
     arkRoyal.setScale(0.15).setOrigin(0.5, 0.5);
     arkRoyal.avionesRestantes = 10;
+    arkRoyal.vida = 4
+    arkRoyal.isOnFire = false
+    arkRoyal.body.label = 'arkroyal'
     arkRoyal.velocity = settings.arkRoyalVelocity;
     return arkRoyal
 }

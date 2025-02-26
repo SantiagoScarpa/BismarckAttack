@@ -23,6 +23,14 @@ export function createAnimations(game) {
         repeat: 0,
         frameRate: 30
     })
+
+    game.anims.create({
+        key: 'explode_arkRoyal',
+        frames: Array.from({ length: 12}, (_, i) => ({ key: `explotion_ark${i + 1}` })),
+        frameRate: 24,
+        hideOnComplete: true 
+    });
+
     game.anims.create({
         key: 'despegue',
         frames: Array.from({ length: 10 }, (_, i) => ({ key: `avion${i}` })),

@@ -30,6 +30,8 @@ export class loaderScene extends Phaser.Scene {
         this.load.image('fog', './assets/imgs/tiles/fog.png');
         this.load.image('francia', './assets/imgs/sprites/franciaTransparente.png');
         this.load.image('bismarckGana', './assets/imgs/bismarckGana.png');
+        this.load.image('crosshair', 'assets/imgs/sprites/crosshair.png');
+        
         this.load.spritesheet('save', './assets/imgs/sprites/save.png',
             { frameWidth: 16, frameHeight: 16 })
         this.load.spritesheet('home', './assets/imgs/buttons/home.png',
@@ -44,12 +46,17 @@ export class loaderScene extends Phaser.Scene {
 
 
         for (let i = 0; i < 32; i++) {
-            this.load.image(`explosion_${i}`, `./assets/imgs/sprites/explotion/frames/1_${i}.png`);
+            this.load.image(`explosion_${i}`, `./assets/imgs/sprites/colision/frames/1_${i}.png`);
         }
 
         for (let i = 0; i < 119; i++) {
-            this.load.image(`fire${i}`, `./assets/imgs/sprites/fire1/1_${i}.png`);
+            this.load.image(`fire${i}`, `./assets/imgs/sprites/fire/1_${i}.png`);
         }
+
+        for (let i = 1; i <= 12; i++) {
+            this.load.image(`explotion_ark${i}`, `./assets/imgs/sprites/explotion_ark/Sprites/e${i}.png`);
+        }
+
 
         //AZUL
         this.load.spritesheet('portaAviones', './assets/imgs/sprites/portaAvion.png',
