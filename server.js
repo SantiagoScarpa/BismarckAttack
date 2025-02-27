@@ -71,6 +71,10 @@ io.on('connection', (socket) => {
         io.emit('updatePlayers', players);
     });
 
+    socket.on('shootBullet', (data) => {
+        socket.broadcast.emit('shootBullet', data);
+    });
+
     socket.on('disconnect', () => {
         console.log(`Jugador desconectado: ${socket.id}`);
         delete players[socket.id];

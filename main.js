@@ -17,8 +17,8 @@ const config = {
                 left: true, right: true, bottom: true, top: true
             },
             debug: {
-                showBody: true,
-                showStaticBody: true
+                showBody: false,
+                showStaticBody: false
             }
         }
     },
