@@ -29,8 +29,9 @@ export class gameScene extends Phaser.Scene {
             this.fireSprite.setDepth(1);
 
             this.fireSprite.setPosition(this.playerShip.x, this.playerShip.y);
+        }
     }
-    }
+
     shootBullet() {
         //if (!this.playerShip) return;
         if (this.playerShip.label === 'bismarck'){
@@ -59,7 +60,6 @@ export class gameScene extends Phaser.Scene {
             setTimeout(() => {
                 bulletTail.destroy();
             }, 100);
-
 
             bullet.setSensor(true);
             this.bullets.push(bullet);
@@ -155,15 +155,6 @@ export class gameScene extends Phaser.Scene {
         // Inicializar balas y fuego
         this.bullets = [];
         this.fireSprite = null;
-
-        // Contador de jugadores
-        this.socket.on('playerCount', (count) => {
-            console.log(`👥 Jugadores conectados: ${count}`);
-            if (count > 2) {
-                alert("⚠️ Límite de jugadores alcanzado. No puedes unirte a la partida en este momento.");
-            }
-            return;
-        });
 
         // Configurar controles
         this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT,W,A,S,D,SPACE');
@@ -338,6 +329,9 @@ export class gameScene extends Phaser.Scene {
         this.minimapCamera.ignore([this.playerShip, radar, overlay]); //
         this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
 
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //------------------------INTERACCION CON EL SEVIIDOR--------------------------------------------------//
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Emitir al servidor que este jugador se unió
         this.socket.on("connect", () => {
             console.log(`Conectado con ID ${this.socket.id}, enviando al server`);
@@ -356,6 +350,7 @@ export class gameScene extends Phaser.Scene {
             if (player.id !== this.socket.id) {
               if (!this.players[player.id]) {
                 // Aquí verificamos el team
+                console.log(`*********** ACA NO ENTRO NUNCA ****************************************************`);
                 if (player.team === 'red') {
                   this.createBismarck(player.id, player.x, player.y);
                 } else {
@@ -363,22 +358,41 @@ export class gameScene extends Phaser.Scene {
                 }
               }
             }
-          });
+        });
 
-          this.socket.on('updatePlayers', (players) => {
+        this.socket.on('newPlane', (player) => {
+            console.log(`Avion desplegado: ${player.team}`);
+            if (this.team === 'red') {
+                this.createAvion(player.id, player.x, player.y);
+            }
+        });
+
+        this.socket.on('updatePlayers', (players) => {
             Object.keys(players).forEach((id) => {
               if (id !== this.socket.id) {
                 if (!this.players[id]) {
                   // Crear nave según el team
                   if (players[id].team === 'red') {
                     this.createBismarck(id, players[id].x, players[id].y, players[id].angle);
-                  } else {
+                  } else if (players[id].team === 'blue') {
                     this.createArkRoyal(id, players[id].x, players[id].y, players[id].angle);
                   }
                 } else {
-                  // Actualizar posición y ángulo
-                  this.players[id].setPosition(players[id].x, players[id].y);
-                  this.players[id].setAngle(players[id].angle);
+                    // Actualizar posición y ángulo
+                    if (players[id].label === 'avion') {
+                        // Ejemplo: Buscar el primer 'arkroyal' en el arreglo
+                        let arkroyalEncontrado = this.objects.find(obj => obj.body.label === 'avion');
+                        if (arkroyalEncontrado) {
+                            arkroyalEncontrado.setPosition(players[id].x, players[id].y);
+                            arkroyalEncontrado.setAngle(players[id].angle);
+                            this.players[id].setPosition(players[id].Px, players[id].Py);
+                            this.players[id].setAngle(players[id].Pangle);
+                        }
+                    } else {
+                        this.players[id].setPosition(players[id].x, players[id].y);
+                        this.players[id].setAngle(players[id].angle); 
+                    }
+                    
                 }
               }
             });
@@ -426,7 +440,7 @@ export class gameScene extends Phaser.Scene {
                     }
                 }
             });
-            }
+        }
 
         this.input.setDefaultCursor('none');
 
@@ -482,24 +496,33 @@ export class gameScene extends Phaser.Scene {
             } else {
                 checkControlsArkRoyale({ ArkRoyale: this.playerShip, keys: this.keys });
             }
-            if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
-                if (!this.avionDesplegado) {
-
-                    this.portaAviones = this.playerShip;
-                    this.portaAvionesIcon = this.add.circle(this.portaAviones.x, this.portaAviones.y, 60, 0x0000ff, 1).setOrigin(0.5, 0.5);
-                    this.cameras.main.ignore([this.portaAvionesIcon]);
-                    if (this.playerShip.angle > -10 && this.playerShip.angle < 10) {
-                        this.playerShip = creacionAvion(this, (this.playerShip.x + 50), this.playerShip.y, settings);
-                    } else {
-                        this.playerShip = creacionAvion(this, (this.playerShip.x + 80), this.playerShip.y, settings);
+            if (this.playerShip.label === 'arkroyal'){
+                if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
+                    if (!this.avionDesplegado) {
+                        this.portaAviones = this.playerShip;
+                        this.portaAvionesIcon = this.add.circle(this.portaAviones.x, this.portaAviones.y, 60, 0x0000ff, 1).setOrigin(0.5, 0.5);
+                        this.cameras.main.ignore([this.portaAvionesIcon]);
+                        if (this.playerShip.angle > -10 && this.playerShip.angle < 10) {
+                            this.playerShip = creacionAvion(this, (this.playerShip.x + 50), this.playerShip.y, settings);
+                        } else {
+                            this.playerShip = creacionAvion(this, (this.playerShip.x + 80), this.playerShip.y, settings);
+                        }
+                        this.avionDesplegado = true;
+                        this.portaAviones.avionesRestantes -= 1;
+                        this.socket.emit('newPlane', {
+                            x: this.playerShip.x,
+                            y: this.playerShip.y,
+                            angle: this.playerShip.angle,
+                            team: this.team,
+                            label: this.playerShip.label
+                        });
+                        this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
+                        this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
                     }
-                    this.avionDesplegado = true;
-                    this.portaAviones.avionesRestantes -= 1;
-                    this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
-                    this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
                 }
             }
         }
+            
 
         const tailOffset = { x: 0, y: 40 };
         //if (!this.playerShip) return;    
@@ -528,13 +551,29 @@ export class gameScene extends Phaser.Scene {
             this.visionMask.fillCircle(this.playerShip.x, this.playerShip.y, this.visionRadius); // Actualiza el círculo de visión
 
             // Emitir la posición actualizada del jugador al servidor
-            this.socket.emit('playerMove', {
-                id: this.socket.id,
-                x: this.playerShip.x,
-                y: this.playerShip.y,
-                angle: this.playerShip.angle,
-                team: this.team
-            });
+            if (this.avionDesplegado) {
+                this.socket.emit('playerMove', {
+                    id: this.socket.id,
+                    x: this.playerShip.x,
+                    y: this.playerShip.y,
+                    angle: this.playerShip.angle,
+                    team: this.team,
+                    label: this.playerShip.label,
+                    Px: this.portaAviones.x,
+                    Py: this.portaAviones.y,
+                    Pangle: this.portaAviones.angle
+                });
+            } else{
+                this.socket.emit('playerMove', {
+                    id: this.socket.id,
+                    x: this.playerShip.x,
+                    y: this.playerShip.y,
+                    angle: this.playerShip.angle,
+                    team: this.team,
+                    label: this.playerShip.label
+                });
+            }
+            
         }
 
         // Mostrar u ocultar objetos según estén dentro del rango de visión
@@ -628,7 +667,7 @@ export class gameScene extends Phaser.Scene {
         avion.velocity = settings.avionVelocity;
         avion.body.label = 'avion'
 
-        this.players[playerId] = avion;
+        //this.players[playerId] = avion;
         this.objects.push(avion);
     }
 }

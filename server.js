@@ -20,6 +20,7 @@ inicioConexionDB(app, settings.dbInfo);
 
 
 const players = {}; // Guardar jugadores activos
+const aviones = {}; // Guardar aviones activos
 let franciaPosition = null; // ✅ Guardamos la posición de Francia
 
 io.on('connection', (socket) => {
@@ -67,6 +68,10 @@ io.on('connection', (socket) => {
             players[socket.id].y = player.y;
             players[socket.id].angle = player.angle;
             players[socket.id].team = player.team;
+            players[socket.id].label = player.label;
+            players[socket.id].Px = player.Px;
+            players[socket.id].Py = player.Py;
+            players[socket.id].Pangle = player.Pangle;
         }
         io.emit('updatePlayers', players);
     });
@@ -81,6 +86,12 @@ io.on('connection', (socket) => {
 
         console.log(`Jugadores restantes: ${Object.keys(players).length}`);
         io.emit('playerCount', Object.keys(players).length);
+    });
+
+    socket.on('newPlane', (player) => {
+        players[socket.id] = player;
+        console.log(`Avion llego al server y es enviado a los jugadores`);
+        io.emit('newPlane', player);
     });
 });
 
