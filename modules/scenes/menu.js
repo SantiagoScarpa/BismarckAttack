@@ -80,21 +80,21 @@ export class menuScene extends Phaser.Scene {
         const width = this.game.config.width;
         const height = this.game.config.height;
     
+        // Modal de selección
         const modalBackground = this.add.rectangle(width / 2, height / 2, 400, 200, 0x000000, 0.8).setDepth(10);
         this.add.text(width / 2, height / 2 - 50, 'Selecciona tu bando', {
             fontFamily: 'Rockwell',
             fontSize: 32,
             color: '#ffffff'
         }).setOrigin(0.5).setDepth(11);
-    
 
-        const playersData = await this.getPlayers(); 
+        const playersData = await this.getPlayers();
         console.log("Información de jugadores:", playersData);
 
         const blueAgarrado = Object.values(playersData).some(p => p.team === 'blue');
         const redAgarrado = Object.values(playersData).some(p => p.team === 'red');
-    
-        // Si el equipo azul está libre, creamos el botón correspondiente
+
+        // Botón para bando azul
         if (!blueAgarrado) {
             const blueBtn = this.add.text(width / 2 - 100, height / 2 + 30, 'BANDO AZUL', {
                 fontFamily: 'Rockwell',
@@ -105,11 +105,14 @@ export class menuScene extends Phaser.Scene {
             }).setOrigin(0.5).setInteractive().setDepth(11);
             blueBtn.on('pointerdown', () => {
                 console.log("🔵 Jugador seleccionó el BANDO AZUL");
-                this.startGame('blue');
+                // Guardamos el equipo seleccionado y mostramos modal de espera
+                this.selectedTeam = 'blue';
+                this.showWaitingModal();
+                this.waitForOtherPlayer();
             });
         }
-    
-        // Si el equipo rojo está libre, creamos el botón correspondiente
+
+        // Botón para bando rojo
         if (!redAgarrado) {
             const redBtn = this.add.text(width / 2 + 100, height / 2 + 30, 'BANDO ROJO', {
                 fontFamily: 'Rockwell',
@@ -120,10 +123,57 @@ export class menuScene extends Phaser.Scene {
             }).setOrigin(0.5).setInteractive().setDepth(11);
             redBtn.on('pointerdown', () => {
                 console.log("🔴 Jugador seleccionó el BANDO ROJO");
-                this.startGame('red');
+                this.selectedTeam = 'red';
+                this.showWaitingModal();
+                this.waitForOtherPlayer();
             });
         }
+
     }
+
+    showWaitingModal() {
+        if (!this.waitingModal) { 
+            const width = this.game.config.width; 
+            const height = this.game.config.height; 
+    
+            this.waitingModal = this.add.rectangle(width / 2, height / 2, 600, 300, 0x000000, 1).setDepth(20);
+    
+          this.waitingText = this.add.text(width / 2, height / 2, 'Esperando al otro jugador', {
+                fontFamily: 'Rockwell',
+                fontSize: 24,
+                color: '#ffffff'
+            }).setOrigin(0.5).setDepth(21); 
+    
+            let dots = "";
+            this.time.addEvent({
+                delay: 300, 
+                loop: true,
+                callback: () => {
+                    dots = dots.length < 5 ? dots + "." : ""; 
+                    this.waitingText.setText(`Esperando al otro jugador${dots}`); 
+                },
+                callbackScope: this
+            });
+        } 
+    }
+    
+    hideWaitingModal() { 
+        if (this.waitingModal) { 
+            this.waitingModal.destroy(); this.waitingText.destroy(); 
+            this.waitingModal = null;
+            this.waitingText = null; 
+        } 
+    }
+
+    async waitForOtherPlayer() { 
+        const intervalId = setInterval(async () => { 
+        const playersCount = await this.getPlayersCount();
+        if (playersCount === 2) { 
+            clearInterval(intervalId); 
+            this.hideWaitingModal(); 
+            this.startGame(this.selectedTeam); 
+        } }, 1000);
+     }
     
 
     startGame(team) {
