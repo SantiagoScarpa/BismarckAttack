@@ -16,6 +16,7 @@ export class gameScene extends Phaser.Scene {
 
     init(data) {
         this.team = data.team;
+        this.socket = data.socket;
     }
 
     activateFire(x, y, scale) {
@@ -149,7 +150,7 @@ export class gameScene extends Phaser.Scene {
         this.codigoAzul = 'J1AZ'
 
         // Conexión y manejo de jugadores vía socket
-        this.socket = io();
+
         this.players = {};
 
         // Inicializar balas y fuego
@@ -164,6 +165,8 @@ export class gameScene extends Phaser.Scene {
             }
             return;
         });
+
+        this.socket.emit("empiezaPartida")
 
         // Configurar controles
         this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT,W,A,S,D,SPACE');
@@ -364,6 +367,8 @@ export class gameScene extends Phaser.Scene {
               }
             }
           });
+
+          
 
           this.socket.on('updatePlayers', (players) => {
             Object.keys(players).forEach((id) => {

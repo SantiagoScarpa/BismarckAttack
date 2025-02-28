@@ -4,6 +4,7 @@ import settings from './../../settings.json' with { type: 'json' };
 const menuOptions = { 'INICIO': 0, 'CONFIG': 1, 'PUREBA': 3 };
 let actualMenuSel = menuOptions.PUREBA;
 
+
 export class menuScene extends Phaser.Scene {
     constructor() {
         super("menuScene");
@@ -105,8 +106,9 @@ export class menuScene extends Phaser.Scene {
             }).setOrigin(0.5).setInteractive().setDepth(11);
             blueBtn.on('pointerdown', () => {
                 console.log("🔵 Jugador seleccionó el BANDO AZUL");
-                // Guardamos el equipo seleccionado y mostramos modal de espera
                 this.selectedTeam = 'blue';
+                this.socket = io();
+                this.socket.emit('setPlayerTeam', 'blue')
                 this.showWaitingModal();
                 this.waitForOtherPlayer();
             });
@@ -124,6 +126,8 @@ export class menuScene extends Phaser.Scene {
             redBtn.on('pointerdown', () => {
                 console.log("🔴 Jugador seleccionó el BANDO ROJO");
                 this.selectedTeam = 'red';
+                this.socket = io();
+                this.socket.emit('setPlayerTeam', 'red')
                 this.showWaitingModal();
                 this.waitForOtherPlayer();
             });
@@ -136,6 +140,7 @@ export class menuScene extends Phaser.Scene {
             const width = this.game.config.width; 
             const height = this.game.config.height; 
     
+
             this.waitingModal = this.add.rectangle(width / 2, height / 2, 600, 300, 0x000000, 1).setDepth(20);
     
           this.waitingText = this.add.text(width / 2, height / 2, 'Esperando al otro jugador', {
@@ -171,13 +176,13 @@ export class menuScene extends Phaser.Scene {
         if (playersCount === 2) { 
             clearInterval(intervalId); 
             this.hideWaitingModal(); 
-            this.startGame(this.selectedTeam); 
+            this.startGame(this.selectedTeam, this.socket); 
         } }, 1000);
      }
     
 
-    startGame(team) {
-        this.scene.start('gameScene', { team });
+    startGame(team, socket) {
+        this.scene.start('gameScene', { team , socket});
     }
 }
 
