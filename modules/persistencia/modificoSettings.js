@@ -66,7 +66,6 @@ export const funcionesSettings = {
         try {
             const settings = fs.readFileSync('settings.json', 'utf8')
             const jsonData = JSON.parse(settings);
-
             if (!subo && jsonData.bismarckVelocity > 0)
                 jsonData.bismarckVelocity--;
             else if (subo && jsonData.bismarckVelocity < 9)
@@ -85,7 +84,6 @@ export const funcionesSettings = {
         try {
             const settings = fs.readFileSync('settings.json', 'utf8')
             const jsonData = JSON.parse(settings);
-            console.log(subo + ' ====' + jsonData.duracionPartidas)
             if (!subo && jsonData.duracionPartida > 0)
                 jsonData.duracionPartida--;
             else if (subo && jsonData.duracionPartida < 9)
@@ -97,5 +95,18 @@ export const funcionesSettings = {
             console.log('Error en bajarVolMenu')
             throw err;
         }
-    }
+    },
+
+    getDuracionPArtida() {
+        try {
+            const settings = fs.readFileSync('settings.json', 'utf8')
+            const jsonData = JSON.parse(settings);
+            let vel = jsonData.duracionPartida
+            return vel;
+        } catch (err) {
+            console.log('Error en getBismarckVel')
+            throw err;
+        }
+    },
 }
+

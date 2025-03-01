@@ -1,5 +1,5 @@
 import { loadAudios, playAudios } from "../audios.js";
-import { obtenerVolumenMenu, obtenerBismarckVelocidad } from "../persistencia/consumoServiciosSettings.js";
+import { obtenerVolumenMenu, obtenerBismarckVelocidad, obtenerDuracionPartida } from "../persistencia/consumoServiciosSettings.js";
 
 const menuOptions = { 'INICIO': 0, 'CONFIG': 1, 'PUREBA': 3 };
 let actualMenuSel = menuOptions.PUREBA;
@@ -67,14 +67,12 @@ export class menuScene extends Phaser.Scene {
     async getPlayersCount() {
         const res = await fetch("/getPlayerConnections")
         const resJSON = await res.json();
-        console.log(resJSON)
         return resJSON;
     }
 
     async getPlayers() {
         const res = await fetch("/getPlayers")
         const resJSON = await res.json();
-        console.log(resJSON)
         return resJSON;
     }
 
@@ -263,4 +261,5 @@ function showReanudarPartida(game) {
 function cargoValoresEnSession() {
     let vel = obtenerBismarckVelocidad()
     let vol = obtenerVolumenMenu()
+    let dur = obtenerDuracionPartida()
 }

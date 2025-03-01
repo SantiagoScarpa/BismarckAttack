@@ -7,6 +7,7 @@ export function creacionArkRoyal(game, posX, posY, settings) {
         .avionesRestantes = 10;
     arkRoyal.velocity = settings.arkRoyalVelocity
     arkRoyal.avionesRestantes = 10
+
     return arkRoyal
 }
 

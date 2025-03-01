@@ -4,7 +4,7 @@ import { playAudios } from './../audios.js';
 import { creacionArkRoyale, checkControlsArkRoyale } from '../controls/controlsArkRoyale.js';
 import { creacionAvion, checkControlsAvion } from '../controls/controlsAvion.js';
 import { createAnimations, generarCodigoPartida } from '../globals.js'
-//import { guardarPartida } from '../persistencia/obtengoPersistencia.js';
+import { armoRespuestaRojo, armoRespuestaAzul } from '../persistencia/obtengoPersistencia.js';
 
 
 export class gameScene extends Phaser.Scene {
@@ -73,8 +73,13 @@ export class gameScene extends Phaser.Scene {
     preload() { }
 
     create() {
-        this.time.delayedCall(5000, () => {
-            alert('¡Tiempo terminado!');
+        let durPartida = sessionStorage.getItem('duracionPartida')
+        if (!durPartida)
+            durPartida = 2
+        this.duracionPartida = durPartida * 60 * 1000
+        this.inicioPartida = Date.now()
+        this.time.delayedCall(this.duracionPartida, () => {
+            this.socket.emit('tiempoPartida')
         }, [], this);
 
         this.codigoPartida = generarCodigoPartida()
@@ -111,7 +116,7 @@ export class gameScene extends Phaser.Scene {
             ) {
                 // Por ejemplo, si el jugador rojo es el Bismarck, se dispara 'ganaBismarck'
                 if (this.team === 'red') {
-                    this.scene.start('ganaBismarck');
+                    this.socket.emit('ganaBismarck', 'red');
                 }
             }
             // Si colisiona una bala contra el jugador, se ejecuta la función onBulletHit
@@ -162,13 +167,26 @@ export class gameScene extends Phaser.Scene {
 
         save.on('pointerdown', () => {
             save.play('saving')
-            // guardarPartida(this)
+            this.socket.emit('pidoGuardado')
         })
+
+        if (this.team === 'red') {
+            this.socket.on('pidoRojo', () => {
+                let respuesta = armoRespuestaRojo(this)
+                console.log(respuesta.codigoRojo)
+                this.socket.emit('respuestaRojo', respuesta)
+            })
+        } else (
+            this.socket.on('pidoAzul', () => {
+                let respuesta = armoRespuestaAzul(this)
+                this.socket.emit('respuestaAzul', respuesta)
+            })
+        )
+
         save.on('animationcomplete', () => { save.setFrame(0) });
 
         homeBtn.on('pointerdown', () => {
-            this.socket.disconnect()
-            this.scene.start('menuScene')
+            this.socket.emit('saleDePartida');
         })
 
         // Definir posición inicial aleatoria
@@ -225,8 +243,8 @@ export class gameScene extends Phaser.Scene {
         radar.setDepth(2);
 
         // Configuración de límites y cámara
-        this.matter.world.setBounds(0, 0, 1920, 1080);
-        this.cameras.main.setBounds(0, 0, 1920, 1080);
+        this.matter.world.setBounds(0, 0, 1920, 2500);
+        this.cameras.main.setBounds(0, 0, 1920, 2500);
         this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
         this.cameras.main.setZoom(2);
 
@@ -304,6 +322,20 @@ export class gameScene extends Phaser.Scene {
 
         // Crear las animaciones definidas globalmente        
         createAnimations(this);
+
+        this.socket.on('finalizacionPartida', (ganador) => {
+            this.socket.disconnect()
+            if (ganador === 'blue') {
+                this.scene.start('ganaArkRoyal');
+            }
+            else if (ganador === 'red') {
+
+                this.scene.start('ganaBismarck');
+            }
+            else {
+                this.scene.start('menuScene');
+            }
+        })
     }
 
     update() {
@@ -325,7 +357,6 @@ export class gameScene extends Phaser.Scene {
             }
             if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
                 if (!this.avionDesplegado) {
-
                     this.portaAviones = this.playerShip;
                     this.portaAvionesIcon = this.add.circle(this.portaAviones.x, this.portaAviones.y, 60, 0x0000ff, 1).setOrigin(0.5, 0.5);
                     this.cameras.main.ignore([this.portaAvionesIcon]);

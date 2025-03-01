@@ -9,6 +9,7 @@ export function expongoWsSettings(app) {
     wsSubirVelBismarck(app);
     wsSubirDuracionPartida(app);
     wsBajarDuracionPartida(app);
+    wsGetDuracionPartida(app);
 }
 
 function wsBajarVolMenu(app) {
@@ -62,5 +63,11 @@ function wsBajarDuracionPartida(app) {
     app.post('/bajarDuracionPartida', (req, res) => {
         funcionesSettings.cambioDuracionPartida(false)
         res.json({ mensaje: 'velocidad subida' })
+    })
+}
+
+function wsGetDuracionPartida(app) {
+    app.get('/getDuracionPartida', (req, res) => {
+        res.json(funcionesSettings.getDuracionPArtida())
     })
 }

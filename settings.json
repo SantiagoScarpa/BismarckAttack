@@ -1,5 +1,5 @@
 {
-  "volumeMenu": 0.1,
+  "volumeMenu": 0.2,
   "volumeBismarckShoot": "0.7",
   "bismarckVelocity": 5,
   "arkRoyaleVelocity": 3,
@@ -10,5 +10,5 @@
     "dbName": "bismarckAttack"
   },
   "avionVelocity": 1,
-  "duracionPartida": 3
+  "duracionPartida": 9
 }

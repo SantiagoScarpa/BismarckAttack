@@ -1,4 +1,4 @@
-// export function guardarPartida({ codigoAzul, codigoRojo, bismarck, arkRoyal, avion, francia }) {
+/*// export function guardarPartida({ codigoAzul, codigoRojo, bismarck, arkRoyal, avion, francia }) {
 
 //     let vFrancia = {
 //         x: francia.x,
@@ -40,60 +40,64 @@
 //             // (Opcional) Mostrar mensaje de error en el juego
 //         });
 // }
+*/
 
-// export function guardarPartida(game) {
-//     console.log('guardarPartida')
-//     let bismarckVida = game.playerShip.vida ? game.playerShip.vida : 0
-//     let avionesRestantes = game.playerShip.avionesRestantes ? game.playerShip.avionesRestantes : 0
+export function armoRespuestaRojo(game) {
 
-//     let bismarckX = 0
-//     let bismarckY = 0
-//     let bismarckAngle = 0
-//     let arkRoyalX = 0
-//     let arkRoyalY = 0
-//     let arkRoyalAngle = 0
+    const tiempoDePartida = Date.now() - game.inicioPartida;
+    const tiempoDisponible = game.duracionPartida - tiempoDePartida;
 
-//     if (game.playerShip.label === 'bismarck') {
-//         bismarckX = game.playerShip.x
-//         bismarckY = game.playerShip.y
-//         bismarckAngle = game.playerShip.angle
+    let respuesta = {
+        codigoRojo: game.codigoPartida,
+        tiempoPartida: tiempoDisponible,
+        bismarck: {
+            x: game.playerShip.x,
+            y: game.playerShip.y,
+            vida: game.playerShip.vida
+        },
+        francia: {
+            x: game.francia.x,
+            y: game.francia.y
+        }
+    }
+    return respuesta
+}
 
-//     } else {
-//         arkRoyalX = game.playerShip.x
-//         arkRoyalY = game.playerShip.y
-//         arkRoyalAngle = game.playerShip.angle
-//     }
+export function armoRespuestaAzul(game) {
+    let respuesta;
+    if (game.avionDesplegado) {
+        respuesta = {
+            codigoAzul: game.codigoPartida,
+            arkRoyal: {
+                x: game.portaAviones.x,
+                y: game.portaAviones.y,
+                avionesRestantes: game.portaAviones.avionesRestantes,
+                avionActual: {
+                    x: game.playerShip.x,
+                    y: game.playerShip.y,
+                    //ESTO SE TIENE QUE CAMBIAR UNA VEZ TENGAMOS LA FUNCIONALIDAD DE ELEGIR Y MUNICION
+                    municion: true,
+                    observador: false,
+                    operador: false
+                }
+            }
+        }
 
-//     //ESTO TIENE QUE CAMBIAR CUANDO CARGUEMOS UN AVION
-//     let avionActualX = 1;
-//     let avionActualY = 1;
-//     let avionActualMunicion = false;
-//     let avionActualOperador = false;
-//     let avionActualObservador = false;
+    } else {
+        respuesta = {
+            codigoAzul: game.codigoPartida,
+            arkRoyal: {
+                x: game.playerShip.x,
+                y: game.playerShip.y,
+                avionesRestantes: game.playerShip.avionesRestantes,
+                avionActual: null
+            }
+        }
+    }
 
-//     game.socket.emit('guardo', {
-//         nroPeticion: 1,
-//         playerId: game.socket.id,
-//         codigoAzul: game.codigoAzul,
-//         codigoRojo: game.codigoRojo,
-//         franciaX: game.francia.x,
-//         franciaY: game.francia.y,
-//         label: game.playerShip.label,
-//         bismarckX: bismarckX,
-//         bismarckY: bismarckY,
-//         bismarckAngle: bismarckAngle,
-//         bismarckVida: bismarckVida,
-//         arkRoyalX: arkRoyalX,
-//         arkRoyalY: arkRoyalY,
-//         arkRoyalAngle: arkRoyalAngle,
-//         arkRoyalAvionesRestantes: avionesRestantes,
-//         avionX: avionActualX,
-//         avionY: avionActualY,
-//         avionMunicion: avionActualMunicion,
-//         avionOperador: avionActualOperador,
-//         avionObservador: avionActualObservador
-//     });
-// }
+
+    return respuesta
+}
 
 export function retomarPartida(codigo) {
     fetch('/guardarPartida', {

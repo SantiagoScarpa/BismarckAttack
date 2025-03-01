@@ -40,7 +40,7 @@ export async function obtenerVolumenMenu() {
         sessionStorage.setItem('volMenu', datos)
         return datos;
     } catch (err) {
-        console.error('Error:', error);
+        console.error('Error:', err);
         throw error;
 
     }
@@ -92,9 +92,9 @@ export function cambiarBismarckVelocidad(subo) {
 export function cambiarDuracionPartida(subo) {
     let url;
     if (!subo)
-        url = 'bajarVelBismarck'
+        url = 'bajarDuracionPartida'
     else
-        url = 'subirVelBismarck'
+        url = 'subirDuracionPartida'
 
     fetch(`/${url}`, {
         method: 'POST',
@@ -114,4 +114,19 @@ export function cambiarDuracionPartida(subo) {
         .catch(error => {
             console.log('Error:', error);
         });
+}
+
+export async function obtenerDuracionPartida() {
+    try {
+        const response = await fetch('/getDuracionPartida');
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+        const datos = await response.json();
+        sessionStorage.setItem('duracionPartida', datos)
+        return datos;
+    } catch (err) {
+        console.error('Error:', err);
+        throw error;
+    }
 }

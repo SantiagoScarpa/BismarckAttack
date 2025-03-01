@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 
+let Partida;
 export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
     mongoose.connect(`mongodb://${dbIp}:${dbPort}/${dbName}`)
         .then(() => { console.log('Conexion a DB completada') })
@@ -15,7 +16,7 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
         y: Number,
         municion: Boolean,
         observador: Boolean,
-        operador: Boolean
+        operador: Boolean,
     })
 
     const arkRoyalSchema = new mongoose.Schema({
@@ -33,46 +34,13 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
     const partidaSchema = new mongoose.Schema({
         codigoAzul: String,
         codigoRojo: String,
+        tiempoPartida: Number,
         bismarck: bismarckSchema,
         arkRoyal: arkRoyalSchema,
         francia: franciaSchema
     })
 
-    const partida = mongoose.model('Partidas', partidaSchema);
-
-
-
-
-    app.post('/guardarPartida', (req, res) => {
-        const { codigoAzul, codigoRojo, vBismarck: bismarck, vArkRoyal: arkRoyal, vFrancia: francia } = req.body; // Datos del juego
-
-        const nuevaPartida = new partida({
-            codigoAzul: codigoAzul, codigoRojo: codigoRojo,
-            bismarck: {
-                x: bismarck.x,
-                y: bismarck.y,
-                vida: bismarck.vida
-            },
-            arkRoyal: {
-                x: arkRoyal.x,
-                y: arkRoyal.y,
-                avionesRestantes: arkRoyal.avionesRestantes,
-                avionActual: {
-                    x: arkRoyal.avionActual.x,
-                    y: arkRoyal.avionActual.y,
-                    observador: arkRoyal.avionActual.observador,
-                    operador: arkRoyal.avionActual.operador
-                }
-            },
-            francia: {
-                x: francia.x,
-                y: francia.y
-            }
-        });
-        nuevaPartida.save()
-            .then(() => res.json({ mensaje: 'Partida guardada' }))
-            .catch(err => res.status(500).json({ error: 'Error al guardar partida' }));
-    });
+    Partida = mongoose.model('Partidas', partidaSchema);
 
     app.get('/retomarPartida', (req, res) => {
         let { codigoAzul, codigoRojo } = req.query;
@@ -82,20 +50,58 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
         else
             codigoAzul = 'N/A'
 
-        partida.findOne({
+        Partida.findOne({
             $or: [
                 { codigoAzul: codigoAzul },
                 { codigoRojo: codigoRojo }]
         })
             .then((par) => {
-                if (!partida) {
+                if (!par) {
                     return res.status(404).json({ mensaje: 'Partida no encontrada' });
                 }
                 res.json(par)
 
             })
-            .catch(err => res.status(500).json({ error: 'Error al retomar partida ' }))
+
+            .catch(err => {
+                console.log(`Error al obtener la partida::: ${err}`)
+                return res.status(500).json({ mensaje: `Error al obtener la partida ${err}` });
+            })
 
     })
 
+}
+
+export function persistoPartida(respuestaAzul, respuestaRojo) {
+    if (!Partida)
+        throw new Error('El modelo no se ha inicializado. Llama a inicioConexionDB primero.');
+    else {
+        const nuevaPartida = new Partida({
+            codigoAzul: respuestaAzul.codigoAzul,
+            codigoRojo: respuestaRojo.codigoRojo,
+            tiempoPartida: respuestaRojo.tiempoPartida,
+            bismarck: {
+                x: respuestaRojo.bismarck.x,
+                y: respuestaRojo.bismarck.y,
+                vida: respuestaRojo.bismarck.vida
+            },
+
+            arkRoyal: {
+                x: respuestaAzul.arkRoyal.x,
+                y: respuestaAzul.arkRoyal.y,
+                avionesRestantes: respuestaAzul.arkRoyal.avionesRestantes,
+                avionActual: respuestaAzul.arkRoyal.avionActual
+            },
+            francia: {
+                x: respuestaRojo.francia.x,
+                y: respuestaRojo.francia.y
+            }
+
+
+        });
+
+        nuevaPartida.save()
+            .then((res) => console.log(`Partida guardada`))
+            .catch((err) => console.log(`Error al guardar la partida::: ${err}`));
+    }
 }

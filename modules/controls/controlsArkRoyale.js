@@ -1,9 +1,10 @@
 //ARCHIVO PARA CREACION DE ARK ROYALE Y SUS CONTROLES
 export function creacionArkRoyale(game, posX, posY, settings) {
-    let arkRoyal = game.matter.add.sprite(posX , posY , 'portaAviones')
+    let arkRoyal = game.matter.add.sprite(posX, posY, 'portaAviones')
     arkRoyal.setScale(0.15).setOrigin(0.5, 0.5);
     arkRoyal.avionesRestantes = 10;
     arkRoyal.velocity = settings.arkRoyalVelocity;
+    arkRoyal.label = 'arkRoyal'
     return arkRoyal
 }
 
@@ -20,7 +21,7 @@ export function checkControlsArkRoyale({ ArkRoyale, keys }) {
 
     if (Math.abs(deltaAngle) <= maxRotationDelta) {
         let newAngle = Phaser.Math.Angle.RotateTo(currentAngle, targetAngle, rotationSpeed);
-        ArkRoyale.angle = newAngle+90;
+        ArkRoyale.angle = newAngle + 90;
     }
 
     let speedX = ArkRoyale.body.velocity.x;
@@ -30,7 +31,7 @@ export function checkControlsArkRoyale({ ArkRoyale, keys }) {
         if (ArkRoyale.body.velocity.y > 0) {
             speedY -= 0.01;
         } else {
-            if ((Math.abs(speedY)) < topeVelocidad){
+            if ((Math.abs(speedY)) < topeVelocidad) {
                 speedY -= acceleration;
             }
         }
@@ -38,26 +39,26 @@ export function checkControlsArkRoyale({ ArkRoyale, keys }) {
         if (ArkRoyale.body.velocity.y < 0) {
             speedY += 0.01;
         } else {
-            if ((Math.abs(speedY)) < topeVelocidad){
+            if ((Math.abs(speedY)) < topeVelocidad) {
                 speedY += acceleration;
-            } 
+            }
         }
     }
     if (keys.LEFT.isDown) {
         if (ArkRoyale.body.velocity.x > 0) {
             speedX -= 0.01;
         } else {
-            if ((Math.abs(speedX)) < topeVelocidad){
+            if ((Math.abs(speedX)) < topeVelocidad) {
                 speedX -= acceleration;
-            } 
+            }
         }
     } else if (keys.RIGHT.isDown) {
         if (ArkRoyale.body.velocity.x < 0) {
             speedX += 0.01;
         } else {
-            if ((Math.abs(speedX)) < topeVelocidad){
+            if ((Math.abs(speedX)) < topeVelocidad) {
                 speedX += acceleration;
-            } 
+            }
         }
     }
 

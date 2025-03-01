@@ -64,7 +64,11 @@ export function checkControlsBismarck({ bismarck, keys }) {
             else
                 bismarck.angle += 1;
             bismarck.setVelocityY(speed);
-        } else if (keys.LEFT.isDown) {
+        } else {
+            bismarck.setVelocityY(0);
+        }
+
+        if (keys.LEFT.isDown) {
 
             if (bismarck.angle > -90)
                 bismarck.angle -= 1;
@@ -76,7 +80,7 @@ export function checkControlsBismarck({ bismarck, keys }) {
 
             bismarck.setVelocityX(speed);
         } else {
-            //bismarck.setVelocityX(0);
+            bismarck.setVelocityX(0);
         }
     }
 }

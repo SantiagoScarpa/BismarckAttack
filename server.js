@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
 import settings from './settings.json' with { type: 'json' };
-import { inicioConexionDB } from './modules/persistencia/creoPersistencia.js';
+import { inicioConexionDB, persistoPartida } from './modules/persistencia/creoPersistencia.js';
 import { expongoWsSettings } from './modules/persistencia/serviciosSettings.js';
 const app = express();
 const server = createServer(app);
@@ -21,6 +21,10 @@ expongoWsSettings(app)
 
 const players = {}; // Guardar jugadores activos
 let franciaPosition = null; // ✅ Guardamos la posición de Francia
+let respuestaAzul = null;
+let respuestaRojo = null;
+let obtubeDatosRojo = false
+let obtubeDatosAzul = false
 
 io.on('connection', (socket) => {
     socket.on('newPlayer', (player) => {
@@ -78,6 +82,45 @@ io.on('connection', (socket) => {
         console.log(`Jugadores restantes: ${Object.keys(players).length}`);
         io.emit('playerCount', Object.keys(players).length);
     });
+
+    socket.on('tiempoPartida', () => {
+        console.log(`Partida terminada por tiempo`);
+        io.emit('finalizacionPartida', 'blue');
+    });
+
+    socket.on('pidoGuardado', () => {
+        console.log('PIDO GUARDADO ')
+        io.emit('pidoRojo')
+        io.emit('pidoAzul')
+    })
+
+    socket.on('saleDePartida', () => {
+        io.emit('finalizacionPartida', 'none');
+    })
+    socket.on('ganaBismarck', () => {
+        io.emit('finalizacionPartida', 'red');
+    })
+
+    socket.on('respuestaRojo', (respuesta) => {
+        respuestaRojo = respuesta
+        obtubeDatosRojo = true;
+        if (obtubeDatosAzul) {
+            obtubeDatosRojo = false;
+            obtubeDatosAzul = false;
+            persistoPartida(respuestaAzul, respuestaRojo)
+        }
+    })
+    socket.on('respuestaAzul', (respuesta) => {
+        respuestaAzul = respuesta
+        obtubeDatosAzul = true
+        if (obtubeDatosRojo) {
+            obtubeDatosRojo = false;
+            obtubeDatosAzul = false;
+            persistoPartida(respuestaAzul, respuestaRojo)
+        }
+
+    })
+
 });
 
 

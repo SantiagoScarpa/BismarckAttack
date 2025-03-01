@@ -1,6 +1,6 @@
 import { loadAudios, playAudios } from "../audios.js";
 import settings from './../../settings.json' with {type: 'json'}
-import { cambiarBismarckVelocidad, bajarVolumenMenu, subirVolumenMenu, obtenerVolumenMenu, obtenerBismarckVelocidad } from "../persistencia/consumoServiciosSettings.js";
+import { cambiarBismarckVelocidad, bajarVolumenMenu, subirVolumenMenu, obtenerVolumenMenu, obtenerBismarckVelocidad, cambiarDuracionPartida, obtenerDuracionPartida } from "../persistencia/consumoServiciosSettings.js";
 
 export class settingsScene extends Phaser.Scene {
     constructor() {
@@ -155,5 +155,60 @@ function agregarVelBismarck(game) {
 }
 
 function agregarTiempoPartida(game) {
+    let durPartida = sessionStorage.getItem('duracionPartida')
+    game.add.text(game.width / 3, game.height / 4 * 1.5, 'Duracion Partida:',
+        {
+            fontFamily: 'Rockwell',
+            fontSize: 32,
+            color: '#e1f4b1'
+        })
+        .setOrigin(0.5, 0.5)
 
+    let bisNum = game.add.sprite(game.width / 3 * 1.5, game.height / 4 * 1.5, 'numeros')
+        .setScale(0.25)
+        .setFrame(durPartida)
+        .setOrigin(0.5, 0.5)
+
+    let btnBajoVol = game.add.sprite(game.width / 3 * 1.5 - 60, game.height / 4 * 1.5, 'flechaIzq')
+        .setScale(0.5)
+        .setInteractive()
+    let btnSuboVol = game.add.sprite(game.width / 3 * 1.5 + 60, game.height / 4 * 1.5, 'flechaDer')
+        .setScale(0.5)
+        .setInteractive()
+
+    btnBajoVol.on('pointerdown', () => {
+
+        if (durPartida > 0) {
+            durPartida--;
+            cambiarDuracionPartida(false)
+            if (durPartida < 1)
+                btnBajoVol.setTint(0x808080);
+            if (durPartida < 9)
+                btnSuboVol.clearTint()
+            bisNum.setFrame(durPartida)
+
+        }
+        else {
+            btnBajoVol.setTint(0x808080);
+        }
+    });
+
+    btnSuboVol.on('pointerdown', () => {
+        if (durPartida < 9) {
+            cambiarDuracionPartida(true)
+            let v = obtenerDuracionPartida()
+            durPartida++;
+            if (durPartida > 8)
+                btnSuboVol.setTint(0x808080);
+
+            if (durPartida > 0) {
+                btnBajoVol.clearTint()
+            }
+            bisNum.setFrame(durPartida)
+        } else {
+
+            btnSuboVol.setTint(0x808080);
+        }
+
+    });
 }

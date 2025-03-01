@@ -1,8 +1,8 @@
 import { playAudios } from "../audios.js";
 
-export class ganaBismarck extends Phaser.Scene {
+export class ganaArkRoyal extends Phaser.Scene {
     constructor() {
-        super("ganaBismarck")
+        super("ganaArkRoyal")
     }
     preload() { }
 
@@ -11,9 +11,9 @@ export class ganaBismarck extends Phaser.Scene {
         const width = this.game.config.width;
         const height = this.game.config.height;
 
-        this.add.image(width / 2, height / 2, 'bismarckGana')
-            .setScale(0.5)
-        this.add.text(width / 2, 50, 'EL EQUIPO ROJO GANA LA PARTIDA!',
+        this.add.image(width / 2, height / 2, 'arkRoyalGana')
+            .setScale(0.75)
+        this.add.text(width / 2, 50, 'EL EQUIPO AZUL GANA LA PARTIDA!',
             {
                 fontFamily: 'Rockwell',
                 fontSize: 64,
@@ -21,6 +21,7 @@ export class ganaBismarck extends Phaser.Scene {
             }
         )
             .setOrigin(0.5, 0.5)
+
 
         let returnBtn = this.add.sprite(50, 50, 'returnBtn')
             .setOrigin(0.5, 0.5)
