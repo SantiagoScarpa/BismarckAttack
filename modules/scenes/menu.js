@@ -88,7 +88,6 @@ export class menuScene extends Phaser.Scene {
             color: '#ffffff'
         }).setOrigin(0.5).setDepth(11);
 
-
         const playersData = await this.getPlayers();
         console.log("Información de jugadores:", playersData);
 
@@ -207,9 +206,10 @@ function showReanudarPartida(game) {
         color: '#ffffff'
     }).setOrigin(0.5).setDepth(11);
 
-
     let txtCodigo = game.add.text(width / 2, height / 2 - 10, ' ',
         { font: '32px Rockwell', fill: '#4d79ff' }).setDepth(11).setOrigin(0.5);
+
+    let inputRectangle = game.add.rectangle(width / 2, height / 2 - 10, 300, 32, 0xFFFFFF, 0.8).setDepth(10);
 
     game.input.keyboard.on('keydown', event => {
         if (event.keyCode === 8 && txtCodigo.text.length > 0) {
@@ -229,11 +229,11 @@ function showReanudarPartida(game) {
     }).setOrigin(0.5).setInteractive().setDepth(11);
 
     retomarBtn.on('pointerdown', () => {
-        try {
-            retomarPartida(txtCodigo.text.trim())
-        } catch (e) {
-            console.log(`e==${e}`)
-        }
+
+        retomarPartida(txtCodigo.text.trim().toUpperCase())
+            .then((partida) => console.dir(partida))
+            .catch((e) => alert(e))
+
     });
 
 
@@ -256,6 +256,7 @@ function showReanudarPartida(game) {
 
     group.add(modalBackground)
     group.add(text)
+    group.add(inputRectangle)
     group.add(cancelarBtn)
     group.add(retomarBtn)
 

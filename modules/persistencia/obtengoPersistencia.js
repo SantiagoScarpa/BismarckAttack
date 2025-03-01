@@ -100,17 +100,15 @@ export function armoRespuestaAzul(game) {
 }
 
 export async function retomarPartida(codigo) {
-
     try {
-        const response = await fetch(`/retomarPartida?codigo=${codigo}`);
-
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
-        }
+        const response = await fetch(`/retomarPartida/${codigo}`);
         const datos = await response.json();
+        if (!response.ok) {
+            throw new Error(`${response.status} : ${datos.mensaje}`);
+        }
+
         return datos;
     } catch (err) {
-        //console.error('Error:', err);
         throw err;
 
     }

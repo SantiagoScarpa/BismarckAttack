@@ -42,9 +42,8 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
 
     Partida = mongoose.model('Partidas', partidaSchema);
 
-    app.get('/retomarPartida', (req, res) => {
-        let { codigo } = req.query;
-
+    app.get('/retomarPartida/:codigo', (req, res) => {
+        let { codigo } = req.params;
 
         Partida.findOne({
             $or: [
@@ -56,7 +55,6 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
                     return res.status(404).json({ mensaje: 'Partida no encontrada' });
                 }
                 res.json(par)
-
             })
 
             .catch(err => {
