@@ -99,20 +99,19 @@ export function armoRespuestaAzul(game) {
     return respuesta
 }
 
-export function retomarPartida(codigo) {
-    fetch('/guardarPartida', {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-    })
-        .then(response => response.json()) // Esperar respuesta en JSON
-        .then(data => {
-            console.log(data.mensaje); // Mostrar mensaje del servidor
-            // (Opcional) Mostrar mensaje en el juego
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // (Opcional) Mostrar mensaje de error en el juego
-        });
+export async function retomarPartida(codigo) {
+
+    try {
+        const response = await fetch(`/retomarPartida?codigo=${codigo}`);
+
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+        const datos = await response.json();
+        return datos;
+    } catch (err) {
+        //console.error('Error:', err);
+        throw err;
+
+    }
 }

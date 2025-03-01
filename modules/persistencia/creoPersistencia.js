@@ -43,17 +43,13 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
     Partida = mongoose.model('Partidas', partidaSchema);
 
     app.get('/retomarPartida', (req, res) => {
-        let { codigoAzul, codigoRojo } = req.query;
+        let { codigo } = req.query;
 
-        if (codigoAzul)
-            codigoRojo = 'N/A'
-        else
-            codigoAzul = 'N/A'
 
         Partida.findOne({
             $or: [
-                { codigoAzul: codigoAzul },
-                { codigoRojo: codigoRojo }]
+                { codigoAzul: codigo },
+                { codigoRojo: codigo }]
         })
             .then((par) => {
                 if (!par) {

@@ -1,5 +1,6 @@
 import { loadAudios, playAudios } from "../audios.js";
 import { obtenerVolumenMenu, obtenerBismarckVelocidad, obtenerDuracionPartida } from "../persistencia/consumoServiciosSettings.js";
+import { retomarPartida } from "../persistencia/obtengoPersistencia.js";
 
 const menuOptions = { 'INICIO': 0, 'CONFIG': 1, 'PUREBA': 3 };
 let actualMenuSel = menuOptions.PUREBA;
@@ -228,8 +229,11 @@ function showReanudarPartida(game) {
     }).setOrigin(0.5).setInteractive().setDepth(11);
 
     retomarBtn.on('pointerdown', () => {
-        //busco
-
+        try {
+            retomarPartida(txtCodigo.text.trim())
+        } catch (e) {
+            console.log(`e==${e}`)
+        }
     });
 
 
@@ -239,12 +243,12 @@ function showReanudarPartida(game) {
         color: '#ff4d4d',
         backgroundColor: '#333',
         padding: { left: 10, right: 10, top: 5, bottom: 5 }
-        // txtCodigo.removeListener('keydown')
     }).setOrigin(0.5).setInteractive().setDepth(11);
 
     cancelarBtn.on('pointerdown', () => {
         txtCodigo.setText('');
 
+        game.input.keyboard.removeListener('keydown')
         group.destroy(true)
 
         agregoFuncionalidadBotones(game)
