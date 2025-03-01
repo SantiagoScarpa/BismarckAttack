@@ -8,7 +8,7 @@
 Antes de ejecutar el proyecto, asegúrate de tener instalado:
 - [Node.js](https://nodejs.org/) (versión 20 o superior)
 - Un navegador web moderno (Google Chrome, Firefox, Edge)
-- Mongo DB instalada version 2.3 o superior
+- [Mongo DB](https://www.mongodb.com/try/download/community) instalada version 2.3 o superior
 
 ### **2️⃣ Instalación**
 1. **Clona este repositorio** en tu máquina local:
