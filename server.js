@@ -90,8 +90,12 @@ io.on('connection', (socket) => {
 
     socket.on('newPlane', (player) => {
         players[socket.id] = player;
-        console.log(`Avion llego al server y es enviado a los jugadores`);
         io.emit('newPlane', player);
+    });
+
+    socket.on('deletPlane', (player) => {
+        //players[socket.id] = player;
+        io.emit('deletPlane', player);
     });
 });
 

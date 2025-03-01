@@ -186,21 +186,27 @@ export class gameScene extends Phaser.Scene {
                         this.onBulletHit(arkroyal, bullet);
                     }
                 }
-                // Si coliciona el avion con el ArkRoyal siempre y cuando el avion este en el aire
-                if (this.avionDesplegado) {
-                    if (
-                        ((bodyA === this.playerShip.body && bodyB === this.portaAviones.body) ||
-                            (bodyA === this.portaAviones.body && bodyB === this.playerShip.body))
+                // Bloque para  la colicion entr el arkRoyal y el avion
+                else if (
+                        (bodyA.label === 'avion' && bodyB.label === 'arkroyal') ||
+                        (bodyA.label === 'arkroyal' && bodyB.label === 'avion')
                     ) {
-                        this.playerShip.destroy();
-                        this.playerShip = this.portaAviones;
-                        this.portaAvionesIcon.destroy();
-                        this.avionDesplegado = false;
-                        this.playerShip.avionesRestantes += 1;
-                        this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
-                        this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
+                        if (this.team === 'blue') {
+                            console.log('DESTROY AVION EQUIPO BLUE');
+                            this.playerShip.destroy();
+                            this.playerShip = this.portaAviones;
+                            this.portaAvionesIcon.destroy();
+                            this.avionDesplegado = false;
+                            this.playerShip.avionesRestantes += 1;
+                            this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
+                            this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
+                        }
+                        this.socket.emit('deletPlane', {
+                            team: this.team,
+                        });
+                        
                     }
-                }
+
             });
         });
 
@@ -367,6 +373,20 @@ export class gameScene extends Phaser.Scene {
             }
         });
 
+        this.socket.on('deletPlane', (player) => {
+            console.log(`Avion fuera de escena: ${player.team}`);
+            if (this.team === 'red') {
+                console.log('DESTROY AVION EQUIPO RED ORDEN DEL SERVIDOR');
+                let indice = this.objects.findIndex(obj => obj.body && obj.body.label === 'avion');
+                if (indice !== -1) {
+                    let avionEncontrado = this.objects[indice];
+                    this.objects.splice(indice, 1);
+                    avionEncontrado.destroy();
+                }
+                this.avion.destroy();
+            }
+        });
+
         this.socket.on('updatePlayers', (players) => {
             Object.keys(players).forEach((id) => {
               if (id !== this.socket.id) {
@@ -380,14 +400,10 @@ export class gameScene extends Phaser.Scene {
                 } else {
                     // Actualizar posición y ángulo
                     if (players[id].label === 'avion') {
-                        // Ejemplo: Buscar el primer 'arkroyal' en el arreglo
-                        let arkroyalEncontrado = this.objects.find(obj => obj.body.label === 'avion');
-                        if (arkroyalEncontrado) {
-                            arkroyalEncontrado.setPosition(players[id].x, players[id].y);
-                            arkroyalEncontrado.setAngle(players[id].angle);
+                            this.avion.setPosition(players[id].x, players[id].y);
+                            this.avion.setAngle(players[id].angle);
                             this.players[id].setPosition(players[id].Px, players[id].Py);
                             this.players[id].setAngle(players[id].Pangle);
-                        }
                     } else {
                         this.players[id].setPosition(players[id].x, players[id].y);
                         this.players[id].setAngle(players[id].angle); 
@@ -502,6 +518,7 @@ export class gameScene extends Phaser.Scene {
                         this.portaAviones = this.playerShip;
                         this.portaAvionesIcon = this.add.circle(this.portaAviones.x, this.portaAviones.y, 60, 0x0000ff, 1).setOrigin(0.5, 0.5);
                         this.cameras.main.ignore([this.portaAvionesIcon]);
+                        this.portaAviones.setVelocity(0);
                         if (this.playerShip.angle > -10 && this.playerShip.angle < 10) {
                             this.playerShip = creacionAvion(this, (this.playerShip.x + 50), this.playerShip.y, settings);
                         } else {
@@ -666,6 +683,7 @@ export class gameScene extends Phaser.Scene {
         avion.setScale(0.15).setOrigin(0.5, 0.5);
         avion.velocity = settings.avionVelocity;
         avion.body.label = 'avion'
+        this.avion = avion
 
         //this.players[playerId] = avion;
         this.objects.push(avion);
