@@ -5,6 +5,7 @@ import { retomarPartida } from "../persistencia/obtengoPersistencia.js";
 const menuOptions = { 'INICIO': 0, 'CONFIG': 1, 'PUREBA': 3 };
 let actualMenuSel = menuOptions.PUREBA;
 
+
 export class menuScene extends Phaser.Scene {
     constructor() {
         super("menuScene");
@@ -81,6 +82,7 @@ export class menuScene extends Phaser.Scene {
         const width = this.game.config.width;
         const height = this.game.config.height;
 
+        // Modal de selección
         const modalBackground = this.add.rectangle(width / 2, height / 2, 400, 200, 0x000000, 0.8).setDepth(10);
         this.add.text(width / 2, height / 2 - 50, 'Selecciona tu bando', {
             fontFamily: 'Rockwell',
@@ -93,6 +95,8 @@ export class menuScene extends Phaser.Scene {
 
         const blueAgarrado = Object.values(playersData).some(p => p.team === 'blue');
         const redAgarrado = Object.values(playersData).some(p => p.team === 'red');
+
+        // Botón para bando azul
 
         // Botón para bando azul
         if (!blueAgarrado) {
@@ -131,6 +135,7 @@ export class menuScene extends Phaser.Scene {
                 this.waitForOtherPlayer();
             });
         }
+
     }
 
     showWaitingModal() {

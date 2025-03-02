@@ -32,6 +32,7 @@ export class gameScene extends Phaser.Scene {
             this.fireSprite.setPosition(this.playerShip.x, this.playerShip.y);
         }
     }
+
     shootBullet() {
         //if (!this.playerShip) return;
         if (this.playerShip.label === 'bismarck') {
@@ -67,6 +68,42 @@ export class gameScene extends Phaser.Scene {
             this.time.delayedCall(2000, () => bullet?.destroy());
         }
     }
+
+    //Crea el misil en cada cliente recibido por el sv
+    createBulletFromData(data) {
+        // Crear el misil usando la posición y los datos enviados
+        let bullet = this.matter.add.sprite(data.x, data.y - 40, 'bismarckMisil');
+        bullet.setScale(0.3);
+        bullet.setCircle(3);
+
+        // Calcular la dirección utilizando las coordenadas del puntero enviadas
+        let dx = data.pointerX - data.x;
+        let dy = data.pointerY - data.y + 40;
+        let angle = Math.atan2(dy, dx);
+
+        // Definir la velocidad del misil
+        let bulletSpeed = 10;
+        let vx = bulletSpeed * Math.cos(angle);
+        let vy = bulletSpeed * Math.sin(angle);
+        bullet.setVelocity(vx, vy);
+
+        bullet.setRotation(angle + Math.PI / 2);
+        bullet.body.label = 'bullet';
+
+        // Crear la cola del misil
+        let bulletTail = this.add.image(data.x, data.y - 56, 'bismarckMisilCola');
+        bulletTail.setScale(0.5);
+
+        playAudios('bismarckShoot', this, settings.volumeBismarckShoot);
+        setTimeout(() => {
+            bulletTail.destroy();
+        }, 100);
+
+        bullet.setSensor(true);
+        this.bullets.push(bullet);
+        this.time.delayedCall(2000, () => bullet?.destroy());
+    }
+
 
     //Crea el misil en cada cliente recibido por el sv
     createBulletFromData(data) {
@@ -518,11 +555,9 @@ export class gameScene extends Phaser.Scene {
                 }
             }
         }
-
         if (Phaser.Input.Keyboard.JustDown(this.keys.P)) {
             this.socket.emit('vistaLateral')
         }
-
         const tailOffset = { x: 0, y: 40 };
         //if (!this.playerShip) return;    
         if (this.playerShip.label === 'bismarck') {
@@ -571,6 +606,7 @@ export class gameScene extends Phaser.Scene {
             });
         }
 
+        //if (!this.playerShip) return;
         if (this.playerShip.label === 'bismarck') {
             this.crosshair.x = this.input.activePointer.worldX;
             this.crosshair.y = this.input.activePointer.worldY;
