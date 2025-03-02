@@ -181,7 +181,7 @@ export class gameScene extends Phaser.Scene {
         this.socket.emit("empiezaPartida")
 
         // Configurar controles
-        this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT,W,A,S,D,SPACE');
+        this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT,W,A,S,D,SPACE,P');
 
         // Manejar colisiones del mundo
         this.matter.world.on('collisionstart', (event) => {
@@ -476,6 +476,11 @@ export class gameScene extends Phaser.Scene {
                 this.scene.start('menuScene');
             }
         })
+
+        this.socket.on('muestroVistaLateral', () => {
+            this.scene.start('sceneVistaLateral')
+            // console.log('FUNCIONA')
+        })
     }
 
     update() {
@@ -512,6 +517,10 @@ export class gameScene extends Phaser.Scene {
                     this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
                 }
             }
+        }
+
+        if (Phaser.Input.Keyboard.JustDown(this.keys.P)) {
+            this.socket.emit('vistaLateral')
         }
 
         const tailOffset = { x: 0, y: 40 };

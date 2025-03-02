@@ -4,6 +4,8 @@ import { menuScene } from './modules/scenes/menu.js';
 import { settingsScene } from './modules/scenes/settings.js';
 import { loaderScene } from './modules/scenes/loader.js'
 import { ganaArkRoyal } from './modules/scenes/ganaArkRoyal.js';
+import { sceneVistaLateral } from './modules/scenes/sceneVistaLateral.js';
+
 const config = {
     type: Phaser.AUTO,
     width: 1600,
@@ -31,7 +33,7 @@ const config = {
             height: 900,
         }
     },
-    scene: [loaderScene, menuScene, gameScene, ganaBismarck, settingsScene, ganaArkRoyal]
+    scene: [loaderScene, menuScene, gameScene, ganaBismarck, settingsScene, ganaArkRoyal, sceneVistaLateral]
 };
 
 const game = new Phaser.Game(config);

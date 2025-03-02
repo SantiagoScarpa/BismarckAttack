@@ -133,6 +133,10 @@ io.on('connection', (socket) => {
 
     })
 
+    socket.on('vistaLateral', () => {
+        io.emit('muestroVistaLateral')
+    })
+
 });
 
 
