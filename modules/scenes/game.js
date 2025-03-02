@@ -102,7 +102,7 @@ export class gameScene extends Phaser.Scene {
         this.time.delayedCall(2000, () => bullet?.destroy());
     }
 
-    onBulletHit(arkroyal, bullet) {     
+    onBulletHit(Nave, bullet) {     
         const bulletX = bullet.x;
         const bulletY = bullet.y;
         console.log("BulletX y BulletY:", bulletX, bulletY)
@@ -113,29 +113,29 @@ export class gameScene extends Phaser.Scene {
         bullet.destroy();
         playAudios('explotion', this, settings.volumeBismarckShoot);
     
-        arkroyal.vida--;
-        console.log("Vida actual de ArkRoyal:", arkroyal.vida);
-        console.log("ArkRoyal is on fire:", arkroyal.isOnFire);
+        Nave.vida--;
+        console.log("Vida actual de nave:", Nave.vida);
+        console.log("nave is on fire:", Nave.isOnFire);
         
-        if (arkroyal.vida === 2 && !arkroyal.isOnFire) {
+        if (Nave.vida === 2 && !Nave.isOnFire) {
             // Usamos la posición del impacto para activar el fuego
-            arkroyal.fireSprite = this.add.sprite(arkroyal.x, arkroyal.y - 20, 'fire0').setScale(0.9);
-            arkroyal.fireSprite.play('fire');
-            arkroyal.isOnFire = true
-            arkroyal.fireSprite.setDepth(1);
+            Nave.fireSprite = this.add.sprite(Nave.x, Nave.y - 20, 'fire0').setScale(0.9);
+            Nave.fireSprite.play('fire');
+            Nave.isOnFire = true
+            Nave.fireSprite.setDepth(1);
             //this.activateFire(bullet.x, bullet.y, 0.9);
         }
-        else if (arkroyal.vida === 1 && arkroyal.fireSprite) {
-            arkroyal.fireSprite.setScale(1.5);
+        else if (Nave.vida === 1 && Nave.fireSprite) {
+            Nave.fireSprite.setScale(1.5);
         }
-        else if (arkroyal.vida === 0) {
-            let explotion_ark = this.add.sprite(arkroyal.x, arkroyal.y - 40, 'explotion_ark1').setScale(1);
+        else if (Nave.vida === 0) {
+            let explotion_ark = this.add.sprite(Nave.x, Nave.y - 40, 'explotion_ark1').setScale(1);
             explotion_ark.play('explode_arkRoyal');
             bullet.destroy()
             
             explotion_ark.once('animationcomplete', () => {
-                if (arkroyal && arkroyal.fireSprite) { //Check if they exist before destroying.
-                    arkroyal.fireSprite.destroy();
+                if (Nave && Nave.fireSprite) { 
+                    Nave.fireSprite.destroy();
                 }
             });
         }
@@ -164,7 +164,7 @@ export class gameScene extends Phaser.Scene {
             event.pairs.forEach(pair => {
                 const { bodyA, bodyB } = pair;
                 console.log('Colisión:', bodyA.label, bodyB.label);
-        
+                
                 // Caso: Bismarck colisiona con Francia
                 if (
                     this.playerShip.body.label === 'bismarck' &&
@@ -175,7 +175,7 @@ export class gameScene extends Phaser.Scene {
                 ) {
                     this.scene.start('ganaBismarck');
                 }
-                // Nuevo bloque para detectar colisión entre cualquier bala y un ArkRoyal
+                // Colisión entre bala y ArkRoyal
                 else if (
                     (bodyA.label === 'bullet' && bodyB.label === 'arkroyal') ||
                     (bodyA.label === 'arkroyal' && bodyB.label === 'bullet')
@@ -186,29 +186,39 @@ export class gameScene extends Phaser.Scene {
                         this.onBulletHit(arkroyal, bullet);
                     }
                 }
-                // Bloque para  la colicion entr el arkRoyal y el avion
+                // NUEVO BLOQUE: Colisión entre bala y avión
                 else if (
-                        (bodyA.label === 'avion' && bodyB.label === 'arkroyal') ||
-                        (bodyA.label === 'arkroyal' && bodyB.label === 'avion')
-                    ) {
-                        if (this.team === 'blue') {
-                            console.log('DESTROY AVION EQUIPO BLUE');
-                            this.playerShip.destroy();
-                            this.playerShip = this.portaAviones;
-                            this.portaAvionesIcon.destroy();
-                            this.avionDesplegado = false;
-                            this.playerShip.avionesRestantes += 1;
-                            this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
-                            this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
-                        }
-                        this.socket.emit('deletPlane', {
-                            team: this.team,
-                        });
-                        
+                    (bodyA.label === 'bullet' && bodyB.label === 'avion') ||
+                    (bodyA.label === 'avion' && bodyB.label === 'bullet')
+                ) {
+                    const bullet = bodyA.label === 'bullet' ? bodyA.gameObject : bodyB.gameObject;
+                    const avion = bodyA.label === 'avion' ? bodyA.gameObject : bodyB.gameObject;
+                    if (bullet && avion) {  
+                        this.onBulletHit(avion, bullet);
                     }
-
+                }
+                // Bloque para la colisión entre el ArkRoyal y el avión
+                else if (
+                    (bodyA.label === 'avion' && bodyB.label === 'arkroyal') ||
+                    (bodyA.label === 'arkroyal' && bodyB.label === 'avion')
+                ) {
+                    if (this.team === 'blue') {
+                        console.log('DESTROY AVION EQUIPO BLUE');
+                        this.playerShip.destroy();
+                        this.playerShip = this.portaAviones;
+                        this.portaAvionesIcon.destroy();
+                        this.avionDesplegado = false;
+                        this.playerShip.avionesRestantes += 1;
+                        this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
+                        this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
+                    }
+                    this.socket.emit('deletPlane', {
+                        team: this.team,
+                    });
+                }
             });
         });
+        
 
         const graphics = this.make.graphics();
         graphics.fillStyle(0x00aaff, 1);
