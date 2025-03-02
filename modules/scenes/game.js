@@ -10,6 +10,7 @@ import { armoRespuestaRojo, armoRespuestaAzul } from '../persistencia/obtengoPer
 export class gameScene extends Phaser.Scene {
     constructor() {
         super("gameScene");
+
         this.targetOffset = { x: 0, y: -150 };
     }
 
@@ -352,8 +353,8 @@ export class gameScene extends Phaser.Scene {
         radar.setDepth(2);
 
         // Configuración de límites y cámara
-        this.matter.world.setBounds(0, 0, 1920, 2500);
-        this.cameras.main.setBounds(0, 0, 1920, 2500);
+        this.matter.world.setBounds(0, 0, 1920, 1080);
+        this.cameras.main.setBounds(0, 0, 1920, 1080);
         this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
         this.cameras.main.setZoom(2);
 

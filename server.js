@@ -45,6 +45,11 @@ io.on('connection', (socket) => {
     });
     console.log(`🎮 Jugador conectado: ${socket.id}`);
 
+    socket.on("empiezaPartida", () => {
+        // Enviar la posición de Francia al nuevo jugador
+        socket.emit('setFranciaPosition', franciaPosition)
+    })
+
     // Si `franciaPosition` no está definida, la creamos al conectar el primer jugador
     if (!franciaPosition) {
         franciaPosition = {
@@ -60,8 +65,11 @@ io.on('connection', (socket) => {
     // Enviar la cantidad de jugadores conectados a todos
     io.emit('playerCount', Object.keys(players).length);
 
-    // Enviar la posición de Francia al nuevo jugador
-    socket.emit('setFranciaPosition', franciaPosition);
+    socket.on('setPlayerTeam', (team => {
+        console.log("team", team)
+        players[socket.id].team = team;
+    }))
+
 
 
 
@@ -73,6 +81,10 @@ io.on('connection', (socket) => {
             players[socket.id].team = player.team;
         }
         io.emit('updatePlayers', players);
+    });
+
+    socket.on('shootBullet', (data) => {
+        socket.broadcast.emit('shootBullet', data);
     });
 
     socket.on('disconnect', () => {
