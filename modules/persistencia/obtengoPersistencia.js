@@ -110,6 +110,6 @@ export async function retomarPartida(codigo) {
         return datos;
     } catch (err) {
         throw err;
-
     }
 }
+

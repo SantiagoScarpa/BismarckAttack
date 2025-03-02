@@ -288,12 +288,12 @@ function showReanudarPartida(game) {
     }).setOrigin(0.5).setInteractive().setDepth(11);
 
     retomarBtn.on('pointerdown', () => {
-
-        retomarPartida(txtCodigo.text.trim().toUpperCase())
-            .then((partida) => console.dir(partida))
+        let codigo = txtCodigo.text.trim().toUpperCase()
+        retomarPartida(codigo)
+            .then((partida) => esperoJugador(this, codigo, partida))
             .catch((e) => alert(e))
 
-        esperoJugador(this, partida)
+
     });
 
 
@@ -329,6 +329,21 @@ function cargoValoresEnSession() {
     let dur = obtenerDuracionPartida()
 }
 
-function esperoJugador(game, partida) {
+function esperoJugador(game, codigo, partida) {
+    if (codigo === partida.codigoRojo) {
+        console.log("🔴 Jugador seleccionó el BANDO ROJO");
+        game.selectedTeam = 'red';
+        game.socket = io();
+        game.socket.emit('setPlayerTeam', 'red')
+        game.showWaitingModal();
+        game.waitForOtherPlayer();
+    } else if (codigo === partida.codigoAzul) {
+        console.log("🔵 Jugador seleccionó el BANDO AZUL");
+        game.selectedTeam = 'blue';
+        game.socket = io();
+        game.socket.emit('setPlayerTeam', 'blue')
+        game.showWaitingModal();
+        game.waitForOtherPlayer();
+    }
 
-}  
+}

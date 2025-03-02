@@ -1,3 +1,4 @@
+import { retomarPartida } from './persistencia/obtengoPersistencia.js';
 /*MODULO PARA GUARDAR FUNCIONES Y VALORES GLOBALES*/
 
 export function createAnimations(game) {
@@ -26,9 +27,9 @@ export function createAnimations(game) {
 
     game.anims.create({
         key: 'explode_arkRoyal',
-        frames: Array.from({ length: 12}, (_, i) => ({ key: `explotion_ark${i + 1}` })),
+        frames: Array.from({ length: 12 }, (_, i) => ({ key: `explotion_ark${i + 1}` })),
         frameRate: 24,
-        hideOnComplete: true 
+        hideOnComplete: true
     });
 
     game.anims.create({
@@ -40,15 +41,36 @@ export function createAnimations(game) {
 
 }
 
-export function generarCodigoPartida() {
+export async function generarCodigoPartida() {
     let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    const charactersLength = characters.length;
+    let ok = false;
+
     let i = 0;
-    while (i < 5) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
-        i++;
+    while (!ok) {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        const charactersLength = characters.length;
+
+        while (i < 5) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            i++;
+        }
+        //valido que no exista
+        await retomarPartida(result.trim().toUpperCase())
+            .then((partida) => { console.log('aca ') })
+            .catch(e => ok = true)
     }
-    return result;
+
+    return result
+
 }
 
+export function mostrarTextoTemporal(game, text, duration) {
+    const tempText = game.add.text(800, 240, text, {
+        fontFamily: 'Rockwell',
+        fontSize: 24,
+        color: '#ffffff'
+    }).setOrigin(0.5).setDepth(11).setScrollFactor(0).setScale(0.5);
+    game.time.delayedCall(duration, () => {
+        tempText.destroy();
+    });
+}

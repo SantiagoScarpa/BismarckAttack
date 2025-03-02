@@ -25,7 +25,7 @@ let respuestaAzul = null;
 let respuestaRojo = null;
 let obtubeDatosRojo = false
 let obtubeDatosAzul = false
-
+let updateDB = false
 io.on('connection', (socket) => {
     socket.on('newPlayer', (player) => {
         // Verificar si ya existe un jugador con el mismo equipo
@@ -48,6 +48,11 @@ io.on('connection', (socket) => {
     socket.on("empiezaPartida", () => {
         // Enviar la posición de Francia al nuevo jugador
         socket.emit('setFranciaPosition', franciaPosition)
+        updateDB = false;
+        //creo el registro de la partida en la DB y pongo que ahora solo se actualiza
+        io.emit('pidoAzul')
+        io.emit('pidoRojo')
+
     })
 
     // Si `franciaPosition` no está definida, la creamos al conectar el primer jugador
@@ -98,10 +103,12 @@ io.on('connection', (socket) => {
     socket.on('tiempoPartida', () => {
         console.log(`Partida terminada por tiempo`);
         io.emit('finalizacionPartida', 'blue');
+
     });
 
     socket.on('pidoGuardado', () => {
         console.log('PIDO GUARDADO ')
+        updateDB = true;
         io.emit('pidoRojo')
         io.emit('pidoAzul')
     })
@@ -119,7 +126,7 @@ io.on('connection', (socket) => {
         if (obtubeDatosAzul) {
             obtubeDatosRojo = false;
             obtubeDatosAzul = false;
-            persistoPartida(respuestaAzul, respuestaRojo)
+            persistoPartida(respuestaAzul, respuestaRojo, updateDB)
         }
     })
     socket.on('respuestaAzul', (respuesta) => {
@@ -128,7 +135,7 @@ io.on('connection', (socket) => {
         if (obtubeDatosRojo) {
             obtubeDatosRojo = false;
             obtubeDatosAzul = false;
-            persistoPartida(respuestaAzul, respuestaRojo)
+            persistoPartida(respuestaAzul, respuestaRojo, updateDB)
         }
 
     })

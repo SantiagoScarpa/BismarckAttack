@@ -66,10 +66,11 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
 
 }
 
-export function persistoPartida(respuestaAzul, respuestaRojo) {
+export async function persistoPartida(respuestaAzul, respuestaRojo, updateDB) {
     if (!Partida)
         throw new Error('El modelo no se ha inicializado. Llama a inicioConexionDB primero.');
     else {
+
         const nuevaPartida = new Partida({
             codigoAzul: respuestaAzul.codigoAzul,
             codigoRojo: respuestaRojo.codigoRojo,
@@ -91,11 +92,20 @@ export function persistoPartida(respuestaAzul, respuestaRojo) {
                 y: respuestaRojo.francia.y
             }
 
-
         });
 
+        if (updateDB) {
+            //borro el registro anterior, es mas facil que updetear cada campo cambiado del nuevo
+            const resultado = await Partida.deleteMany({
+                $or: [
+                    { codigoAzul: respuestaAzul.codigoAzul },
+                    { codigoRojo: respuestaRojo.codigoRojo }]
+            })
+        }
         nuevaPartida.save()
             .then((res) => console.log(`Partida guardada`))
             .catch((err) => console.log(`Error al guardar la partida::: ${err}`));
     }
 }
+
+

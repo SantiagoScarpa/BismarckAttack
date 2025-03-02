@@ -3,7 +3,7 @@ import { checkControlsBismarck, creacionBismarck } from '../controls/controlsBis
 import { playAudios } from './../audios.js';
 import { creacionArkRoyale, checkControlsArkRoyale } from '../controls/controlsArkRoyale.js';
 import { creacionAvion, checkControlsAvion } from '../controls/controlsAvion.js';
-import { createAnimations, generarCodigoPartida } from '../globals.js'
+import { createAnimations, generarCodigoPartida, mostrarTextoTemporal } from '../globals.js'
 import { armoRespuestaRojo, armoRespuestaAzul } from '../persistencia/obtengoPersistencia.js';
 
 
@@ -104,42 +104,6 @@ export class gameScene extends Phaser.Scene {
         this.time.delayedCall(2000, () => bullet?.destroy());
     }
 
-
-    //Crea el misil en cada cliente recibido por el sv
-    createBulletFromData(data) {
-        // Crear el misil usando la posición y los datos enviados
-        let bullet = this.matter.add.sprite(data.x, data.y - 40, 'bismarckMisil');
-        bullet.setScale(0.3);
-        bullet.setCircle(3);
-
-        // Calcular la dirección utilizando las coordenadas del puntero enviadas
-        let dx = data.pointerX - data.x;
-        let dy = data.pointerY - data.y + 40;
-        let angle = Math.atan2(dy, dx);
-
-        // Definir la velocidad del misil
-        let bulletSpeed = 10;
-        let vx = bulletSpeed * Math.cos(angle);
-        let vy = bulletSpeed * Math.sin(angle);
-        bullet.setVelocity(vx, vy);
-
-        bullet.setRotation(angle + Math.PI / 2);
-        bullet.body.label = 'bullet';
-
-        // Crear la cola del misil
-        let bulletTail = this.add.image(data.x, data.y - 56, 'bismarckMisilCola');
-        bulletTail.setScale(0.5);
-
-        playAudios('bismarckShoot', this, settings.volumeBismarckShoot);
-        setTimeout(() => {
-            bulletTail.destroy();
-        }, 100);
-
-        bullet.setSensor(true);
-        this.bullets.push(bullet);
-        this.time.delayedCall(2000, () => bullet?.destroy());
-    }
-
     onBulletHit(arkroyal, bullet) {
         const bulletX = bullet.x;
         const bulletY = bullet.y;
@@ -181,7 +145,7 @@ export class gameScene extends Phaser.Scene {
 
     preload() { }
 
-    create() {
+    async create() {
         let durPartida = sessionStorage.getItem('duracionPartida')
         if (!durPartida)
             durPartida = 2
@@ -191,7 +155,8 @@ export class gameScene extends Phaser.Scene {
             this.socket.emit('tiempoPartida')
         }, [], this);
 
-        this.codigoPartida = generarCodigoPartida()
+        this.codigoPartida = await generarCodigoPartida()
+        console.log('cod=' + this.codigoPartida)
         this.add.text(490, 240, `Codigo de partida: ${this.codigoPartida}`, {
             fontFamily: 'Rockwell',
             fontSize: 24,
@@ -314,11 +279,13 @@ export class gameScene extends Phaser.Scene {
                 let respuesta = armoRespuestaRojo(this)
                 console.log(respuesta.codigoRojo)
                 this.socket.emit('respuestaRojo', respuesta)
+                mostrarTextoTemporal(this, 'Partida guardada', 3000)
             })
         } else (
             this.socket.on('pidoAzul', () => {
                 let respuesta = armoRespuestaAzul(this)
                 this.socket.emit('respuestaAzul', respuesta)
+                mostrarTextoTemporal(this, 'Partida guardada', 3000)
             })
         )
 
@@ -495,7 +462,7 @@ export class gameScene extends Phaser.Scene {
             });
         }
 
-        this.input.setDefaultCursor('none');
+        //this.input.setDefaultCursor('none');
 
         // Crear las animaciones definidas globalmente        
         createAnimations(this);
