@@ -56,8 +56,17 @@ export async function generarCodigoPartida() {
         }
         //valido que no exista
         await retomarPartida(result.trim().toUpperCase())
-            .then((partida) => { console.log('aca ') })
-            .catch(e => ok = true)
+            .then((partida) => { })
+            .catch(e => {
+                const status = parseInt(e.message.split(':')[0].trim());
+
+                if (status == 500) {
+                    throw Error(`Error en la conexion a la base de datos, contacte al administrador`)
+                }
+                else {
+                    ok = true
+                }
+            })
     }
 
     return result

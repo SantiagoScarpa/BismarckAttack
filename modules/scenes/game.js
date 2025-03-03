@@ -17,6 +17,7 @@ export class gameScene extends Phaser.Scene {
     init(data) {
         this.team = data.team;
         this.socket = data.socket;
+        this.reanudo = data.reanudo;
     }
 
     activateFire(x, y, scale) {
@@ -146,6 +147,7 @@ export class gameScene extends Phaser.Scene {
     preload() { }
 
     async create() {
+        console.log(`reanudo partida=${this.reanudo}`)
         let durPartida = sessionStorage.getItem('duracionPartida')
         if (!durPartida)
             durPartida = 2
@@ -155,8 +157,10 @@ export class gameScene extends Phaser.Scene {
             this.socket.emit('tiempoPartida')
         }, [], this);
 
-        this.codigoPartida = await generarCodigoPartida()
-        console.log('cod=' + this.codigoPartida)
+        try { this.codigoPartida = await generarCodigoPartida() }
+        catch (e) {
+            alert(e)
+        }
         this.add.text(490, 240, `Codigo de partida: ${this.codigoPartida}`, {
             fontFamily: 'Rockwell',
             fontSize: 24,

@@ -59,9 +59,8 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
 
             .catch(err => {
                 console.log(`Error al obtener la partida::: ${err}`)
-                return res.status(500).json({ mensaje: `Error al obtener la partida ${err}` });
+                return res.status(500).json({ status: 500, mensaje: `Error al obtener la partida ${err}` });
             })
-
     })
 
 }

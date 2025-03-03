@@ -179,14 +179,14 @@ export class menuScene extends Phaser.Scene {
             if (playersCount === 2) {
                 clearInterval(intervalId);
                 this.hideWaitingModal();
-                this.startGame(this.selectedTeam, this.socket);
+                this.startGame(this.selectedTeam, this.socket, this.reanudo);
             }
         }, 1000);
     }
 
 
-    startGame(team, socket) {
-        this.scene.start('gameScene', { team, socket });
+    startGame(team, socket, reanudo) {
+        this.scene.start('gameScene', { team, socket, reanudo });
     }
 }
 
@@ -202,6 +202,7 @@ async function agregoFuncionalidadBotones(game) {
 
     playBtn.on('pointerdown', async () => {
         const cantidadJugadores = await game.getPlayersCount();
+        game.reanudo = false
         playBtn.setFrame(2);
         playAudios('menuSelection', game, game.volumeMenu);
         if (cantidadJugadores < 2) {
@@ -237,6 +238,7 @@ async function agregoFuncionalidadBotones(game) {
 
     replayBtn.on('pointerdown', () => {
         replayBtn.setFrame(0)
+        game.reanudo = true
         playAudios('menuSelection', game, game.volumeMenu)
 
         playBtn.setInteractive(false);
@@ -290,7 +292,7 @@ function showReanudarPartida(game) {
     retomarBtn.on('pointerdown', () => {
         let codigo = txtCodigo.text.trim().toUpperCase()
         retomarPartida(codigo)
-            .then((partida) => esperoJugador(this, codigo, partida))
+            .then((partida) => esperoJugador(game, codigo, partida))
             .catch((e) => alert(e))
 
 
@@ -321,7 +323,6 @@ function showReanudarPartida(game) {
     group.add(retomarBtn)
 
 }
-
 
 function cargoValoresEnSession() {
     let vel = obtenerBismarckVelocidad()
