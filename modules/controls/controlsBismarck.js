@@ -6,6 +6,7 @@ export function creacionBismarck(game, posX, posY, settings) {
     bismarck.vida = 3;
     bismarck.isOnFire = false;
     bismarck.label = 'bismarck'
+    bismarck.destroyed = false
     bismarck.velocity = settings.bismarckVelocity;
     return bismarck;
 }

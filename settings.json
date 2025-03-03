@@ -1,6 +1,8 @@
 {
     "volumeMenu": "0.4",
     "volumeBismarckShoot": "0.7",
+    "volumeExplotion": "1.6",
+    "volumeAvionShoot" : "0.5",
     "bismarckVelocity": 3,
     "arkRoyaleVelocity": 3,
     "serverPort": 3000,

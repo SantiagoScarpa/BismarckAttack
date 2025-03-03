@@ -1,6 +1,6 @@
 import settings from '../../settings.json' with {type: 'json'};
 import { checkControlsBismarck, creacionBismarck } from '../controls/controlsBismarck.js';
-import { playAudios } from './../audios.js';
+import { playAudios, stopAudios } from './../audios.js';
 import { creacionArkRoyale, checkControlsArkRoyale } from '../controls/controlsArkRoyale.js';
 import { creacionAvion, checkControlsAvion } from '../controls/controlsAvion.js';
 import { createAnimations } from '../globals.js'
@@ -32,10 +32,11 @@ export class gameScene extends Phaser.Scene {
         }
     }
 
-    shootBullet() {
+    shoot_bullet_bismarck() {
         //if (!this.playerShip) return;
         if (this.playerShip.label === 'bismarck'){
             let bullet = this.matter.add.sprite(this.playerShip.x, this.playerShip.y - 40, 'bismarckMisil');
+            bullet.owner = 'bismarck'
             bullet.setScale(0.3);
             bullet.setCircle(3);
 
@@ -67,40 +68,94 @@ export class gameScene extends Phaser.Scene {
         }
     }
 
+    shoot_bullet_avion() {
+        if (this.playerShip.label === 'avion'){
+            let bullet = this.matter.add.sprite(this.playerShip.x, this.playerShip.y - 40, 'torpedo');
+            bullet.owner = 'avion'
+            bullet.setScale(0.02);
+            bullet.setCircle(3);
+
+            let angle = this.playerShip.rotation;
+    
+            let bulletSpeed = 10;
+            let vx = bulletSpeed * Math.cos(angle);
+            let vy = bulletSpeed * Math.sin(angle);
+            bullet.setVelocity(vx, vy);
+
+            bullet.setRotation(angle + Math.PI/2); 
+            bullet.body.label = 'bullet';
+
+            let bulletTail = this.add.image(this.playerShip.x, this.playerShip.y - 56, 'bismarckMisilCola')
+            bulletTail.setScale(0.5)
+
+            playAudios('avion_shoot', this, settings.volumneAvion_shoot)
+            setTimeout(() => {
+                bulletTail.destroy();
+            }, 100);
+
+
+            bullet.setSensor(true);
+            this.bullets.push(bullet);
+            this.time.delayedCall(2000, () => bullet?.destroy());
+        }
+    }
+
     //Crea el misil en cada cliente recibido por el sv
     createBulletFromData(data) {
-        // Crear el misil usando la posición y los datos enviados
-        let bullet = this.matter.add.sprite(data.x, data.y - 40, 'bismarckMisil');
+        let spriteKey = data.spriteKey || 'bismarckMisil';
+        let bullet = this.matter.add.sprite(data.x, data.y - 40, spriteKey);
         bullet.setScale(0.3);
+        console.log("SpriteKEY : ", spriteKey);
+        
+        if (spriteKey === 'torpedo') {
+            bullet.setScale(0.02);
+        }
         bullet.setCircle(3);
     
-        // Calcular la dirección utilizando las coordenadas del puntero enviadas
-        let dx = data.pointerX - data.x;
-        let dy = data.pointerY - data.y + 40;
-        let angle = Math.atan2(dy, dx);
-    
-        // Definir la velocidad del misil
-        let bulletSpeed = 10;
-        let vx = bulletSpeed * Math.cos(angle);
-        let vy = bulletSpeed * Math.sin(angle);
-        bullet.setVelocity(vx, vy);
-    
-        bullet.setRotation(angle + Math.PI / 2);
+        if (data.rotation !== undefined) {
+            // Si se envió la rotación, utilízala directamente
+            let angle = data.rotation;
+            let bulletSpeed = 10;
+            let vx = bulletSpeed * Math.cos(angle);
+            let vy = bulletSpeed * Math.sin(angle);
+            bullet.setVelocity(vx, vy);
+            bullet.setRotation(angle + Math.PI / 2);
+        } else {
+            // Calcular la dirección utilizando las coordenadas del puntero enviadas
+            let dx = data.pointerX - data.x;
+            let dy = data.pointerY - data.y + 40;
+            let angle = Math.atan2(dy, dx);
+        
+            // Definir la velocidad del misil
+            let bulletSpeed = 10;
+            let vx = bulletSpeed * Math.cos(angle);
+            let vy = bulletSpeed * Math.sin(angle);
+            bullet.setVelocity(vx, vy);
+        
+            bullet.setRotation(angle + Math.PI / 2);
+        }
         bullet.body.label = 'bullet';
-    
+        
         // Crear la cola del misil
         let bulletTail = this.add.image(data.x, data.y - 56, 'bismarckMisilCola');
         bulletTail.setScale(0.5);
-    
-        playAudios('bismarckShoot', this, settings.volumeBismarckShoot);
+        
+        // Reproducir el audio correspondiente según el spriteKey
+        if (spriteKey === 'torpedo') {
+            playAudios('avion_shoot', this, settings.volumeAvionShoot);
+        } else {
+            playAudios('bismarckShoot', this, settings.volumeBismarckShoot);
+        }
+        
         setTimeout(() => {
             bulletTail.destroy();
         }, 100);
-    
+        
         bullet.setSensor(true);
         this.bullets.push(bullet);
         this.time.delayedCall(2000, () => bullet?.destroy());
     }
+    
 
     onBulletHit(Nave, bullet) {     
         const bulletX = bullet.x;
@@ -111,11 +166,9 @@ export class gameScene extends Phaser.Scene {
         explosion.play('explode');
         explosion.on('animationcomplete', () => explosion.destroy());
         bullet.destroy();
-        playAudios('explotion', this, settings.volumeBismarckShoot);
-    
-        Nave.vida--;
-        console.log("Vida actual de nave:", Nave.vida);
-        console.log("nave is on fire:", Nave.isOnFire);
+        
+        stopAudios('avion_shoot', this);
+        playAudios('explotion', this, settings.volumeExplotion);
         
         if (Nave.vida === 2 && !Nave.isOnFire) {
             // Usamos la posición del impacto para activar el fuego
@@ -184,20 +237,50 @@ export class gameScene extends Phaser.Scene {
                     const arkroyal = bodyA.label === 'arkroyal' ? bodyA.gameObject : bodyB.gameObject;
                     if (bullet && arkroyal) {  
                         this.onBulletHit(arkroyal, bullet);
+                        arkroyal.vida--;
+                        //if (arkroyal.vida === 0){
+                        //    arkroyal.destroy()
+                        //}
+                        console.log("Vida arkroyal: ", arkroyal.vida);
                     }
                 }
-                // NUEVO BLOQUE: Colisión entre bala y avión
+                // Colisión entre bala y avión
                 else if (
                     (bodyA.label === 'bullet' && bodyB.label === 'avion') ||
                     (bodyA.label === 'avion' && bodyB.label === 'bullet')
                 ) {
                     const bullet = bodyA.label === 'bullet' ? bodyA.gameObject : bodyB.gameObject;
                     const avion = bodyA.label === 'avion' ? bodyA.gameObject : bodyB.gameObject;
+                    console.log("OWNER BULLET: ",bullet.owner);
+                    if (bullet.owner === 'avion') return;
                     if (bullet && avion) {  
                         this.onBulletHit(avion, bullet);
+                        avion.vida--;
+                        //if (avion.vida === 0){
+                        //    avion.destroy()
+                        //}
+                        console.log("Vida avion: ", avion.vida);
                     }
                 }
-                // Bloque para la colisión entre el ArkRoyal y el avión
+                // Colisión entre bala y bismarck
+                else if (
+                    (bodyA.label === 'bullet' && bodyB.label === 'bismarck') ||
+                    (bodyA.label === 'bismarck' && bodyB.label === 'bullet')
+                ) {
+                    const bullet = bodyA.label === 'bullet' ? bodyA.gameObject : bodyB.gameObject;
+                    const bismarck = bodyA.label === 'bismarck' ? bodyA.gameObject : bodyB.gameObject;
+                    console.log("OWNER BULLET: ",bullet.owner);
+                    if (bullet.owner === 'bismarck') return;
+                    if (bullet && bismarck) {
+                        this.onBulletHit(bismarck, bullet);
+                        bismarck.vida--;
+                        //if (bismarck.vida === 0){
+                        //    bismarck.destroy()
+                        //}
+                        console.log("Vida bismarck: ", bismarck.vida);
+                    }
+                }
+                // Colisión entre ArkRoyal y avión
                 else if (
                     (bodyA.label === 'avion' && bodyB.label === 'arkroyal') ||
                     (bodyA.label === 'arkroyal' && bodyB.label === 'avion')
@@ -442,7 +525,11 @@ export class gameScene extends Phaser.Scene {
             }
         });
 
-        this.socket.on('shootBullet', (data) => {
+        this.socket.on('shoot_bullet_bismarck', (data) => {
+            this.createBulletFromData(data);
+        });
+        
+        this.socket.on('shoot_bullet_avion', (data) => {
             this.createBulletFromData(data);
         });
 
@@ -451,17 +538,17 @@ export class gameScene extends Phaser.Scene {
             this.input.on('pointerdown', (pointer) => {
                 if (pointer.leftButtonDown()) {
                     if (!this.lastShotTime || this.time.now - this.lastShotTime > 200) { 
-                        const shootData = {
+                        const shootData_bismarck = {
                             x: this.playerShip.x,
                             y: this.playerShip.y,
                             pointerX: this.input.activePointer.worldX,
                             pointerY: this.input.activePointer.worldY
                         };
                         // Emitir el disparo al servidor para sincronizarlo con otros clientes
-                        this.socket.emit('shootBullet', shootData);
+                        this.socket.emit('shoot_bullet_bismarck', shootData_bismarck);
 
                         // Ejecutar el disparo localmente
-                        this.shootBullet();
+                        this.shoot_bullet_bismarck();
                         this.lastShotTime = this.time.now;
                     }
                 }
@@ -509,46 +596,59 @@ export class gameScene extends Phaser.Scene {
         // Ejecuta controles según el equipo
 
         if (!this.playerShip) return;
+
         if (this.playerShip.label === 'bismarck') {
+            // Controles bismarck
             checkControlsBismarck({ bismarck: this.playerShip, keys: this.keys });
-            // Disparar bala al presionar SPACE
+        } else if (this.playerShip.label === 'avion') {
+            // Controles y disparo para Avión
+            checkControlsAvion({ avion: this.playerShip, keys: this.keys });
             if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
-                this.shootBullet();
+                this.shoot_bullet_avion();
+                const shootData_avion = {
+                    x: this.playerShip.x,
+                    y: this.playerShip.y,
+                    spriteKey: 'torpedo',
+                    rotation: this.playerShip.rotation 
+                };
+                // Emitir el disparo al servidor para sincronizarlo con otros clientes
+                this.socket.emit('shoot_bullet_avion', shootData_avion);
             }
-        } else {
-            //checkControlsAvion({ avion: this.playerShip, keys: this.keys });
+        } else if (this.playerShip.label === 'arkroyal') {
+            // Si el avión ya fue desplegado, se usan controles de avión; de lo contrario, controles de ArkRoyal.
             if (this.avionDesplegado) {
                 checkControlsAvion({ avion: this.playerShip, keys: this.keys });
             } else {
                 checkControlsArkRoyale({ ArkRoyale: this.playerShip, keys: this.keys });
             }
-            if (this.playerShip.label === 'arkroyal'){
-                if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
-                    if (!this.avionDesplegado) {
-                        this.portaAviones = this.playerShip;
-                        this.portaAvionesIcon = this.add.circle(this.portaAviones.x, this.portaAviones.y, 60, 0x0000ff, 1).setOrigin(0.5, 0.5);
-                        this.cameras.main.ignore([this.portaAvionesIcon]);
-                        this.portaAviones.setVelocity(0);
-                        if (this.playerShip.angle > -10 && this.playerShip.angle < 10) {
-                            this.playerShip = creacionAvion(this, (this.playerShip.x + 50), this.playerShip.y, settings);
-                        } else {
-                            this.playerShip = creacionAvion(this, (this.playerShip.x + 80), this.playerShip.y, settings);
-                        }
-                        this.avionDesplegado = true;
-                        this.portaAviones.avionesRestantes -= 1;
-                        this.socket.emit('newPlane', {
-                            x: this.playerShip.x,
-                            y: this.playerShip.y,
-                            angle: this.playerShip.angle,
-                            team: this.team,
-                            label: this.playerShip.label
-                        });
-                        this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
-                        this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
+    
+            // Si se presiona SPACE y aún no hay avión desplegado, se despliega uno
+            if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
+                if (!this.avionDesplegado) {
+                    this.portaAviones = this.playerShip;
+                    this.portaAvionesIcon = this.add.circle(this.portaAviones.x, this.portaAviones.y, 60, 0x0000ff, 1).setOrigin(0.5, 0.5);
+                    this.cameras.main.ignore([this.portaAvionesIcon]);
+                    this.portaAviones.setVelocity(0);
+                    if (this.playerShip.angle > -10 && this.playerShip.angle < 10) {
+                        this.playerShip = creacionAvion(this, this.playerShip.x + 50, this.playerShip.y, settings);
+                    } else {
+                        this.playerShip = creacionAvion(this, this.playerShip.x + 80, this.playerShip.y, settings);
                     }
+                    this.avionDesplegado = true;
+                    this.portaAviones.avionesRestantes -= 1;
+                    this.socket.emit('newPlane', {
+                        x: this.playerShip.x,
+                        y: this.playerShip.y,
+                        angle: this.playerShip.angle,
+                        team: this.team,
+                        label: this.playerShip.label
+                    });
+                    this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
+                    this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
                 }
             }
-        }
+            }
+
             
 
         const tailOffset = { x: 0, y: 40 };
@@ -668,6 +768,7 @@ export class gameScene extends Phaser.Scene {
         let bismarck = this.matter.add.sprite(x, y, 'bismarck');
         bismarck.setScale(0.10).setOrigin(0.5, 0.5);
         bismarck.velocity = settings.bismarckVelocity;
+        bismarck.vida = 4;
         bismarck.body.label = 'bismarck'
 
         this.players[playerId] = bismarck;
@@ -692,6 +793,7 @@ export class gameScene extends Phaser.Scene {
         let avion = this.matter.add.sprite(x, y, 'avion');
         avion.setScale(0.15).setOrigin(0.5, 0.5);
         avion.velocity = settings.avionVelocity;
+        avion.vida = 2
         avion.body.label = 'avion'
         this.avion = avion
 
