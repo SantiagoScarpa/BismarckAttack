@@ -141,7 +141,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on('vistaLateral', () => {
-        io.emit('muestroVistaLateral', players)
+        io.emit('muestroVistaLateral', players, )
     })
 
 });
