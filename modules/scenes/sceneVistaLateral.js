@@ -1,12 +1,12 @@
 
-
 export class sceneVistaLateral extends Phaser.Scene {
     constructor() {
         super("sceneVistaLateral")
     }
     preload() { }
 
-    create() {
+    create(players) {
+
         this.time.delayedCall(5000, () => {
             console.log('VOLVERIA')
         }, [], this);
@@ -23,8 +23,21 @@ export class sceneVistaLateral extends Phaser.Scene {
             }
         )
             .setOrigin(0.5, 0.5)
+        console.log(players)
+        const arrayDeObjetos = Object.values(players);
+        const {x:xBLUE,y:yBLUE} = arrayDeObjetos.find(x => x.team=="blue")
+        let lateralArk = this.matter.add.sprite(xBLUE, yBLUE, "lateralArkRoyale")
+        lateralArk.setScale(0.35).setOrigin(0.5, 0.5);
+        lateralArk.vida = 4;
+        lateralArk.body.label = 'lateralArk';
+        lateralArk.isOnFire = false;
 
+        const {x:xRED,y:yRED} = arrayDeObjetos.find(x => x.team=="red")
+        let lateralBismark =  this.matter.add.sprite(xRED, yRED, "lateralBismark")
+        lateralBismark.setScale(0.30).setOrigin(0.5, 0.5);
+        lateralBismark.body.label = 'bismarck'
     }
+
     update() {
 
     }

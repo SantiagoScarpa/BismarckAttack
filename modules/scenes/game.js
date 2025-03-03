@@ -485,8 +485,8 @@ export class gameScene extends Phaser.Scene {
             }
         })
 
-        this.socket.on('muestroVistaLateral', () => {
-            this.scene.start('sceneVistaLateral')
+        this.socket.on('muestroVistaLateral', (players) => {
+            this.scene.start('sceneVistaLateral', players)
             // console.log('FUNCIONA')
         })
     }
