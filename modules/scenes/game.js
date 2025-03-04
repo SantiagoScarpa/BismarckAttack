@@ -16,6 +16,7 @@ export class gameScene extends Phaser.Scene {
 
     init(data) {
         this.team = data.team;
+        this.playerDestroyed = false; 
     }
 
     activateFire(x, y, scale) {
@@ -251,11 +252,11 @@ export class gameScene extends Phaser.Scene {
                 ) {
                     const bullet = bodyA.label === 'bullet' ? bodyA.gameObject : bodyB.gameObject;
                     const avion = bodyA.label === 'avion' ? bodyA.gameObject : bodyB.gameObject;
-                    console.log("OWNER BULLET: ",bullet.owner);
                     if (bullet.owner === 'avion') return;
                     if (bullet && avion) {  
                         this.onBulletHit(avion, bullet);
                         avion.vida--;
+                        console.log("Vida avion : ", avion.vida)
                         //if (avion.vida === 0){
                         //    avion.destroy()
                         //}
@@ -269,15 +270,19 @@ export class gameScene extends Phaser.Scene {
                 ) {
                     const bullet = bodyA.label === 'bullet' ? bodyA.gameObject : bodyB.gameObject;
                     const bismarck = bodyA.label === 'bismarck' ? bodyA.gameObject : bodyB.gameObject;
-                    console.log("OWNER BULLET: ",bullet.owner);
                     if (bullet.owner === 'bismarck') return;
                     if (bullet && bismarck) {
                         this.onBulletHit(bismarck, bullet);
                         bismarck.vida--;
-                        //if (bismarck.vida === 0){
-                        //    bismarck.destroy()
-                        //}
-                        console.log("Vida bismarck: ", bismarck.vida);
+                        console.log("Vida bismarck : ", bismarck.vida)
+                        if (bismarck.vida === 0 && !bismarck.destroyed) {
+                            bismarck.destroyed = true;
+                            this.socket.emit('shipDestroyed', { 
+                                shipId: this.socket.id, 
+                                shipType: 'bismarck',
+                                team: this.team
+                            });
+                        }
                     }
                 }
                 // Colisión entre ArkRoyal y avión
@@ -286,7 +291,6 @@ export class gameScene extends Phaser.Scene {
                     (bodyA.label === 'arkroyal' && bodyB.label === 'avion')
                 ) {
                     if (this.team === 'blue') {
-                        console.log('DESTROY AVION EQUIPO BLUE');
                         this.playerShip.destroy();
                         this.playerShip = this.portaAviones;
                         this.portaAvionesIcon.destroy();
@@ -300,6 +304,30 @@ export class gameScene extends Phaser.Scene {
                     });
                 }
             });
+        });
+
+        this.socket.on('destroyShip', (data) => {
+            const ship = this.players[data.shipId];
+            if (ship && !ship.destroyed) {
+                ship.destroy();
+                delete this.players[data.shipId];
+                ship.destroyed = true;
+        
+                // Determinar qué escena mostrar según el team del jugador
+                if (data.shipType === 'bismarck') {
+                    // Si soy del equipo AZUL y se destruyó un Bismarck
+                    if (this.team === 'blue') {
+                        this.scene.start('ganaArkRoyal'); // Escena victoria azul
+                    } 
+                    // Si soy del equipo ROJO y es MI Bismarck
+                    else if (ship === this.playerShip) {
+                        this.scene.start('ganaArkRoyal'); // Escena derrota rojo
+                    }
+                }
+                
+                // Limpieza adicional
+                if (ship.fireSprite) ship.fireSprite.destroy();
+            }
         });
         
 
@@ -365,6 +393,7 @@ export class gameScene extends Phaser.Scene {
             posY = 760;
             // Jugador rojo obtiene el Bismarck
             this.playerShip = creacionBismarck(this, posX, posY, settings);
+            this.playerShip.id = this.socket.id;
         } else if (this.team === 'blue') {
             let coordenadaInicioLocalX = Math.floor(Math.random() * (660 - 1 + 1)) + 1;
             let coordenadaInicioLocalY = Math.floor(Math.random() * (460 - 1 + 1)) + 1;
@@ -595,7 +624,7 @@ export class gameScene extends Phaser.Scene {
     update() {
         // Ejecuta controles según el equipo
 
-        if (!this.playerShip) return;
+        if (this.playerDestroyed) return; 
 
         if (this.playerShip.label === 'bismarck') {
             // Controles bismarck
@@ -649,7 +678,11 @@ export class gameScene extends Phaser.Scene {
             }
             }
 
-            
+            if (this.playerShip?.destroyed) {
+                this.playerDestroyed = true;
+                this.scene.start('ganaArkRoyal');
+                return;
+            }
 
         const tailOffset = { x: 0, y: 40 };
         //if (!this.playerShip) return;    
@@ -769,6 +802,7 @@ export class gameScene extends Phaser.Scene {
         bismarck.setScale(0.10).setOrigin(0.5, 0.5);
         bismarck.velocity = settings.bismarckVelocity;
         bismarck.vida = 4;
+        bismarck.destroyed = false; 
         bismarck.body.label = 'bismarck'
 
         this.players[playerId] = bismarck;

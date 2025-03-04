@@ -84,6 +84,12 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('shoot_bullet_avion', data);
     });
 
+    socket.on('shipDestroyed', (data) => {
+        data.shipType = 'bismarck'; 
+        data.team = 'red'; 
+        io.emit('destroyShip', data);
+    });
+
     socket.on('disconnect', () => {
         console.log(`Jugador desconectado: ${socket.id}`);
         delete players[socket.id];
