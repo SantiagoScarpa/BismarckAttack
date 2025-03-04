@@ -5,7 +5,6 @@ import { retomarPartida } from "../persistencia/obtengoPersistencia.js";
 const menuOptions = { 'INICIO': 0, 'CONFIG': 1, 'PUREBA': 3 };
 let actualMenuSel = menuOptions.PUREBA;
 
-
 export class menuScene extends Phaser.Scene {
     constructor() {
         super("menuScene");
@@ -16,6 +15,9 @@ export class menuScene extends Phaser.Scene {
         cargoValoresEnSession();
         const width = this.game.config.width;
         const height = this.game.config.height;
+
+        this.partida = null;
+        this.codigoEspera = null;
 
         this.add.text(width / 2, 200, 'MENU', {
             fontFamily: 'Rockwell',
@@ -62,7 +64,8 @@ export class menuScene extends Phaser.Scene {
             })
             .setOrigin(0.5, 0.5)
             .setDepth(2)
-
+        this.playWaiting = false
+        this.replayWaiting = false
         await agregoFuncionalidadBotones(this)
     }
 
@@ -96,7 +99,6 @@ export class menuScene extends Phaser.Scene {
         const blueAgarrado = Object.values(playersData).some(p => p.team === 'blue');
         const redAgarrado = Object.values(playersData).some(p => p.team === 'red');
 
-        // Botón para bando azul
 
         // Botón para bando azul
         if (!blueAgarrado) {
@@ -112,6 +114,7 @@ export class menuScene extends Phaser.Scene {
                 this.selectedTeam = 'blue';
                 this.socket = io();
                 this.socket.emit('setPlayerTeam', 'blue')
+                this.socket.emit('esperoNuevaPartida')
                 this.showWaitingModal();
                 this.waitForOtherPlayer();
             });
@@ -131,6 +134,7 @@ export class menuScene extends Phaser.Scene {
                 this.selectedTeam = 'red';
                 this.socket = io();
                 this.socket.emit('setPlayerTeam', 'red')
+                this.socket.emit('esperoNuevaPartida')
                 this.showWaitingModal();
                 this.waitForOtherPlayer();
             });
@@ -179,16 +183,22 @@ export class menuScene extends Phaser.Scene {
             if (playersCount === 2) {
                 clearInterval(intervalId);
                 this.hideWaitingModal();
-                this.startGame(this.selectedTeam, this.socket, this.reanudo);
+                this.startGame(this.selectedTeam, this.socket, this.reanudo, this.partida);
             }
         }, 1000);
     }
+    async esperoNuevaPartida() {
+        let res = await fetch('/getEsperoNuevaPartida')
+        let resJson = await res.json();
+        return resJson;
+    }
 
-
-    startGame(team, socket, reanudo) {
-        this.scene.start('gameScene', { team, socket, reanudo });
+    startGame(team, socket, reanudo, partida) {
+        this.scene.start('gameScene', { team, socket, reanudo, partida });
     }
 }
+
+
 
 async function agregoFuncionalidadBotones(game) {
     const { playBtn, configBtn, replayBtn } = game;
@@ -205,11 +215,16 @@ async function agregoFuncionalidadBotones(game) {
         game.reanudo = false
         playBtn.setFrame(2);
         playAudios('menuSelection', game, game.volumeMenu);
-        if (cantidadJugadores < 2) {
-            await game.showTeamSelectionMenu();
-        }
-        else {
-            alert("La cantidad de jugadores ha alcanzado su maximo ✌✔")
+        game.codigoEspera = await esperoCodigo();
+        if (game.codigoEspera == null) {
+            if (cantidadJugadores < 2) {
+                await game.showTeamSelectionMenu();
+            }
+            else {
+                alert("La cantidad de jugadores ha alcanzado su maximo ✌✔")
+            }
+        } else {
+            alert("Otro jugador esta reanudando una partida, no se puede iniciar una nueva")
         }
     });
 
@@ -236,22 +251,26 @@ async function agregoFuncionalidadBotones(game) {
         replayBtn.setFrame(0);
     })
 
-    replayBtn.on('pointerdown', () => {
-        replayBtn.setFrame(0)
-        game.reanudo = true
-        playAudios('menuSelection', game, game.volumeMenu)
-
-        playBtn.setInteractive(false);
-        replayBtn.setInteractive(false);
-        configBtn.setInteractive(false);
-        playBtn.removeListener('pointerdown');
-        replayBtn.removeListener('pointerdown');
-        configBtn.removeListener('pointerdown');
-        playBtn.removeListener('pointerover');
-        replayBtn.removeListener('pointerover');
-        configBtn.removeListener('pointerover');
-        showReanudarPartida(game)
-
+    replayBtn.on('pointerdown', async () => {
+        let esperoNuevaPartida = await game.esperoNuevaPartida();
+        game.codigoEspera = await esperoCodigo();
+        if (!esperoNuevaPartida) {
+            replayBtn.setFrame(0)
+            game.reanudo = true
+            playAudios('menuSelection', game, game.volumeMenu)
+            playBtn.setInteractive(false);
+            replayBtn.setInteractive(false);
+            configBtn.setInteractive(false);
+            playBtn.removeListener('pointerdown');
+            replayBtn.removeListener('pointerdown');
+            configBtn.removeListener('pointerdown');
+            playBtn.removeListener('pointerover');
+            replayBtn.removeListener('pointerover');
+            configBtn.removeListener('pointerover');
+            showReanudarPartida(game)
+        } else {
+            alert('Un usuario se encuentra iniciando una partida nueva, no se puede reanudar otra')
+        }
     })
 }
 
@@ -291,10 +310,15 @@ function showReanudarPartida(game) {
 
     retomarBtn.on('pointerdown', () => {
         let codigo = txtCodigo.text.trim().toUpperCase()
-        retomarPartida(codigo)
-            .then((partida) => esperoJugador(game, codigo, partida))
-            .catch((e) => alert(e))
 
+        if (game.codigoEspera === null || codigo === game.codigoEspera) {
+            retomarPartida(codigo)
+                .then((partida) => esperoJugador(game, codigo, partida))
+                .catch((e) => alert(e))
+        } else {
+            alert('Un jugador se encuentra esperando continuar otra partida')
+            txtCodigo.setText('');
+        }
 
     });
 
@@ -330,12 +354,14 @@ function cargoValoresEnSession() {
     let dur = obtenerDuracionPartida()
 }
 
-function esperoJugador(game, codigo, partida) {
+async function esperoJugador(game, codigo, partida) {
+    game.partida = partida;
     if (codigo === partida.codigoRojo) {
         console.log("🔴 Jugador seleccionó el BANDO ROJO");
         game.selectedTeam = 'red';
         game.socket = io();
         game.socket.emit('setPlayerTeam', 'red')
+        game.socket.emit('esperoCodigo', partida.codigoAzul)
         game.showWaitingModal();
         game.waitForOtherPlayer();
     } else if (codigo === partida.codigoAzul) {
@@ -343,8 +369,15 @@ function esperoJugador(game, codigo, partida) {
         game.selectedTeam = 'blue';
         game.socket = io();
         game.socket.emit('setPlayerTeam', 'blue')
+        game.socket.emit('esperoCodigo', partida.codigoRojo)
         game.showWaitingModal();
         game.waitForOtherPlayer();
     }
 
+}
+
+async function esperoCodigo() {
+    let res = await fetch('/getCodigoEspera')
+    let resJson = await res.json();
+    return resJson;
 }

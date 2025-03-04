@@ -68,8 +68,12 @@ export class loaderScene extends Phaser.Scene {
                 { frameWidth: 156, frameHeight: 593 });
         for (let i = 0; i < 10; i++) {
             this.load.image(`avion${i}`, `./assets/imgs/sprites/despegue/avion${i}.png`);
-        }
-
+        };
+        this.load.image('piloto', './assets/imgs/sprites/piloto.png');
+        this.load.image('observador', './assets/imgs/sprites/observador.png');
+        this.load.image('operador', './assets/imgs/sprites/operador.png');
+        this.load.image('cancelar', './assets/imgs/sprites/cancelar.png');
+        this.load.image('fondo_menu', './assets/imgs/sprites/fondomenuavion.png');
         this.load.spritesheet('numeros', './assets/imgs/sprites/numbers.png',
             { frameWidth: 128, frameHeight: 192 });
 

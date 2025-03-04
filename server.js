@@ -20,12 +20,18 @@ inicioConexionDB(app, settings.dbInfo);
 expongoWsSettings(app)
 
 const players = {}; // Guardar jugadores activos
+const aviones = {}; // Guardar aviones activos
 let franciaPosition = null; // ✅ Guardamos la posición de Francia
 let respuestaAzul = null;
 let respuestaRojo = null;
-let obtubeDatosRojo = false
-let obtubeDatosAzul = false
-let updateDB = false
+let obtubeDatosRojo = false;
+let obtubeDatosAzul = false;
+let updateDB = false;
+let codigoEspero = null;
+let esperoNuevaPartida = false;
+let listoRojo = false
+let listoAzul = false;
+
 io.on('connection', (socket) => {
     socket.on('newPlayer', (player) => {
         // Verificar si ya existe un jugador con el mismo equipo
@@ -45,14 +51,15 @@ io.on('connection', (socket) => {
     });
     console.log(`🎮 Jugador conectado: ${socket.id}`);
 
-    socket.on("empiezaPartida", () => {
+    socket.on("empiezaPartida", (reanuda) => {
         // Enviar la posición de Francia al nuevo jugador
         socket.emit('setFranciaPosition', franciaPosition)
-        updateDB = false;
-        //creo el registro de la partida en la DB y pongo que ahora solo se actualiza
-        io.emit('pidoAzul')
-        io.emit('pidoRojo')
-
+        if (!reanuda) {
+            updateDB = false;
+            //creo el registro de la partida en la DB y pongo que ahora solo se actualiza
+            io.emit('pidoAzul')
+            io.emit('pidoRojo')
+        }
     })
 
     // Si `franciaPosition` no está definida, la creamos al conectar el primer jugador
@@ -84,6 +91,10 @@ io.on('connection', (socket) => {
             players[socket.id].y = player.y;
             players[socket.id].angle = player.angle;
             players[socket.id].team = player.team;
+            players[socket.id].label = player.label;
+            players[socket.id].Px = player.Px;
+            players[socket.id].Py = player.Py;
+            players[socket.id].Pangle = player.Pangle;
         }
         io.emit('updatePlayers', players);
     });
@@ -95,7 +106,8 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log(`Jugador desconectado: ${socket.id}`);
         delete players[socket.id];
-
+        codigoEspero = null
+        esperoNuevaPartida = false
         console.log(`Jugadores restantes: ${Object.keys(players).length}`);
         io.emit('playerCount', Object.keys(players).length);
     });
@@ -144,6 +156,44 @@ io.on('connection', (socket) => {
         io.emit('muestroVistaLateral', players, )
     })
 
+    socket.on('esperoCodigo', (codigo) => {
+        codigoEspero = codigo;
+    })
+    socket.on('esperoNuevaPartida', () => {
+        esperoNuevaPartida = true;
+    })
+
+
+    socket.on('newPlane', (player) => {
+        players[socket.id] = player;
+        io.emit('newPlane', player);
+    });
+
+    socket.on('deletPlane', (player) => {
+        io.emit('deletPlane', player);
+    });
+
+    socket.on('rojoCargado', () => {
+        listoRojo = true
+        console.log(`SERVER ROJO LISTO azul listo==${listoAzul}`)
+        if (listoAzul) {
+            console.log('server / ROJO listo todos')
+            io.emit('listoTodos')
+            listoAzul = false
+            listoRojo = false
+        }
+    })
+
+    socket.on('azulCargado', () => {
+        listoAzul = true
+        console.log(`SERVER AZUL LISTO rojo listo==${listoRojo}`)
+        if (listoRojo) {
+            console.log('server / AZUL listo todos')
+            io.emit('listoTodos')
+            listoAzul = false
+            listoRojo = false
+        }
+    })
 });
 
 
@@ -159,4 +209,12 @@ app.get('/getPlayers', (req, res) => {
     res.json(players)
 })
 
+
+app.get('/getCodigoEspera', (req, res) => {
+    res.json(codigoEspero)
+})
+
+app.get('/getEsperoNuevaPartida', (req, res) => {
+    res.json(esperoNuevaPartida)
+})
 

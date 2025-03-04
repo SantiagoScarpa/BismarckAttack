@@ -9,19 +9,21 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
     const bismarckSchema = new mongoose.Schema({
         x: Number,
         y: Number,
+        angle: Number,
         vida: Number
     })
     const avionSchema = new mongoose.Schema({
         x: Number,
         y: Number,
         municion: Boolean,
-        observador: Boolean,
-        operador: Boolean,
+        tiempoVida: Number,
+        opcion: Number
     })
 
     const arkRoyalSchema = new mongoose.Schema({
         x: Number,
         y: Number,
+        angle: Number,
         avionesRestantes: Number,
         avionActual: avionSchema
     })
@@ -34,6 +36,7 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
     const partidaSchema = new mongoose.Schema({
         codigoAzul: String,
         codigoRojo: String,
+        inicioPartida: Number,
         tiempoPartida: Number,
         bismarck: bismarckSchema,
         arkRoyal: arkRoyalSchema,
@@ -73,16 +76,19 @@ export async function persistoPartida(respuestaAzul, respuestaRojo, updateDB) {
         const nuevaPartida = new Partida({
             codigoAzul: respuestaAzul.codigoAzul,
             codigoRojo: respuestaRojo.codigoRojo,
+            inicioPartida: respuestaRojo.inicioPartida,
             tiempoPartida: respuestaRojo.tiempoPartida,
             bismarck: {
                 x: respuestaRojo.bismarck.x,
                 y: respuestaRojo.bismarck.y,
+                angle: respuestaRojo.bismarck.angle,
                 vida: respuestaRojo.bismarck.vida
             },
 
             arkRoyal: {
                 x: respuestaAzul.arkRoyal.x,
                 y: respuestaAzul.arkRoyal.y,
+                angle: respuestaAzul.arkRoyal.angle,
                 avionesRestantes: respuestaAzul.arkRoyal.avionesRestantes,
                 avionActual: respuestaAzul.arkRoyal.avionActual
             },
