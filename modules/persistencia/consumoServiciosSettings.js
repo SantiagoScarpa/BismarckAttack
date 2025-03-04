@@ -40,7 +40,7 @@ export async function obtenerVolumenMenu() {
         sessionStorage.setItem('volMenu', datos)
         return datos;
     } catch (err) {
-        console.error('Error:', err);
+        console.log('Error:', err);
         throw error;
 
     }
@@ -57,7 +57,7 @@ export async function obtenerBismarckVelocidad() {
         sessionStorage.setItem('bismarckVelocity', datos)
         return datos;
     } catch (err) {
-        console.error('Error:', error);
+        console.log('Error:', error);
         throw error;
     }
 }
@@ -126,7 +126,7 @@ export async function obtenerDuracionPartida() {
         sessionStorage.setItem('duracionPartida', datos)
         return datos;
     } catch (err) {
-        console.error('Error:', err);
+        console.log('Error:', err);
         throw error;
     }
 }
