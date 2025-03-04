@@ -486,7 +486,8 @@ export class gameScene extends Phaser.Scene {
         })
 
         this.socket.on('muestroVistaLateral', (players) => {
-            this.scene.start('sceneVistaLateral', { players, socketId: this.socket.id })
+            const franciaPosition = {x:this.francia.x, y:this.francia.y}
+            this.scene.start('sceneVistaLateral', { players, socketId: this.socket.id, franciaPosition: franciaPosition,  })
         })
     }
 

@@ -7,6 +7,7 @@ export class sceneVistaLateral extends Phaser.Scene {
   init(data) {
     this.players = data.players;
     this.playerId = data.socketId;
+    this.franciaPosition = data.franciaPosition
   }
 
   create() {
@@ -32,20 +33,22 @@ export class sceneVistaLateral extends Phaser.Scene {
       .setOrigin(0.5, 0.5);
     console.log(this.players);
     console.log(this.playerId);
+    console.log(this.franciaPosition);
     const arrayJugadores = Object.values(this.players);
-
+    
     const { x: xBLUE, y: yBLUE } = arrayJugadores.find((x) => x.team == "blue");
     const { x: xRED, y: yRED } = arrayJugadores.find((x) => x.team == "red");
+    const { x: xFrancia, y: yFrancia } = this.franciaPosition
+    
 
-    // Mostrar u ocultar objetos según estén dentro del rango de visión
     const jugadorConsola = this.players[this.playerId];
 
     const distance = Phaser.Math.Distance.Between(xBLUE, yBLUE, xRED, yRED);
     if (distance <= visionObjets) {
       let lateralArk = this.matter.add.sprite(xBLUE, yBLUE, "lateralArkRoyale");
-      lateralArk.setScale(0.65).setOrigin(0.5, 0.5);
+      lateralArk.setScale(0.85).setOrigin(0.5, 0.5);
       let lateralBismark = this.matter.add.sprite(xRED, yRED, "lateralBismark");
-      lateralBismark.setScale(0.6).setOrigin(0.5, 0.5);
+      lateralBismark.setScale(0.8).setOrigin(0.5, 0.5);
     } else {
       if (jugadorConsola.team == "red") {
         let lateralBismark = this.matter.add.sprite(
@@ -63,6 +66,20 @@ export class sceneVistaLateral extends Phaser.Scene {
         lateralArk.setScale(0.65).setOrigin(0.5, 0.5);
       }
     }
+    const distanceFranceArkRoyale = Phaser.Math.Distance.Between(xBLUE, yBLUE, xFrancia, yFrancia);
+    if (distanceFranceArkRoyale <= visionObjets && jugadorConsola.team == "blue") {
+      this.francia = this.matter.add.image(xFrancia, yFrancia, 'francia');
+    }
+
+    const distanceFranceBismark = Phaser.Math.Distance.Between(xRED, yRED, xFrancia, yFrancia);
+    if (distanceFranceBismark <= visionObjets && jugadorConsola.team == "red") {
+      this.francia = this.matter.add.image(xFrancia, yFrancia, 'francia');
+    }
+
+
+
+
+
   }
 
   update() {}
