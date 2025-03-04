@@ -253,6 +253,7 @@ async function agregoFuncionalidadBotones(game) {
 
     replayBtn.on('pointerdown', async () => {
         let esperoNuevaPartida = await game.esperoNuevaPartida();
+        game.codigoEspera = await esperoCodigo();
         if (!esperoNuevaPartida) {
             replayBtn.setFrame(0)
             game.reanudo = true
@@ -309,7 +310,8 @@ function showReanudarPartida(game) {
 
     retomarBtn.on('pointerdown', () => {
         let codigo = txtCodigo.text.trim().toUpperCase()
-        if (game.codigoEspera !== null && codigo === game.codigoEspera) {
+
+        if (game.codigoEspera === null || codigo === game.codigoEspera) {
             retomarPartida(codigo)
                 .then((partida) => esperoJugador(game, codigo, partida))
                 .catch((e) => alert(e))
