@@ -23,9 +23,11 @@ const players = {}; // Guardar jugadores activos
 let franciaPosition = null; // ✅ Guardamos la posición de Francia
 let respuestaAzul = null;
 let respuestaRojo = null;
-let obtubeDatosRojo = false
-let obtubeDatosAzul = false
-let updateDB = false
+let obtubeDatosRojo = false;
+let obtubeDatosAzul = false;
+let updateDB = false;
+let codigoEspero = null;
+let esperoNuevaPartida = false
 io.on('connection', (socket) => {
     socket.on('newPlayer', (player) => {
         // Verificar si ya existe un jugador con el mismo equipo
@@ -97,7 +99,8 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log(`Jugador desconectado: ${socket.id}`);
         delete players[socket.id];
-
+        codigoEspero = null
+        esperoNuevaPartida = false
         console.log(`Jugadores restantes: ${Object.keys(players).length}`);
         io.emit('playerCount', Object.keys(players).length);
     });
@@ -146,6 +149,13 @@ io.on('connection', (socket) => {
         io.emit('muestroVistaLateral')
     })
 
+    socket.on('esperoCodigo', (codigo) => {
+        codigoEspero = codigo;
+    })
+    socket.on('esperoNuevaPartida', () => {
+        esperoNuevaPartida = true;
+    })
+
 });
 
 
@@ -161,4 +171,12 @@ app.get('/getPlayers', (req, res) => {
     res.json(players)
 })
 
+
+app.get('/getCodigoEspera', (req, res) => {
+    res.json(codigoEspero)
+})
+
+app.get('/getEsperoNuevaPartida', (req, res) => {
+    res.json(esperoNuevaPartida)
+})
 
