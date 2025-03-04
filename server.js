@@ -163,7 +163,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on('vistaLateral', () => {
-        io.emit('muestroVistaLateral')
+        io.emit('muestroVistaLateral', players, )
     })
 
     socket.on('esperoCodigo', (codigo) => {

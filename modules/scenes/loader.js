@@ -46,7 +46,8 @@ export class loaderScene extends Phaser.Scene {
         //    { frameWidth: 32, frameHeight: 72 });
         this.load.spritesheet('bismarckMisilCola', './assets/imgs/sprites/bismarckBulletTail.png',
             { frameWidth: 53, frameHeight: 71 });
-
+            this.load.spritesheet('lateralBismark', './assets/imgs/lateralViews/LateralBismark.png',
+                { frameWidth: 828, frameHeight: 145 });
 
         for (let i = 0; i < 32; i++) {
             this.load.image(`explosion_${i}`, `./assets/imgs/sprites/colision/frames/1_${i}.png`);
@@ -66,6 +67,8 @@ export class loaderScene extends Phaser.Scene {
             { frameWidth: 156, frameHeight: 593 });
         this.load.spritesheet('avion', './assets/imgs/sprites/avion.png',
             { frameWidth: 447, frameHeight: 350 });
+            this.load.spritesheet('lateralArkRoyale', './assets/imgs/lateralViews/LateralArkRoyale.png',
+                { frameWidth: 156, frameHeight: 593 });
         for (let i = 0; i < 10; i++) {
             this.load.image(`avion${i}`, `./assets/imgs/sprites/despegue/avion${i}.png`);
         };

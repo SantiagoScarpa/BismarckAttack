@@ -677,9 +677,11 @@ export class gameScene extends Phaser.Scene {
             }
         })
 
-        this.socket.on('muestroVistaLateral', () => {
-            this.scene.start('sceneVistaLateral')
-        })
+       this.socket.on('muestroVistaLateral', (players) => {
+            const franciaPosition = {x:this.francia.x, y:this.francia.y}
+            this.scene.start('sceneVistaLateral', { players, socketId: this.socket.id, franciaPosition: franciaPosition,  })
+
+     } )
 
         if (this.team === 'red' && this.reanudo && this.partida.arkRoyal.avionActual !== null) {
             console.log('game / aviso que rojo cargo')
