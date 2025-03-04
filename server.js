@@ -3,8 +3,8 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
 import settings from './settings.json' with { type: 'json' };
-import { inicioConexionDB } from './modules/persistencia/creoPersistencia.js';
-
+import { inicioConexionDB, persistoPartida } from './modules/persistencia/creoPersistencia.js';
+import { expongoWsSettings } from './modules/persistencia/serviciosSettings.js';
 const app = express();
 const server = createServer(app);
 const io = new Server(server);
@@ -17,11 +17,17 @@ app.use('/modules', express.static(path.join(process.cwd(), 'modules')));
 app.use(express.json());
 
 inicioConexionDB(app, settings.dbInfo);
-
+expongoWsSettings(app)
 
 const players = {}; // Guardar jugadores activos
 let franciaPosition = null; // ✅ Guardamos la posición de Francia
-
+let respuestaAzul = null;
+let respuestaRojo = null;
+let obtubeDatosRojo = false;
+let obtubeDatosAzul = false;
+let updateDB = false;
+let codigoEspero = null;
+let esperoNuevaPartida = false
 io.on('connection', (socket) => {
     socket.on('newPlayer', (player) => {
         // Verificar si ya existe un jugador con el mismo equipo
@@ -33,7 +39,7 @@ io.on('connection', (socket) => {
             console.log(`Equipo ${player.team} ya está ocupado para ${socket.id}`);
             return;
         }
-        
+
         // Si el equipo está disponible, se actualiza el objeto del jugador
         players[socket.id] = player;
         console.log(`Jugadores conectados: ${Object.keys(players).length}`);
@@ -41,9 +47,16 @@ io.on('connection', (socket) => {
     });
     console.log(`🎮 Jugador conectado: ${socket.id}`);
 
-    socket.on("empiezaPartida",() => {
-          // Enviar la posición de Francia al nuevo jugador
+    socket.on("empiezaPartida", (reanuda) => {
+        // Enviar la posición de Francia al nuevo jugador
         socket.emit('setFranciaPosition', franciaPosition)
+
+        if (!reanuda) {
+            updateDB = false;
+            //creo el registro de la partida en la DB y pongo que ahora solo se actualiza
+            io.emit('pidoAzul')
+            io.emit('pidoRojo')
+        }
     })
 
     // Si `franciaPosition` no está definida, la creamos al conectar el primer jugador
@@ -61,13 +74,13 @@ io.on('connection', (socket) => {
     // Enviar la cantidad de jugadores conectados a todos
     io.emit('playerCount', Object.keys(players).length);
 
-    socket.on('setPlayerTeam', (team=>{
+    socket.on('setPlayerTeam', (team => {
         console.log("team", team)
         players[socket.id].team = team;
     }))
- 
 
-   
+
+
 
     socket.on('playerMove', (player) => {
         if (players[socket.id]) {
@@ -86,10 +99,63 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log(`Jugador desconectado: ${socket.id}`);
         delete players[socket.id];
-
+        codigoEspero = null
+        esperoNuevaPartida = false
         console.log(`Jugadores restantes: ${Object.keys(players).length}`);
         io.emit('playerCount', Object.keys(players).length);
     });
+
+    socket.on('tiempoPartida', () => {
+        console.log(`Partida terminada por tiempo`);
+        io.emit('finalizacionPartida', 'blue');
+
+    });
+
+    socket.on('pidoGuardado', () => {
+        console.log('PIDO GUARDADO ')
+        updateDB = true;
+        io.emit('pidoRojo')
+        io.emit('pidoAzul')
+    })
+
+    socket.on('saleDePartida', () => {
+        io.emit('finalizacionPartida', 'none');
+    })
+    socket.on('ganaBismarck', () => {
+        io.emit('finalizacionPartida', 'red');
+    })
+
+    socket.on('respuestaRojo', (respuesta) => {
+        respuestaRojo = respuesta
+        obtubeDatosRojo = true;
+        if (obtubeDatosAzul) {
+            obtubeDatosRojo = false;
+            obtubeDatosAzul = false;
+            persistoPartida(respuestaAzul, respuestaRojo, updateDB)
+        }
+    })
+    socket.on('respuestaAzul', (respuesta) => {
+        respuestaAzul = respuesta
+        obtubeDatosAzul = true
+        if (obtubeDatosRojo) {
+            obtubeDatosRojo = false;
+            obtubeDatosAzul = false;
+            persistoPartida(respuestaAzul, respuestaRojo, updateDB)
+        }
+
+    })
+
+    socket.on('vistaLateral', () => {
+        io.emit('muestroVistaLateral')
+    })
+
+    socket.on('esperoCodigo', (codigo) => {
+        codigoEspero = codigo;
+    })
+    socket.on('esperoNuevaPartida', () => {
+        esperoNuevaPartida = true;
+    })
+
 });
 
 
@@ -105,4 +171,12 @@ app.get('/getPlayers', (req, res) => {
     res.json(players)
 })
 
+
+app.get('/getCodigoEspera', (req, res) => {
+    res.json(codigoEspero)
+})
+
+app.get('/getEsperoNuevaPartida', (req, res) => {
+    res.json(esperoNuevaPartida)
+})
 

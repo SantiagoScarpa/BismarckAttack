@@ -31,7 +31,7 @@ export class loaderScene extends Phaser.Scene {
         this.load.image('francia', './assets/imgs/sprites/franciaTransparente.png');
         this.load.image('bismarckGana', './assets/imgs/bismarckGana.png');
         this.load.image('crosshair', 'assets/imgs/sprites/crosshair.png');
-        
+        this.load.image('arkRoyalGana', './assets/imgs/ganaArkRoyal.webp');
         this.load.spritesheet('save', './assets/imgs/sprites/save.png',
             { frameWidth: 16, frameHeight: 16 })
         this.load.spritesheet('home', './assets/imgs/buttons/home.png',
@@ -67,6 +67,8 @@ export class loaderScene extends Phaser.Scene {
             this.load.image(`avion${i}`, `./assets/imgs/sprites/despegue/avion${i}.png`);
         }
 
+        this.load.spritesheet('numeros', './assets/imgs/sprites/numbers.png',
+            { frameWidth: 128, frameHeight: 192 });
 
 
         loadAudios(this);
@@ -74,6 +76,9 @@ export class loaderScene extends Phaser.Scene {
         this.load.on("complete", () => {
             this.scene.start("menuScene");
         });
+
+
+
 
     }
     create() { }
