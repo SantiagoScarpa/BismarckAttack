@@ -11,6 +11,7 @@ export function creacionBismarck(game, posX, posY, angle, settings) {
         bismarck.isOnFire = false;
         bismarck.label = 'bismarck'
         bismarck.angle = angle
+        bismarck.destroyed = false
         bismarck.velocity = vel;
         return bismarck;
     } catch (err) {

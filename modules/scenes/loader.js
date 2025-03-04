@@ -31,6 +31,7 @@ export class loaderScene extends Phaser.Scene {
         this.load.image('francia', './assets/imgs/sprites/franciaTransparente.png');
         this.load.image('bismarckGana', './assets/imgs/bismarckGana.png');
         this.load.image('crosshair', 'assets/imgs/sprites/crosshair.png');
+        this.load.image('torpedo', 'assets/imgs/sprites/torpedo.png');
         this.load.image('arkRoyalGana', './assets/imgs/ganaArkRoyal.webp');
         this.load.spritesheet('save', './assets/imgs/sprites/save.png',
             { frameWidth: 16, frameHeight: 16 })
@@ -41,6 +42,8 @@ export class loaderScene extends Phaser.Scene {
             { frameWidth: 828, frameHeight: 145 });
         this.load.spritesheet('bismarckMisil', './assets/imgs/sprites/bismarckBullet.png',
             { frameWidth: 32, frameHeight: 72 });
+        //this.load.spritesheet('torpedo', './assets/imgs/sprites/torpedo.png',
+        //    { frameWidth: 32, frameHeight: 72 });
         this.load.spritesheet('bismarckMisilCola', './assets/imgs/sprites/bismarckBulletTail.png',
             { frameWidth: 53, frameHeight: 71 });
 

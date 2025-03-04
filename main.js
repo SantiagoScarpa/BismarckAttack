@@ -1,5 +1,6 @@
 import { gameScene } from './modules/scenes/game.js';
 import { ganaBismarck } from './modules/scenes/ganaBismarck.js';
+import { ganaArkRoyal } from './modules/scenes/ganaArkRoyal.js';
 import { menuScene } from './modules/scenes/menu.js';
 import { settingsScene } from './modules/scenes/settings.js';
 import { loaderScene } from './modules/scenes/loader.js'

@@ -99,8 +99,18 @@ io.on('connection', (socket) => {
         io.emit('updatePlayers', players);
     });
 
-    socket.on('shootBullet', (data) => {
-        socket.broadcast.emit('shootBullet', data);
+    socket.on('shoot_bullet_bismarck', (data) => {
+        socket.broadcast.emit('shoot_bullet_bismarck', data);
+    });
+
+    socket.on('shoot_bullet_avion', (data) => {
+        socket.broadcast.emit('shoot_bullet_avion', data);
+    });
+
+    socket.on('shipDestroyed', (data) => {
+        data.shipType = 'bismarck'; 
+        data.team = 'red'; 
+        io.emit('destroyShip', data);
     });
 
     socket.on('disconnect', () => {
