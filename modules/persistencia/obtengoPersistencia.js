@@ -1,4 +1,4 @@
-// export function guardarPartida({ codigoAzul, codigoRojo, bismarck, arkRoyal, avion, francia }) {
+/*// export function guardarPartida({ codigoAzul, codigoRojo, bismarck, arkRoyal, avion, francia }) {
 
 //     let vFrancia = {
 //         x: francia.x,
@@ -40,75 +40,80 @@
 //             // (Opcional) Mostrar mensaje de error en el juego
 //         });
 // }
+*/
 
-// export function guardarPartida(game) {
-//     console.log('guardarPartida')
-//     let bismarckVida = game.playerShip.vida ? game.playerShip.vida : 0
-//     let avionesRestantes = game.playerShip.avionesRestantes ? game.playerShip.avionesRestantes : 0
+export function armoRespuestaRojo(game) {
 
-//     let bismarckX = 0
-//     let bismarckY = 0
-//     let bismarckAngle = 0
-//     let arkRoyalX = 0
-//     let arkRoyalY = 0
-//     let arkRoyalAngle = 0
+    const tiempoDePartida = Date.now() - game.inicioPartida;
+    const tiempoDisponible = game.duracionPartida - tiempoDePartida;
 
-//     if (game.playerShip.label === 'bismarck') {
-//         bismarckX = game.playerShip.x
-//         bismarckY = game.playerShip.y
-//         bismarckAngle = game.playerShip.angle
-
-//     } else {
-//         arkRoyalX = game.playerShip.x
-//         arkRoyalY = game.playerShip.y
-//         arkRoyalAngle = game.playerShip.angle
-//     }
-
-//     //ESTO TIENE QUE CAMBIAR CUANDO CARGUEMOS UN AVION
-//     let avionActualX = 1;
-//     let avionActualY = 1;
-//     let avionActualMunicion = false;
-//     let avionActualOperador = false;
-//     let avionActualObservador = false;
-
-//     game.socket.emit('guardo', {
-//         nroPeticion: 1,
-//         playerId: game.socket.id,
-//         codigoAzul: game.codigoAzul,
-//         codigoRojo: game.codigoRojo,
-//         franciaX: game.francia.x,
-//         franciaY: game.francia.y,
-//         label: game.playerShip.label,
-//         bismarckX: bismarckX,
-//         bismarckY: bismarckY,
-//         bismarckAngle: bismarckAngle,
-//         bismarckVida: bismarckVida,
-//         arkRoyalX: arkRoyalX,
-//         arkRoyalY: arkRoyalY,
-//         arkRoyalAngle: arkRoyalAngle,
-//         arkRoyalAvionesRestantes: avionesRestantes,
-//         avionX: avionActualX,
-//         avionY: avionActualY,
-//         avionMunicion: avionActualMunicion,
-//         avionOperador: avionActualOperador,
-//         avionObservador: avionActualObservador
-//     });
-// }
-
-export function retomarPartida(codigo) {
-    fetch('/guardarPartida', {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json'
+    let respuesta = {
+        codigoRojo: game.codigoPartida,
+        tiempoPartida: tiempoDisponible,
+        inicioPartida: game.inicioPartida,
+        bismarck: {
+            x: game.playerShip.x,
+            y: game.playerShip.y,
+            angle: game.playerShip.angle,
+            vida: game.playerShip.vida
         },
-    })
-        .then(response => response.json()) // Esperar respuesta en JSON
-        .then(data => {
-            console.log(data.mensaje); // Mostrar mensaje del servidor
-            // (Opcional) Mostrar mensaje en el juego
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // (Opcional) Mostrar mensaje de error en el juego
-        });
+        francia: {
+            x: game.francia.x,
+            y: game.francia.y
+        }
+    }
+    return respuesta
 }
+
+export function armoRespuestaAzul(game) {
+    let respuesta;
+    if (game.avionDesplegado) {
+        respuesta = {
+            codigoAzul: game.codigoPartida,
+            arkRoyal: {
+                x: game.portaAviones.x,
+                y: game.portaAviones.y,
+                angle: 0,
+                avionesRestantes: game.portaAviones.avionesRestantes,
+                avionActual: {
+                    x: game.playerShip.x,
+                    y: game.playerShip.y,
+                    //ESTO SE TIENE QUE CAMBIAR UNA VEZ TENGAMOS LA FUNCIONALIDAD DE ELEGIR Y MUNICION
+                    municion: true,
+                    observador: false,
+                    operador: false
+                }
+            }
+        }
+
+    } else {
+        respuesta = {
+            codigoAzul: game.codigoPartida,
+            arkRoyal: {
+                x: game.playerShip.x,
+                y: game.playerShip.y,
+                angle: game.playerShip.angle,
+                avionesRestantes: game.playerShip.avionesRestantes,
+                avionActual: null
+            }
+        }
+    }
+
+
+    return respuesta
+}
+
+export async function retomarPartida(codigo) {
+    try {
+        const response = await fetch(`/retomarPartida/${codigo}`);
+        const datos = await response.json();
+        if (!response.ok) {
+            throw new Error(`${response.status} : ${datos.mensaje}`);
+        }
+
+        return datos;
+    } catch (err) {
+        throw err;
+    }
+}
+
