@@ -31,9 +31,8 @@ export class loaderScene extends Phaser.Scene {
         this.load.image('francia', './assets/imgs/sprites/franciaTransparente.png');
         this.load.image('bismarckGana', './assets/imgs/bismarckGana.png');
         this.load.image('crosshair', 'assets/imgs/sprites/crosshair.png');
-        this.load.image('arkRoyalGana', './assets/imgs/ganaArkRoyal.webp');
         this.load.image('torpedo', 'assets/imgs/sprites/torpedo.png');
-        
+        this.load.image('arkRoyalGana', './assets/imgs/ganaArkRoyal.webp');
         this.load.spritesheet('save', './assets/imgs/sprites/save.png',
             { frameWidth: 16, frameHeight: 16 })
         this.load.spritesheet('home', './assets/imgs/buttons/home.png',
@@ -69,8 +68,14 @@ export class loaderScene extends Phaser.Scene {
             { frameWidth: 447, frameHeight: 350 });
         for (let i = 0; i < 10; i++) {
             this.load.image(`avion${i}`, `./assets/imgs/sprites/despegue/avion${i}.png`);
-        }
-
+        };
+        this.load.image('piloto', './assets/imgs/sprites/piloto.png');
+        this.load.image('observador', './assets/imgs/sprites/observador.png');
+        this.load.image('operador', './assets/imgs/sprites/operador.png');
+        this.load.image('cancelar', './assets/imgs/sprites/cancelar.png');
+        this.load.image('fondo_menu', './assets/imgs/sprites/fondomenuavion.png');
+        this.load.spritesheet('numeros', './assets/imgs/sprites/numbers.png',
+            { frameWidth: 128, frameHeight: 192 });
 
 
         loadAudios(this);
@@ -78,6 +83,9 @@ export class loaderScene extends Phaser.Scene {
         this.load.on("complete", () => {
             this.scene.start("menuScene");
         });
+
+
+
 
     }
     create() { }

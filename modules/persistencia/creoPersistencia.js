@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 
+let Partida;
 export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
     mongoose.connect(`mongodb://${dbIp}:${dbPort}/${dbName}`)
         .then(() => { console.log('Conexion a DB completada') })
@@ -8,19 +9,21 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
     const bismarckSchema = new mongoose.Schema({
         x: Number,
         y: Number,
+        angle: Number,
         vida: Number
     })
     const avionSchema = new mongoose.Schema({
         x: Number,
         y: Number,
         municion: Boolean,
-        observador: Boolean,
-        operador: Boolean
+        tiempoVida: Number,
+        opcion: Number
     })
 
     const arkRoyalSchema = new mongoose.Schema({
         x: Number,
         y: Number,
+        angle: Number,
         avionesRestantes: Number,
         avionActual: avionSchema
     })
@@ -33,69 +36,81 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
     const partidaSchema = new mongoose.Schema({
         codigoAzul: String,
         codigoRojo: String,
+        inicioPartida: Number,
+        tiempoPartida: Number,
         bismarck: bismarckSchema,
         arkRoyal: arkRoyalSchema,
         francia: franciaSchema
     })
 
-    const partida = mongoose.model('Partidas', partidaSchema);
+    Partida = mongoose.model('Partidas', partidaSchema);
 
+    app.get('/retomarPartida/:codigo', (req, res) => {
+        let { codigo } = req.params;
 
-
-
-    app.post('/guardarPartida', (req, res) => {
-        const { codigoAzul, codigoRojo, vBismarck: bismarck, vArkRoyal: arkRoyal, vFrancia: francia } = req.body; // Datos del juego
-
-        const nuevaPartida = new partida({
-            codigoAzul: codigoAzul, codigoRojo: codigoRojo,
-            bismarck: {
-                x: bismarck.x,
-                y: bismarck.y,
-                vida: bismarck.vida
-            },
-            arkRoyal: {
-                x: arkRoyal.x,
-                y: arkRoyal.y,
-                avionesRestantes: arkRoyal.avionesRestantes,
-                avionActual: {
-                    x: arkRoyal.avionActual.x,
-                    y: arkRoyal.avionActual.y,
-                    observador: arkRoyal.avionActual.observador,
-                    operador: arkRoyal.avionActual.operador
-                }
-            },
-            francia: {
-                x: francia.x,
-                y: francia.y
-            }
-        });
-        nuevaPartida.save()
-            .then(() => res.json({ mensaje: 'Partida guardada' }))
-            .catch(err => res.status(500).json({ error: 'Error al guardar partida' }));
-    });
-
-    app.get('/retomarPartida', (req, res) => {
-        let { codigoAzul, codigoRojo } = req.query;
-
-        if (codigoAzul)
-            codigoRojo = 'N/A'
-        else
-            codigoAzul = 'N/A'
-
-        partida.findOne({
+        Partida.findOne({
             $or: [
-                { codigoAzul: codigoAzul },
-                { codigoRojo: codigoRojo }]
+                { codigoAzul: codigo },
+                { codigoRojo: codigo }]
         })
             .then((par) => {
-                if (!partida) {
+                if (!par) {
                     return res.status(404).json({ mensaje: 'Partida no encontrada' });
                 }
                 res.json(par)
-
             })
-            .catch(err => res.status(500).json({ error: 'Error al retomar partida ' }))
 
+            .catch(err => {
+                console.log(`Error al obtener la partida::: ${err}`)
+                return res.status(500).json({ status: 500, mensaje: `Error al obtener la partida ${err}` });
+            })
     })
 
 }
+
+export async function persistoPartida(respuestaAzul, respuestaRojo, updateDB) {
+    if (!Partida)
+        throw new Error('El modelo no se ha inicializado. Llama a inicioConexionDB primero.');
+    else {
+
+        const nuevaPartida = new Partida({
+            codigoAzul: respuestaAzul.codigoAzul,
+            codigoRojo: respuestaRojo.codigoRojo,
+            inicioPartida: respuestaRojo.inicioPartida,
+            tiempoPartida: respuestaRojo.tiempoPartida,
+            bismarck: {
+                x: respuestaRojo.bismarck.x,
+                y: respuestaRojo.bismarck.y,
+                angle: respuestaRojo.bismarck.angle,
+                vida: respuestaRojo.bismarck.vida
+            },
+
+            arkRoyal: {
+                x: respuestaAzul.arkRoyal.x,
+                y: respuestaAzul.arkRoyal.y,
+                angle: respuestaAzul.arkRoyal.angle,
+                avionesRestantes: respuestaAzul.arkRoyal.avionesRestantes,
+                avionActual: respuestaAzul.arkRoyal.avionActual
+            },
+            francia: {
+                x: respuestaRojo.francia.x,
+                y: respuestaRojo.francia.y
+            }
+
+        });
+
+        if (updateDB) {
+            //borro el registro anterior, es mas facil que updetear cada campo cambiado del nuevo
+            const resultado = await Partida.deleteMany({
+                $or: [
+                    { codigoAzul: respuestaAzul.codigoAzul },
+                    { codigoRojo: respuestaRojo.codigoRojo }]
+            })
+        }
+        nuevaPartida.save()
+            .then((res) => console.log(`Partida guardada`))
+            .catch((err) => console.log(`Error al guardar la partida::: ${err}`));
+    }
+}
+
+

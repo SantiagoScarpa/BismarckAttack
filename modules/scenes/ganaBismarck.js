@@ -1,4 +1,4 @@
-
+import { playAudios } from "../audios.js";
 
 export class ganaBismarck extends Phaser.Scene {
     constructor() {
@@ -7,6 +7,7 @@ export class ganaBismarck extends Phaser.Scene {
     preload() { }
 
     create() {
+        this.volMenu = sessionStorage.getItem('volMenu')
         const width = this.game.config.width;
         const height = this.game.config.height;
 
@@ -20,6 +21,16 @@ export class ganaBismarck extends Phaser.Scene {
             }
         )
             .setOrigin(0.5, 0.5)
+
+        let returnBtn = this.add.sprite(50, 50, 'returnBtn')
+            .setOrigin(0.5, 0.5)
+            .setInteractive()
+
+        returnBtn.on('pointerdown', () => {
+            this.scene.start('menuScene')
+            playAudios('return', this, this.volMenu)
+        })
+
     }
     update() {
 
