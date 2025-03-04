@@ -349,6 +349,7 @@ export class gameScene extends Phaser.Scene {
             posY = this.reanudo ? this.partida.arkRoyal.y : (100 + coordenadaInicioLocalY);
             angle = this.reanudo ? this.partida.arkRoyal.angle : 0;
             let avionesRestantes = this.reanudo ? this.partida.arkRoyal.avionesRestantes : 0;
+            this.menuAvionDespegado = false;
             // Jugador azul obtiene el ArkRoyale
             this.playerShip = creacionArkRoyale(this, posX, posY, angle, avionesRestantes, settings);
             this.avionDesplegado = false;
@@ -579,6 +580,7 @@ export class gameScene extends Phaser.Scene {
             }
         } else {
             //checkControlsAvion({ avion: this.playerShip, keys: this.keys });
+            console.log(`GAME - UPDATE / avionDesplegado -- menuAvionDesplegado ===${this.avionDesplegado} / ${this.menuAvionDespegado} / ${this.playerShip.label}`)
             if (this.avionDesplegado) {
                 checkControlsAvion({ avion: this.playerShip, keys: this.keys });
             } else {
@@ -587,6 +589,7 @@ export class gameScene extends Phaser.Scene {
             }
             if (this.playerShip.label === 'arkroyal') {
                 if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
+                    console.log(`GAME - UPDATE entro al space cuando lo presiono`)
                     if (!this.menuAvionDespegado) {
                         this.playerShip.setVelocityX(0);
                         this.playerShip.setVelocityY(0);
