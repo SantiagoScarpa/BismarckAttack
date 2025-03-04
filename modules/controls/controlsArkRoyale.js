@@ -1,11 +1,12 @@
 //ARCHIVO PARA CREACION DE ARK ROYALE Y SUS CONTROLES
-export function creacionArkRoyale(game, posX, posY, settings) {
+export function creacionArkRoyale(game, posX, posY, angle, avionesRestantes, settings) {
     let arkRoyal = game.matter.add.sprite(posX, posY, 'portaAviones', null, { label: 'arkroyal' });
     arkRoyal.setScale(0.15).setOrigin(0.5, 0.5);
-    arkRoyal.avionesRestantes = 10;
+    arkRoyal.avionesRestantes = avionesRestantes;
     arkRoyal.vida = 4
     arkRoyal.isOnFire = false
     arkRoyal.body.label = 'arkroyal'
+    arkRoyal.angle = angle
     arkRoyal.velocity = settings.arkRoyalVelocity;
     arkRoyal.label = 'arkRoyal'
     return arkRoyal
@@ -22,9 +23,16 @@ export function checkControlsArkRoyale({ ArkRoyale, keys }) {
     let currentAngle = ArkRoyale.angle;
     let deltaAngle = Phaser.Math.Angle.ShortestBetween(currentAngle, targetAngle);
 
-    if (Math.abs(deltaAngle) <= maxRotationDelta) {
-        let newAngle = Phaser.Math.Angle.RotateTo(currentAngle, targetAngle, rotationSpeed);
-        ArkRoyale.angle = newAngle + 90;
+    if (ArkRoyale.body.velocity.y !== 0 && ArkRoyale.body.velocity.x !== 0) {
+        if (Math.abs(deltaAngle) <= maxRotationDelta) {
+            let newAngle = Phaser.Math.Angle.RotateTo(currentAngle, targetAngle, rotationSpeed);
+            ArkRoyale.angle = newAngle + 90;
+        }
+    } else if (keys.RIGHT.isDown) {
+        if (Math.abs(deltaAngle) <= maxRotationDelta) {
+            let newAngle = Phaser.Math.Angle.RotateTo(currentAngle, targetAngle, rotationSpeed);
+            ArkRoyale.angle = newAngle + 90;
+        }
     }
 
     let speedX = ArkRoyale.body.velocity.x;

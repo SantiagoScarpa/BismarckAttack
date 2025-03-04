@@ -17,6 +17,8 @@ export class menuScene extends Phaser.Scene {
         const width = this.game.config.width;
         const height = this.game.config.height;
 
+        this.partida = null;
+
         this.add.text(width / 2, 200, 'MENU', {
             fontFamily: 'Rockwell',
             fontSize: 80,
@@ -62,7 +64,8 @@ export class menuScene extends Phaser.Scene {
             })
             .setOrigin(0.5, 0.5)
             .setDepth(2)
-
+        this.playWaiting = false
+        this.replayWaiting = false
         await agregoFuncionalidadBotones(this)
     }
 
@@ -179,14 +182,14 @@ export class menuScene extends Phaser.Scene {
             if (playersCount === 2) {
                 clearInterval(intervalId);
                 this.hideWaitingModal();
-                this.startGame(this.selectedTeam, this.socket, this.reanudo);
+                this.startGame(this.selectedTeam, this.socket, this.reanudo, this.partida);
             }
         }, 1000);
     }
 
 
-    startGame(team, socket, reanudo) {
-        this.scene.start('gameScene', { team, socket, reanudo });
+    startGame(team, socket, reanudo, partida) {
+        this.scene.start('gameScene', { team, socket, reanudo, partida });
     }
 }
 
@@ -211,6 +214,7 @@ async function agregoFuncionalidadBotones(game) {
         else {
             alert("La cantidad de jugadores ha alcanzado su maximo ✌✔")
         }
+
     });
 
     configBtn.on('pointerover', function () {
@@ -240,7 +244,6 @@ async function agregoFuncionalidadBotones(game) {
         replayBtn.setFrame(0)
         game.reanudo = true
         playAudios('menuSelection', game, game.volumeMenu)
-
         playBtn.setInteractive(false);
         replayBtn.setInteractive(false);
         configBtn.setInteractive(false);
@@ -251,7 +254,6 @@ async function agregoFuncionalidadBotones(game) {
         replayBtn.removeListener('pointerover');
         configBtn.removeListener('pointerover');
         showReanudarPartida(game)
-
     })
 }
 
@@ -331,6 +333,7 @@ function cargoValoresEnSession() {
 }
 
 function esperoJugador(game, codigo, partida) {
+    game.partida = partida;
     if (codigo === partida.codigoRojo) {
         console.log("🔴 Jugador seleccionó el BANDO ROJO");
         game.selectedTeam = 'red';

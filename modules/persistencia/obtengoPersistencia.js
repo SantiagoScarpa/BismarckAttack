@@ -50,9 +50,11 @@ export function armoRespuestaRojo(game) {
     let respuesta = {
         codigoRojo: game.codigoPartida,
         tiempoPartida: tiempoDisponible,
+        inicioPartida: game.inicioPartida,
         bismarck: {
             x: game.playerShip.x,
             y: game.playerShip.y,
+            angle: game.playerShip.angle,
             vida: game.playerShip.vida
         },
         francia: {
@@ -71,6 +73,7 @@ export function armoRespuestaAzul(game) {
             arkRoyal: {
                 x: game.portaAviones.x,
                 y: game.portaAviones.y,
+                angle: 0,
                 avionesRestantes: game.portaAviones.avionesRestantes,
                 avionActual: {
                     x: game.playerShip.x,
@@ -89,6 +92,7 @@ export function armoRespuestaAzul(game) {
             arkRoyal: {
                 x: game.playerShip.x,
                 y: game.playerShip.y,
+                angle: game.playerShip.angle,
                 avionesRestantes: game.playerShip.avionesRestantes,
                 avionActual: null
             }

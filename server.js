@@ -45,14 +45,16 @@ io.on('connection', (socket) => {
     });
     console.log(`🎮 Jugador conectado: ${socket.id}`);
 
-    socket.on("empiezaPartida", () => {
+    socket.on("empiezaPartida", (reanuda) => {
         // Enviar la posición de Francia al nuevo jugador
         socket.emit('setFranciaPosition', franciaPosition)
-        updateDB = false;
-        //creo el registro de la partida en la DB y pongo que ahora solo se actualiza
-        io.emit('pidoAzul')
-        io.emit('pidoRojo')
 
+        if (!reanuda) {
+            updateDB = false;
+            //creo el registro de la partida en la DB y pongo que ahora solo se actualiza
+            io.emit('pidoAzul')
+            io.emit('pidoRojo')
+        }
     })
 
     // Si `franciaPosition` no está definida, la creamos al conectar el primer jugador

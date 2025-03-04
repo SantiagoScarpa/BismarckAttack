@@ -1,5 +1,5 @@
 //ARCHIVO PARA CREACION DE BISMARCK Y SUS CONTROLES 
-export function creacionBismarck(game, posX, posY, settings) {
+export function creacionBismarck(game, posX, posY, angle, settings) {
 
     try {
         let vel = sessionStorage.getItem('bismarckVelocity')
@@ -10,6 +10,7 @@ export function creacionBismarck(game, posX, posY, settings) {
         bismarck.vida = 3;
         bismarck.isOnFire = false;
         bismarck.label = 'bismarck'
+        bismarck.angle = angle
         bismarck.velocity = vel;
         return bismarck;
     } catch (err) {
