@@ -16,8 +16,8 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
         x: Number,
         y: Number,
         municion: Boolean,
-        observador: Boolean,
-        operador: Boolean,
+        tiempoVida: Number,
+        opcion: Number
     })
 
     const arkRoyalSchema = new mongoose.Schema({

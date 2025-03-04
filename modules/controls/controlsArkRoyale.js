@@ -9,7 +9,6 @@ export function creacionArkRoyale(game, posX, posY, angle, avionesRestantes, set
     arkRoyal.body.label = 'arkroyal'
     arkRoyal.angle = angle
     arkRoyal.velocity = settings.arkRoyalVelocity;
-    arkRoyal.label = 'arkRoyal'
     return arkRoyal
 }
 

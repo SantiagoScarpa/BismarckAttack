@@ -67,6 +67,7 @@ export function armoRespuestaRojo(game) {
 
 export function armoRespuestaAzul(game) {
     let respuesta;
+    console.log(game.tiempo)
     if (game.avionDesplegado) {
         respuesta = {
             codigoAzul: game.codigoPartida,
@@ -80,8 +81,8 @@ export function armoRespuestaAzul(game) {
                     y: game.playerShip.y,
                     //ESTO SE TIENE QUE CAMBIAR UNA VEZ TENGAMOS LA FUNCIONALIDAD DE ELEGIR Y MUNICION
                     municion: true,
-                    observador: false,
-                    operador: false
+                    opcion: game.avionOpcion,
+                    tiempoVida: 9999,
                 }
             }
         }

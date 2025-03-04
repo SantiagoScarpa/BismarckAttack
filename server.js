@@ -28,7 +28,10 @@ let obtubeDatosRojo = false;
 let obtubeDatosAzul = false;
 let updateDB = false;
 let codigoEspero = null;
-let esperoNuevaPartida = false
+let esperoNuevaPartida = false;
+let listoRojo = false
+let listoAzul = false;
+
 io.on('connection', (socket) => {
     socket.on('newPlayer', (player) => {
         // Verificar si ya existe un jugador con el mismo equipo
@@ -51,7 +54,6 @@ io.on('connection', (socket) => {
     socket.on("empiezaPartida", (reanuda) => {
         // Enviar la posición de Francia al nuevo jugador
         socket.emit('setFranciaPosition', franciaPosition)
-
         if (!reanuda) {
             updateDB = false;
             //creo el registro de la partida en la DB y pongo que ahora solo se actualiza
@@ -170,6 +172,28 @@ io.on('connection', (socket) => {
     socket.on('deletPlane', (player) => {
         io.emit('deletPlane', player);
     });
+
+    socket.on('rojoCargado', () => {
+        listoRojo = true
+        console.log(`SERVER ROJO LISTO azul listo==${listoAzul}`)
+        if (listoAzul) {
+            console.log('server / ROJO listo todos')
+            io.emit('listoTodos')
+            listoAzul = false
+            listoRojo = false
+        }
+    })
+
+    socket.on('azulCargado', () => {
+        listoAzul = true
+        console.log(`SERVER AZUL LISTO rojo listo==${listoRojo}`)
+        if (listoRojo) {
+            console.log('server / AZUL listo todos')
+            io.emit('listoTodos')
+            listoAzul = false
+            listoRojo = false
+        }
+    })
 });
 
 

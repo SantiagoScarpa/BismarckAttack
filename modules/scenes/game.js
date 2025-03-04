@@ -348,7 +348,7 @@ export class gameScene extends Phaser.Scene {
             posX = this.reanudo ? this.partida.arkRoyal.x : (100 + coordenadaInicioLocalX);
             posY = this.reanudo ? this.partida.arkRoyal.y : (100 + coordenadaInicioLocalY);
             angle = this.reanudo ? this.partida.arkRoyal.angle : 0;
-            let avionesRestantes = this.reanudo ? this.partida.arkRoyal.avionesRestantes : 0;
+            let avionesRestantes = this.reanudo ? this.partida.arkRoyal.avionesRestantes : 10;
             // Jugador azul obtiene el ArkRoyale
             this.playerShip = creacionArkRoyale(this, posX, posY, angle, avionesRestantes, settings);
             this.avionDesplegado = false;
@@ -551,18 +551,21 @@ export class gameScene extends Phaser.Scene {
 
         this.socket.on('muestroVistaLateral', () => {
             this.scene.start('sceneVistaLateral')
-            // console.log('FUNCIONA')
         })
 
-
+        if (this.team === 'red' && this.reanudo && this.partida.arkRoyal.avionActual !== null) {
+            console.log('game / aviso que rojo cargo')
+            this.socket.emit('rojoCargado') //tengo que avisar que el rojo ya cargo si hay un avion para que no den error los controles
+        }
         if (this.reanudo && this.partida.arkRoyal.avionActual !== null && this.team === 'blue') {
-            this.avionDesplegado = true;
-            this.portaAviones = this.playerShip;
-            this.portaAvionesIcon = this.add.circle(this.portaAviones.x, this.portaAviones.y, 60, 0x0000ff, 1).setOrigin(0.5, 0.5);
-            this.cameras.main.ignore([this.portaAvionesIcon]);
-            this.playerShip = creacionAvion(this, (this.partida.arkRoyal.avionActual.x), this.partida.arkRoyal.avionActual.y, settings);
-            this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
-            this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
+            console.log('game / aviso que azul cargo')
+            this.socket.emit('azulCargado')
+            this.socket.on('listoTodos', () => {
+                console.log('listo todos ')
+                this.avionReanudado = true
+                this.despegueAvion(this.partida.arkRoyal.avionActual.opcion, this.partida.arkRoyal.avionActual.x, this.partida.arkRoyal.avionActual.y);
+            })
+
         }
 
     }
@@ -813,7 +816,9 @@ export class gameScene extends Phaser.Scene {
             boton.on('pointerdown', () => {
                 this.menu.destroy();
                 this.menuAvionDespegado = false;
-                this.despegueAvion(opcion.valor);
+                this.avionOpcion = opcion.valor
+                this.avionReanudado = false
+                this.despegueAvion(opcion.valor, 0, 0);
             });
             this.menu.add(boton);
         });
@@ -854,18 +859,22 @@ export class gameScene extends Phaser.Scene {
         this.menu.addAt(fondoMenu, 0); // Agrega el fondo como el primer elemento
     }
 
-    despegueAvion(opcion) {
+    despegueAvion(opcion, reanudoX, reanudoY) {
         console.log('Opción seleccionada:', opcion);
         if (!this.avionDesplegado) {
             this.portaAviones = this.playerShip;
             this.portaAvionesIcon = this.add.circle(this.portaAviones.x, this.portaAviones.y, 60, 0x0000ff, 1).setOrigin(0.5, 0.5);
             this.cameras.main.ignore([this.portaAvionesIcon]);
             this.portaAviones.setVelocity(0);
-            if (this.playerShip.angle > -10 && this.playerShip.angle < 10) {
-                this.playerShip = creacionAvion(this, (this.playerShip.x + 50), this.playerShip.y, settings);
+            let despegoX = (this.reanudo && this.avionReanudado) ? reanudoX : this.playerShip.x
+            let despegoY = (this.reanudo && this.avionReanudado) ? reanudoY : this.playerShip.y
+            if (this.playerShip.angle > -10 && this.playerShip.angle < 10 && !this.avionReanudado) {
+                despegoX = despegoX + 50
             } else {
-                this.playerShip = creacionAvion(this, (this.playerShip.x + 80), this.playerShip.y, settings);
+                despegoX = despegoX + 80
             }
+            this.playerShip = creacionAvion(this, despegoX, despegoY, settings);
+            this.avionReanudado = false
             this.avionDesplegado = true;
             this.portaAviones.avionesRestantes -= 1;
             this.socket.emit('newPlane', {
