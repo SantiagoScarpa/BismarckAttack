@@ -64,7 +64,6 @@ export class gameScene extends Phaser.Scene {
                 bulletTail.destroy();
             }, 100);
 
-
             bullet.setSensor(true);
             this.bullets.push(bullet);
             this.time.delayedCall(2000, () => bullet?.destroy());
@@ -223,21 +222,33 @@ export class gameScene extends Phaser.Scene {
                         this.onBulletHit(arkroyal, bullet);
                     }
                 }
-                // Si coliciona el avion con el ArkRoyal siempre y cuando el avion este en el aire
-                if (this.avionDesplegado) {
-                    if (
-                        ((bodyA === this.playerShip.body && bodyB === this.portaAviones.body) ||
-                            (bodyA === this.portaAviones.body && bodyB === this.playerShip.body))
-                    ) {
+                // Bloque para  la colicion entr el arkRoyal y el avion
+                else if (
+                    (bodyA.label === 'avion' && bodyB.label === 'arkroyal') ||
+                    (bodyA.label === 'arkroyal' && bodyB.label === 'avion')
+                ) {
+                    if (this.team === 'blue') {
+                        console.log('DESTROY AVION EQUIPO BLUE');
+                        clearInterval(this.intervaloTiempo); // Detiene el intervalo
+                        this.barraFondo.destroy(); // Destruye la barra de fondo
+                        this.barraRelleno.destroy(); // Destruye la barra de relleno
+                        this.avionDesplegado = false;
+                        this.tiempoRestante = 0;
                         this.playerShip.destroy();
                         this.playerShip = this.portaAviones;
                         this.portaAvionesIcon.destroy();
-                        this.avionDesplegado = false;
                         this.playerShip.avionesRestantes += 1;
                         this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
                         this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
+                        this.visionObjets = 210; // Radio para objetos
+                        this.visionRadius = 200;  // Radio de visión
                     }
+                    this.socket.emit('deletPlane', {
+                        team: this.team,
+                    });
+
                 }
+
             });
         });
 
@@ -264,15 +275,19 @@ export class gameScene extends Phaser.Scene {
 
         if (this.reanudo) {
             this.createFrancia(this.partida.francia.x, this.partida.francia.y);
-            const franciaIcon = this.add.circle(this.partida.francia.x, this.partida.francia.y, 60, 0xff0000, 1).setOrigin(0.5, 0.5);
-            this.cameras.main.ignore([franciaIcon]);
+            if (this.team === 'red') {
+                const franciaIcon = this.add.circle(this.partida.francia.x, this.partida.francia.y, 60, 0xff0000, 1).setOrigin(0.5, 0.5);
+                this.cameras.main.ignore([franciaIcon]);
+            }
         } else {
             // Esperar la posición de Francia desde el servidor
             this.socket.on('setFranciaPosition', (position) => {
                 console.log(`Recibida posición de Francia: (${position.x}, ${position.y})`);
                 this.createFrancia(position.x, position.y);
-                const franciaIcon = this.add.circle(position.x, position.y, 60, 0xff0000, 1).setOrigin(0.5, 0.5);
-                this.cameras.main.ignore([franciaIcon]);
+                if (this.team === 'red') {
+                    const franciaIcon = this.add.circle(position.x, position.y, 60, 0xff0000, 1).setOrigin(0.5, 0.5);
+                    this.cameras.main.ignore([franciaIcon]);
+                }
             });
         }
         const homeBtn = this.add.sprite(1120, 250, 'home')
@@ -391,6 +406,9 @@ export class gameScene extends Phaser.Scene {
         this.minimapCamera.ignore([this.playerShip, radar, overlay]); //
         this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
 
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //------------------------INTERACCION CON EL SEVIIDOR--------------------------------------------------//
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Emitir al servidor que este jugador se unió
         this.socket.on("connect", () => {
             console.log(`Conectado con ID ${this.socket.id}, enviando al server`);
@@ -409,6 +427,7 @@ export class gameScene extends Phaser.Scene {
             if (player.id !== this.socket.id) {
                 if (!this.players[player.id]) {
                     // Aquí verificamos el team
+                    console.log(`*********** ACA NO ENTRO NUNCA ****************************************************`);
                     if (player.team === 'red') {
                         this.createBismarck(player.id, player.x, player.y);
                     } else {
@@ -418,7 +437,26 @@ export class gameScene extends Phaser.Scene {
             }
         });
 
+        this.socket.on('newPlane', (player) => {
+            console.log(`Avion desplegado: ${player.team}`);
+            if (this.team === 'red') {
+                this.createAvion(player.id, player.x, player.y);
+            }
+        });
 
+        this.socket.on('deletPlane', (player) => {
+            console.log(`Avion fuera de escena: ${player.team}`);
+            if (this.team === 'red') {
+                console.log('DESTROY AVION EQUIPO RED ORDEN DEL SERVIDOR');
+                let indice = this.objects.findIndex(obj => obj.body && obj.body.label === 'avion');
+                if (indice !== -1) {
+                    let avionEncontrado = this.objects[indice];
+                    this.objects.splice(indice, 1);
+                    avionEncontrado.destroy();
+                }
+                this.avion.destroy();
+            }
+        });
 
         this.socket.on('updatePlayers', (players) => {
             Object.keys(players).forEach((id) => {
@@ -427,13 +465,20 @@ export class gameScene extends Phaser.Scene {
                         // Crear nave según el team
                         if (players[id].team === 'red') {
                             this.createBismarck(id, players[id].x, players[id].y, players[id].angle);
-                        } else {
+                        } else if (players[id].team === 'blue') {
                             this.createArkRoyal(id, players[id].x, players[id].y, players[id].angle);
                         }
                     } else {
                         // Actualizar posición y ángulo
-                        this.players[id].setPosition(players[id].x, players[id].y);
-                        this.players[id].setAngle(players[id].angle);
+                        if (players[id].label === 'avion') {
+                            this.avion.setPosition(players[id].x, players[id].y);
+                            this.avion.setAngle(players[id].angle);
+                            this.players[id].setPosition(players[id].Px, players[id].Py);
+                            this.players[id].setAngle(players[id].Pangle);
+                        } else {
+                            this.players[id].setPosition(players[id].x, players[id].y);
+                            this.players[id].setAngle(players[id].angle);
+                        }
                     }
                 }
             });
@@ -483,7 +528,9 @@ export class gameScene extends Phaser.Scene {
             });
         }
 
-        //this.input.setDefaultCursor('none');
+        if (this.team === 'red') {
+            this.input.setDefaultCursor('none');
+        }
 
         // Crear las animaciones definidas globalmente        
         createAnimations(this);
@@ -535,26 +582,21 @@ export class gameScene extends Phaser.Scene {
             if (this.avionDesplegado) {
                 checkControlsAvion({ avion: this.playerShip, keys: this.keys });
             } else {
-                checkControlsArkRoyale({ ArkRoyale: this.playerShip, keys: this.keys });
+                if (!this.menuAvionDespegado)
+                    checkControlsArkRoyale({ ArkRoyale: this.playerShip, keys: this.keys });
             }
-            if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
-                if (!this.avionDesplegado) {
-
-                    this.portaAviones = this.playerShip;
-                    this.portaAvionesIcon = this.add.circle(this.portaAviones.x, this.portaAviones.y, 60, 0x0000ff, 1).setOrigin(0.5, 0.5);
-                    this.cameras.main.ignore([this.portaAvionesIcon]);
-                    if (this.playerShip.angle > -10 && this.playerShip.angle < 10) {
-                        this.playerShip = creacionAvion(this, (this.playerShip.x + 50), this.playerShip.y, settings);
-                    } else {
-                        this.playerShip = creacionAvion(this, (this.playerShip.x + 80), this.playerShip.y, settings);
+            if (this.playerShip.label === 'arkroyal') {
+                if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
+                    if (!this.menuAvionDespegado) {
+                        this.playerShip.setVelocityX(0);
+                        this.playerShip.setVelocityY(0);
+                        this.menuAvion(this.playerShip.x, this.playerShip.y);
                     }
-                    this.avionDesplegado = true;
-                    this.portaAviones.avionesRestantes -= 1;
-                    this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
-                    this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
+
                 }
             }
         }
+
         if (Phaser.Input.Keyboard.JustDown(this.keys.P)) {
             this.socket.emit('vistaLateral')
         }
@@ -585,13 +627,29 @@ export class gameScene extends Phaser.Scene {
             this.visionMask.fillCircle(this.playerShip.x, this.playerShip.y, this.visionRadius); // Actualiza el círculo de visión
 
             // Emitir la posición actualizada del jugador al servidor
-            this.socket.emit('playerMove', {
-                id: this.socket.id,
-                x: this.playerShip.x,
-                y: this.playerShip.y,
-                angle: this.playerShip.angle,
-                team: this.team
-            });
+            if (this.avionDesplegado) {
+                this.socket.emit('playerMove', {
+                    id: this.socket.id,
+                    x: this.playerShip.x,
+                    y: this.playerShip.y,
+                    angle: this.playerShip.angle,
+                    team: this.team,
+                    label: this.playerShip.label,
+                    Px: this.portaAviones.x,
+                    Py: this.portaAviones.y,
+                    Pangle: this.portaAviones.angle
+                });
+            } else {
+                this.socket.emit('playerMove', {
+                    id: this.socket.id,
+                    x: this.playerShip.x,
+                    y: this.playerShip.y,
+                    angle: this.playerShip.angle,
+                    team: this.team,
+                    label: this.playerShip.label
+                });
+            }
+
         }
 
         // Mostrar u ocultar objetos según estén dentro del rango de visión
@@ -684,8 +742,224 @@ export class gameScene extends Phaser.Scene {
         avion.setScale(0.15).setOrigin(0.5, 0.5);
         avion.velocity = settings.avionVelocity;
         avion.body.label = 'avion'
+        this.avion = avion
 
-        this.players[playerId] = avion;
+        //this.players[playerId] = avion;
         this.objects.push(avion);
     }
+
+
+
+    menuAvion(x, y) {
+        const espacioEntreIconos = 2;
+        const tamañoIcono = 24;
+        const radioMenu = 60;
+        this.menuAvionDespegado = true;
+        // Crea un contenedor para el menú
+        this.menu = this.add.container(x, y);
+        // Define las opciones del menú
+        const opciones = [
+            { imagenes: ['piloto'], valor: 1 },
+            { imagenes: ['piloto', 'observador'], valor: 2 },
+            { imagenes: ['piloto', 'observador', 'operador'], valor: 4 },
+            { imagenes: ['piloto', 'operador'], valor: 3 },
+        ];
+
+        // Calcula el ángulo de cada opción
+        const anguloOpcion = (Math.PI * 2) / opciones.length;
+
+        // Crea los botones del menú
+        opciones.forEach((opcion, index) => {
+            // Calcula la posición del botón en el círculo
+            const angulo = anguloOpcion * index - Math.PI / 2; // Iniciar desde arriba
+            const botonX = Math.cos(angulo) * radioMenu;
+            const botonY = Math.sin(angulo) * radioMenu;
+
+            const boton = this.add.container(botonX, botonY);
+
+            // Calcula el ancho del botón basado en las imágenes
+            let anchoBoton = 0;
+            opcion.imagenes.forEach(() => {
+                anchoBoton += tamañoIcono + espacioEntreIconos;
+            });
+            anchoBoton -= espacioEntreIconos;
+
+            // Calcula el offset inicial para centrar los iconos
+            let xOffset = 0;
+
+            // Agrega las imágenes al botón
+            opcion.imagenes.forEach(imagen => {
+                const img = this.add.image(xOffset + tamañoIcono / 2 - anchoBoton / 2, 0, imagen);
+                img.setDisplaySize(tamañoIcono, tamañoIcono);
+                img.setOrigin(0.5);
+                boton.add(img);
+                xOffset += tamañoIcono + espacioEntreIconos;
+            });
+
+
+            boton.setInteractive(new Phaser.Geom.Rectangle(-anchoBoton / 2, -tamañoIcono / 2, anchoBoton, tamañoIcono), Phaser.Geom.Rectangle.Contains);
+            boton.on('pointerover', () => {
+                const fondoHover = this.add.graphics();
+                fondoHover.fillStyle(0x008000, 0.4);
+                fondoHover.fillRect(-anchoBoton / 2, -tamañoIcono / 2, anchoBoton, tamañoIcono);
+                boton.addAt(fondoHover, 0);
+                boton.setData('fondoHover', fondoHover);
+            });
+            boton.on('pointerout', () => {
+                const fondoHover = boton.getData('fondoHover');
+                if (fondoHover)
+                    fondoHover.destroy();
+            });
+            boton.on('pointerdown', () => {
+                this.menu.destroy();
+                this.menuAvionDespegado = false;
+                this.despegueAvion(opcion.valor);
+            });
+            this.menu.add(boton);
+        });
+
+        // Centra el menú en la posición del jugador
+        this.menu.x = x + 80;
+        this.menu.y = y + 70;
+        this.menu.x -= this.menu.getBounds().width / 2;
+        this.menu.y -= this.menu.getBounds().height / 2;
+
+        const centroMenuX = this.menu.getBounds().width / 2;
+        const centroMenuY = this.menu.getBounds().height / 2;
+
+        const botonCentral = this.add.container(centroMenuX - 85, centroMenuY - 70);
+        const imgSalir = this.add.image(0, 0, 'cancelar');
+        imgSalir.setDisplaySize(tamañoIcono, tamañoIcono);
+        botonCentral.add(imgSalir);
+        botonCentral.setInteractive(new Phaser.Geom.Rectangle(-tamañoIcono / 2, -tamañoIcono / 2, tamañoIcono, tamañoIcono), Phaser.Geom.Rectangle.Contains);
+        botonCentral.on('pointerover', () => {
+            const fondoHover = this.add.graphics();
+            fondoHover.fillStyle(0xFFBDC0, 0.4);
+            fondoHover.fillRect(-tamañoIcono / 2, -tamañoIcono / 2, tamañoIcono, tamañoIcono);
+            botonCentral.addAt(fondoHover, 0);
+            botonCentral.setData('fondoHover', fondoHover);
+        });
+        botonCentral.on('pointerout', () => {
+            const fondoHover = botonCentral.getData('fondoHover');
+            if (fondoHover)
+                fondoHover.destroy();
+        });
+        botonCentral.on('pointerdown', () => {
+            this.menu.destroy();
+            this.menuAvionDespegado = false;
+        });
+        this.menu.add(botonCentral);
+
+        const fondoMenu = this.add.image(0, 0, 'fondo_menu').setOrigin(0.5).setScale(0.65); // Centra la imagen
+        this.menu.addAt(fondoMenu, 0); // Agrega el fondo como el primer elemento
+    }
+
+    despegueAvion(opcion) {
+        console.log('Opción seleccionada:', opcion);
+        if (!this.avionDesplegado) {
+            this.portaAviones = this.playerShip;
+            this.portaAvionesIcon = this.add.circle(this.portaAviones.x, this.portaAviones.y, 60, 0x0000ff, 1).setOrigin(0.5, 0.5);
+            this.cameras.main.ignore([this.portaAvionesIcon]);
+            this.portaAviones.setVelocity(0);
+            if (this.playerShip.angle > -10 && this.playerShip.angle < 10) {
+                this.playerShip = creacionAvion(this, (this.playerShip.x + 50), this.playerShip.y, settings);
+            } else {
+                this.playerShip = creacionAvion(this, (this.playerShip.x + 80), this.playerShip.y, settings);
+            }
+            this.avionDesplegado = true;
+            this.portaAviones.avionesRestantes -= 1;
+            this.socket.emit('newPlane', {
+                x: this.playerShip.x,
+                y: this.playerShip.y,
+                angle: this.playerShip.angle,
+                team: this.team,
+                label: this.playerShip.label
+            });
+            this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
+            this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
+            let tiempoDeVida = 0;
+            switch (opcion) {
+                case 1:
+                    this.visionObjets = 50; // Radio para objetos
+                    this.visionRadius = 45;  // Radio de visión
+                    tiempoDeVida = 30000;
+                    break;
+                case 2:
+                    this.visionObjets = 210; // Radio para objetos
+                    this.visionRadius = 200;  // Radio de visión
+                    tiempoDeVida = 20000;
+                    break;
+
+                case 3:
+                    this.visionObjets = 50; // Radio para objetos
+                    this.visionRadius = 45;  // Radio de visión
+                    tiempoDeVida = 20000;
+                    break;
+                case 4:
+                    this.visionObjets = 210; // Radio para objetos
+                    this.visionRadius = 200;  // Radio de visión
+                    tiempoDeVida = 10000;
+                    break;
+            }
+
+            // Tiempo de vida del avión en milisegundos (ejemplo: 30 segundos)
+            let tiempoRestante = tiempoDeVida;
+
+            // Crea la barra de tiempo
+            const barraAncho = 100;
+            const barraAlto = 10;
+            const barraX = 1080;
+            const barraY = 555;
+
+            const barraFondo = this.add.rectangle(barraX, barraY, barraAncho, barraAlto, 0x666666);
+            barraFondo.setOrigin(0, 0);
+            barraFondo.setScrollFactor(0);
+            barraFondo.setDepth(2);
+            this.cameras.main.ignore([barraFondo]);
+
+            const barraRelleno = this.add.rectangle(barraX, barraY, barraAncho, barraAlto, 0x00ff00);
+            barraRelleno.setOrigin(0, 0);
+            barraRelleno.setScrollFactor(0);
+            barraRelleno.setDepth(2);
+
+            // Función para actualizar la barra de tiempo
+            const actualizarBarra = () => {
+                tiempoRestante -= 1000;
+                const porcentaje = tiempoRestante / tiempoDeVida;
+                barraRelleno.width = barraAncho * porcentaje;
+                barraRelleno.x = barraX;
+                barraRelleno.y = barraY;
+                barraFondo.x = barraX;
+                barraFondo.y = barraY;
+
+                if (tiempoRestante <= 0) {
+                    this.socket.emit('deletPlane', {
+                        team: this.team,
+                    });
+                    // Destruye el avión y la barra
+                    clearInterval(this.intervaloTiempo); // Detiene el intervalo
+                    this.barraFondo.destroy();
+                    this.barraRelleno.destroy();
+                    this.avionDesplegado = false;
+                    this.tiempoRestante = 0;
+                    this.playerShip.destroy();
+                    this.playerShip = this.portaAviones;
+                    this.portaAvionesIcon.destroy();
+                    this.playerShip.avionesRestantes -= 1;
+                    this.cameras.main.startFollow(this.portaAviones, true, 0.1, 0.1);
+                    this.minimapCamera.startFollow(this.portaAviones, true, 0.1, 0.1);
+                    this.visionObjets = 210; // Radio para objetos
+                    this.visionRadius = 200;  // Radio de visión
+                }
+            };
+
+            // Actualiza la barra cada segundo
+            this.intervaloTiempo = setInterval(actualizarBarra, 1000); // Guarda el intervalo en una variable
+
+            this.barraFondo = barraFondo; // Guarda la barra de fondo
+            this.barraRelleno = barraRelleno; // Guarda la barra de relleno
+            this.tiempoRestante = tiempoRestante; // Guarda el tiempo restante
+        }
+    }
+
 }

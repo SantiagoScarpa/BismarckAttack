@@ -20,6 +20,7 @@ inicioConexionDB(app, settings.dbInfo);
 expongoWsSettings(app)
 
 const players = {}; // Guardar jugadores activos
+const aviones = {}; // Guardar aviones activos
 let franciaPosition = null; // ✅ Guardamos la posición de Francia
 let respuestaAzul = null;
 let respuestaRojo = null;
@@ -88,6 +89,10 @@ io.on('connection', (socket) => {
             players[socket.id].y = player.y;
             players[socket.id].angle = player.angle;
             players[socket.id].team = player.team;
+            players[socket.id].label = player.label;
+            players[socket.id].Px = player.Px;
+            players[socket.id].Py = player.Py;
+            players[socket.id].Pangle = player.Pangle;
         }
         io.emit('updatePlayers', players);
     });
@@ -156,6 +161,15 @@ io.on('connection', (socket) => {
         esperoNuevaPartida = true;
     })
 
+
+    socket.on('newPlane', (player) => {
+        players[socket.id] = player;
+        io.emit('newPlane', player);
+    });
+
+    socket.on('deletPlane', (player) => {
+        io.emit('deletPlane', player);
+    });
 });
 
 

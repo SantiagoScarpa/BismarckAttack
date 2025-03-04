@@ -5,6 +5,7 @@ export function creacionArkRoyale(game, posX, posY, angle, avionesRestantes, set
     arkRoyal.avionesRestantes = avionesRestantes;
     arkRoyal.vida = 4
     arkRoyal.isOnFire = false
+    arkRoyal.label = 'arkroyal'
     arkRoyal.body.label = 'arkroyal'
     arkRoyal.angle = angle
     arkRoyal.velocity = settings.arkRoyalVelocity;
