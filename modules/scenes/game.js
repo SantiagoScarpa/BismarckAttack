@@ -327,7 +327,6 @@ export class gameScene extends Phaser.Scene {
                     (bodyA.label === 'arkroyal' && bodyB.label === 'avion')
                 ) {
                     if (this.team === 'blue') {
-                        console.log('DESTROY AVION EQUIPO BLUE');
                         clearInterval(this.intervaloTiempo); // Detiene el intervalo
                         this.barraFondo.destroy(); // Destruye la barra de fondo
                         this.barraRelleno.destroy(); // Destruye la barra de relleno
@@ -336,7 +335,7 @@ export class gameScene extends Phaser.Scene {
                         this.playerShip.destroy();
                         this.playerShip = this.portaAviones;
                         this.portaAvionesIcon.destroy();
-                        this.playerShip.avionesRestantes += 1;
+                        //this.playerShip.avionesRestantes += 1;
                         this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
                         this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
                         this.visionObjets = 210; // Radio para objetos
@@ -476,6 +475,11 @@ export class gameScene extends Phaser.Scene {
             // Jugador azul obtiene el ArkRoyale
             this.playerShip = creacionArkRoyale(this, posX, posY, angle, avionesRestantes, settings);
             this.avionDesplegado = false;
+            this.dispCantAviones = this.add.text(1130, 661, `Aviones disponibles: ${this.playerShip.avionesRestantes}`, {
+                fontFamily: 'Rockwell',
+                fontSize: 18,
+                color: '#ffffff'
+            }).setOrigin(0.5).setDepth(11).setScrollFactor(0).setScale(0.5);
         }
 
         //if (!this.playerShip) return;
@@ -515,6 +519,7 @@ export class gameScene extends Phaser.Scene {
         radar.setScrollFactor(0);
         radar.setScale(0.09);
         radar.setDepth(2);
+        radar.setAlpha(0.6);
 
         // Configuración de límites y cámara
         this.matter.world.setBounds(0, 0, 1920, 1080);
@@ -594,7 +599,7 @@ export class gameScene extends Phaser.Scene {
                         }
                     } else {
                         // Actualizar posición y ángulo
-                        if (players[id].label === 'avion') {
+                        if (players[id].label === 'avion' && this.avion) {
                             this.avion.setPosition(players[id].x, players[id].y);
                             this.avion.setAngle(players[id].angle);
                             this.players[id].setPosition(players[id].Px, players[id].Py);
@@ -657,7 +662,7 @@ export class gameScene extends Phaser.Scene {
         }
 
         if (this.team === 'red') {
-            this.input.setDefaultCursor('none');
+            //this.input.setDefaultCursor('none');
         }
 
         // Crear las animaciones definidas globalmente        
@@ -811,6 +816,11 @@ export class gameScene extends Phaser.Scene {
                 const distance = Phaser.Math.Distance.Between(this.playerShip.x, this.playerShip.y, obj.x, obj.y);
                 if (distance <= this.visionObjets) {
                     obj.setAlpha(1);  // Objeto visible
+                    if(obj.body.label === 'bismarck' && this.playerShip.label === 'avion' && this.playerShip.observador && !this.playerShip.observadorMarco){
+                        this.bismarckIcon = this.add.circle(obj.x, obj.y, 60, 0xea8700, 1).setOrigin(0.5, 0.5);
+                        this.cameras.main.ignore([this.bismarckIcon]);
+                        this.playerShip.observadorMarco = true;
+                    }
                 } else {
                     obj.setAlpha(0);  // Objeto invisible
                 }
@@ -1029,7 +1039,7 @@ export class gameScene extends Phaser.Scene {
             this.playerShip = creacionAvion(this, despegoX, despegoY, settings);
             this.avionReanudado = false
             this.avionDesplegado = true;
-            this.portaAviones.avionesRestantes -= 1;
+            //this.portaAviones.avionesRestantes -= 1;
             this.socket.emit('newPlane', {
                 x: this.playerShip.x,
                 y: this.playerShip.y,
@@ -1056,11 +1066,13 @@ export class gameScene extends Phaser.Scene {
                     this.visionObjets = 50; // Radio para objetos
                     this.visionRadius = 45;  // Radio de visión
                     tiempoDeVida = 20000;
+                    this.playerShip.observador = true;
                     break;
                 case 4:
                     this.visionObjets = 210; // Radio para objetos
                     this.visionRadius = 200;  // Radio de visión
                     tiempoDeVida = 10000;
+                    this.playerShip.observador = true;
                     break;
             }
 
@@ -1095,19 +1107,23 @@ export class gameScene extends Phaser.Scene {
                 barraFondo.y = barraY;
 
                 if (tiempoRestante <= 0) {
-                    this.socket.emit('deletPlane', {
-                        team: this.team,
-                    });
                     // Destruye el avión y la barra
+                    this.avionDesplegado = false;
                     clearInterval(this.intervaloTiempo); // Detiene el intervalo
                     this.barraFondo.destroy();
                     this.barraRelleno.destroy();
-                    this.avionDesplegado = false;
                     this.tiempoRestante = 0;
                     this.playerShip.destroy();
                     this.playerShip = this.portaAviones;
                     this.portaAvionesIcon.destroy();
+                    this.socket.emit('deletPlane', {
+                        team: this.team,
+                    });
                     this.playerShip.avionesRestantes -= 1;
+                    if (this.playerShip.avionesRestantes <= 0){
+                        this.socket.emit('ganaBismarck')
+                    }
+                    this.dispCantAviones.setText(`Aviones disponibles: ${this.playerShip.avionesRestantes}`);
                     this.cameras.main.startFollow(this.portaAviones, true, 0.1, 0.1);
                     this.minimapCamera.startFollow(this.portaAviones, true, 0.1, 0.1);
                     this.visionObjets = 210; // Radio para objetos

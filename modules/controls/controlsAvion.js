@@ -3,8 +3,10 @@
 export function creacionAvion(game, posX, posY, settings) {
     let avion = game.matter.add.sprite(posX, posY, 'avion0');
     avion.setScale(0.15).setOrigin(0.5, 0.5).setVelocityX(1);
-    avion.label = 'avion' 
-    avion.body.label = 'avion' 
+    avion.label = 'avion';
+    avion.body.label = 'avion';
+    avion.observador = false;
+    avion.observadorMarco = false;
     avion.anims.play('despegue');
     return avion;
 }
