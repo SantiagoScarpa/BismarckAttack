@@ -221,7 +221,7 @@ export class gameScene extends Phaser.Scene {
             this.codigoPartida = this.team == 'red' ? this.partida.codigoRojo : this.partida.codigoAzul
         }
 
-        this.add.text(490, 240, `Codigo de partida: ${this.codigoPartida}`, {
+        this.dispTextCodigoPartida = this.add.text(490, 240, `Codigo de partida: ${this.codigoPartida}`, {
             fontFamily: 'Rockwell',
             fontSize: 24,
             color: '#ffffff'
@@ -532,7 +532,7 @@ export class gameScene extends Phaser.Scene {
             .add(1300, 695, 320, 180, false, 'minimap')
             .setOrigin(0.5, 0.5)
             .setZoom(0.05);
-        this.minimapCamera.ignore([this.playerShip, radar, overlay]); //
+        this.minimapCamera.ignore([this.playerShip, radar, overlay, this.dispTextCodigoPartida]); //
         this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -663,6 +663,8 @@ export class gameScene extends Phaser.Scene {
 
         if (this.team === 'red') {
             //this.input.setDefaultCursor('none');
+        } else {
+            this.minimapCamera.ignore([this.dispCantAviones]); 
         }
 
         // Crear las animaciones definidas globalmente        
@@ -921,39 +923,31 @@ export class gameScene extends Phaser.Scene {
         const tamañoIcono = 24;
         const radioMenu = 60;
         this.menuAvionDespegado = true;
-        // Crea un contenedor para el menú
         this.menu = this.add.container(x, y);
-        // Define las opciones del menú
         const opciones = [
             { imagenes: ['piloto'], valor: 1 },
             { imagenes: ['piloto', 'observador'], valor: 2 },
             { imagenes: ['piloto', 'observador', 'operador'], valor: 4 },
             { imagenes: ['piloto', 'operador'], valor: 3 },
         ];
-
-        // Calcula el ángulo de cada opción
+    
         const anguloOpcion = (Math.PI * 2) / opciones.length;
-
-        // Crea los botones del menú
+    
         opciones.forEach((opcion, index) => {
-            // Calcula la posición del botón en el círculo
-            const angulo = anguloOpcion * index - Math.PI / 2; // Iniciar desde arriba
+            const angulo = anguloOpcion * index - Math.PI / 2;
             const botonX = Math.cos(angulo) * radioMenu;
             const botonY = Math.sin(angulo) * radioMenu;
-
+    
             const boton = this.add.container(botonX, botonY);
-
-            // Calcula el ancho del botón basado en las imágenes
+    
             let anchoBoton = 0;
             opcion.imagenes.forEach(() => {
                 anchoBoton += tamañoIcono + espacioEntreIconos;
             });
             anchoBoton -= espacioEntreIconos;
-
-            // Calcula el offset inicial para centrar los iconos
+    
             let xOffset = 0;
-
-            // Agrega las imágenes al botón
+    
             opcion.imagenes.forEach(imagen => {
                 const img = this.add.image(xOffset + tamañoIcono / 2 - anchoBoton / 2, 0, imagen);
                 img.setDisplaySize(tamañoIcono, tamañoIcono);
@@ -962,64 +956,50 @@ export class gameScene extends Phaser.Scene {
                 xOffset += tamañoIcono + espacioEntreIconos;
             });
 
-
-            boton.setInteractive(new Phaser.Geom.Rectangle(-anchoBoton / 2, -tamañoIcono / 2, anchoBoton, tamañoIcono), Phaser.Geom.Rectangle.Contains);
+            boton.setInteractive(new Phaser.Geom.Circle(0, 0, radioMenu-15), Phaser.Geom.Circle.Contains);
             boton.on('pointerover', () => {
-                const fondoHover = this.add.graphics();
-                fondoHover.fillStyle(0x008000, 0.4);
-                fondoHover.fillRect(-anchoBoton / 2, -tamañoIcono / 2, anchoBoton, tamañoIcono);
-                boton.addAt(fondoHover, 0);
-                boton.setData('fondoHover', fondoHover);
+                fondoMenu.setTexture(`fondo_menu${index}`);
             });
             boton.on('pointerout', () => {
-                const fondoHover = boton.getData('fondoHover');
-                if (fondoHover)
-                    fondoHover.destroy();
+                fondoMenu.setTexture('fondo_menu');
             });
             boton.on('pointerdown', () => {
                 this.menu.destroy();
                 this.menuAvionDespegado = false;
-                this.avionOpcion = opcion.valor
-                this.avionReanudado = false
+                this.avionOpcion = opcion.valor;
+                this.avionReanudado = false;
                 this.despegueAvion(opcion.valor, 0, 0);
             });
             this.menu.add(boton);
         });
-
-        // Centra el menú en la posición del jugador
+    
         this.menu.x = x + 80;
         this.menu.y = y + 70;
         this.menu.x -= this.menu.getBounds().width / 2;
         this.menu.y -= this.menu.getBounds().height / 2;
-
+    
         const centroMenuX = this.menu.getBounds().width / 2;
         const centroMenuY = this.menu.getBounds().height / 2;
-
+    
         const botonCentral = this.add.container(centroMenuX - 85, centroMenuY - 70);
         const imgSalir = this.add.image(0, 0, 'cancelar');
         imgSalir.setDisplaySize(tamañoIcono, tamañoIcono);
         botonCentral.add(imgSalir);
-        botonCentral.setInteractive(new Phaser.Geom.Rectangle(-tamañoIcono / 2, -tamañoIcono / 2, tamañoIcono, tamañoIcono), Phaser.Geom.Rectangle.Contains);
+        botonCentral.setInteractive(new Phaser.Geom.Circle(0, 0, 25), Phaser.Geom.Circle.Contains);
         botonCentral.on('pointerover', () => {
-            const fondoHover = this.add.graphics();
-            fondoHover.fillStyle(0xFFBDC0, 0.4);
-            fondoHover.fillRect(-tamañoIcono / 2, -tamañoIcono / 2, tamañoIcono, tamañoIcono);
-            botonCentral.addAt(fondoHover, 0);
-            botonCentral.setData('fondoHover', fondoHover);
+            fondoMenu.setTexture('fondo_menu5');
         });
         botonCentral.on('pointerout', () => {
-            const fondoHover = botonCentral.getData('fondoHover');
-            if (fondoHover)
-                fondoHover.destroy();
+            fondoMenu.setTexture('fondo_menu');
         });
         botonCentral.on('pointerdown', () => {
             this.menu.destroy();
             this.menuAvionDespegado = false;
         });
         this.menu.add(botonCentral);
-
-        const fondoMenu = this.add.image(0, 0, 'fondo_menu').setOrigin(0.5).setScale(0.65); // Centra la imagen
-        this.menu.addAt(fondoMenu, 0); // Agrega el fondo como el primer elemento
+    
+        const fondoMenu = this.add.image(0, 0, 'fondo_menu').setOrigin(0.5).setScale(0.65);
+        this.menu.addAt(fondoMenu, 0);
     }
 
     despegueAvion(opcion, reanudoX, reanudoY) {
@@ -1090,22 +1070,32 @@ export class gameScene extends Phaser.Scene {
             barraFondo.setScrollFactor(0);
             barraFondo.setDepth(2);
             this.cameras.main.ignore([barraFondo]);
+            this.minimapCamera.ignore([barraFondo]);
 
             const barraRelleno = this.add.rectangle(barraX, barraY, barraAncho, barraAlto, 0x00ff00);
             barraRelleno.setOrigin(0, 0);
             barraRelleno.setScrollFactor(0);
             barraRelleno.setDepth(2);
+            this.minimapCamera.ignore([barraRelleno]);
 
             // Función para actualizar la barra de tiempo
             const actualizarBarra = () => {
-                tiempoRestante -= 1000;
-                const porcentaje = tiempoRestante / tiempoDeVida;
+                tiempoRestante -= 250;
+                let porcentaje = tiempoRestante / tiempoDeVida;
+                porcentaje = Math.max(0, Math.min(1, porcentaje));
                 barraRelleno.width = barraAncho * porcentaje;
                 barraRelleno.x = barraX;
                 barraRelleno.y = barraY;
                 barraFondo.x = barraX;
                 barraFondo.y = barraY;
 
+                if (porcentaje < 0.55) {
+                    barraRelleno.fillColor = 0xffff00; // Amarillo si es menor al 50%
+                }
+                if (porcentaje < 0.25) {
+                    barraRelleno.fillColor = 0xff0000; // Rojo si es menor al 25%
+                }
+        
                 if (tiempoRestante <= 0) {
                     // Destruye el avión y la barra
                     this.avionDesplegado = false;
@@ -1132,7 +1122,7 @@ export class gameScene extends Phaser.Scene {
             };
 
             // Actualiza la barra cada segundo
-            this.intervaloTiempo = setInterval(actualizarBarra, 1000); // Guarda el intervalo en una variable
+            this.intervaloTiempo = setInterval(actualizarBarra, 250); // Guarda el intervalo en una variable
 
             this.barraFondo = barraFondo; // Guarda la barra de fondo
             this.barraRelleno = barraRelleno; // Guarda la barra de relleno
