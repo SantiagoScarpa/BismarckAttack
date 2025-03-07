@@ -1,47 +1,3 @@
-/*// export function guardarPartida({ codigoAzul, codigoRojo, bismarck, arkRoyal, avion, francia }) {
-
-//     let vFrancia = {
-//         x: francia.x,
-//         y: francia.y
-//     }
-//     let vBismarck = {
-//         x: bismarck.x,
-//         y: bismarck.y,
-//         vida: bismarck.vida
-//     }
-
-//     let vArkRoyal = {
-//         x: arkRoyal.x,
-//         y: arkRoyal.y,
-//         avionesRestantes: arkRoyal.avionesRestantes,
-//         avionActual: {
-//             x: 100,
-//             y: 100,
-//             municion: true,
-//             operador: false,
-//             observador: false
-//         }
-//     }
-
-//     fetch('/guardarPartida', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json'
-//         },
-//         body: JSON.stringify({ codigoAzul, codigoRojo, vBismarck, vArkRoyal, avion, vFrancia })
-//     })
-//         .then(response => response.json()) // Esperar respuesta en JSON
-//         .then(data => {
-//             console.log(data.mensaje); // Mostrar mensaje del servidor
-//             // (Opcional) Mostrar mensaje en el juego
-//         })
-//         .catch(error => {
-//             console.log('Error:', error);
-//             // (Opcional) Mostrar mensaje de error en el juego
-//         });
-// }
-*/
-
 export function armoRespuestaRojo(game) {
 
     const tiempoDePartida = Date.now() - game.inicioPartida;
@@ -67,7 +23,6 @@ export function armoRespuestaRojo(game) {
 
 export function armoRespuestaAzul(game) {
     let respuesta;
-    console.log(game.tiempo)
     if (game.avionDesplegado) {
         respuesta = {
             codigoAzul: game.codigoPartida,
@@ -79,10 +34,9 @@ export function armoRespuestaAzul(game) {
                 avionActual: {
                     x: game.playerShip.x,
                     y: game.playerShip.y,
-                    //ESTO SE TIENE QUE CAMBIAR UNA VEZ TENGAMOS LA FUNCIONALIDAD DE ELEGIR Y MUNICION
-                    municion: true,
+                    municion: game.playerShip.municion,
                     opcion: game.avionOpcion,
-                    tiempoVida: 9999,
+                    tiempoAvion: game.tiempoAvion,
                 }
             }
         }
