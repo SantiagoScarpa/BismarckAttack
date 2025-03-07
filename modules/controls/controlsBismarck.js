@@ -7,7 +7,7 @@ export function creacionBismarck(game, posX, posY, angle, settings) {
             vel = settings.bismarckVelocity
         let bismarck = game.matter.add.sprite(posX, posY, 'bismarck', null, { label: 'bismarck' });
         bismarck.setScale(0.10).setOrigin(0.5, 0.5);
-        bismarck.vida = 3;
+        bismarck.vida = game.reanudo ? game.partida.bismarck.vida : settings.bismarckVida;
         bismarck.isOnFire = false;
         bismarck.label = 'bismarck'
         bismarck.angle = angle

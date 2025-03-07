@@ -105,6 +105,7 @@ export class gameScene extends Phaser.Scene {
     }
 
     //Crea el misil en cada cliente recibido por el sv
+
     createBulletFromData(data) {
         let spriteKey = data.spriteKey || 'bismarckMisil';
         let bullet = this.matter.add.sprite(data.x, data.y - 40, spriteKey);
@@ -139,7 +140,7 @@ export class gameScene extends Phaser.Scene {
             bullet.setRotation(angle + Math.PI / 2);
         }
         bullet.body.label = 'bullet';
-
+        bullet.owner = data.owner;
         // Crear la cola del misil
         let bulletTail = this.add.image(data.x, data.y - 56, 'bismarckMisilCola');
         bulletTail.setScale(0.5);
@@ -306,6 +307,7 @@ export class gameScene extends Phaser.Scene {
                 ) {
                     const bullet = bodyA.label === 'bullet' ? bodyA.gameObject : bodyB.gameObject;
                     const bismarck = bodyA.label === 'bismarck' ? bodyA.gameObject : bodyB.gameObject;
+                    console.log(`Bullet owner: ${bullet.owner}`);
                     if (bullet.owner === 'bismarck') return;
                     if (bullet && bismarck) {
                         this.onBulletHit(bismarck, bullet);
@@ -604,7 +606,7 @@ export class gameScene extends Phaser.Scene {
                     if (!this.players[id]) {
                         // Crear nave según el team
                         if (players[id].team === 'red') {
-                            this.createBismarck(id, players[id].x, players[id].y, players[id].angle);
+                            this.createBismarck(game, id, players[id].x, players[id].y, players[id].angle);
                         } else if (players[id].team === 'blue') {
                             this.createArkRoyal(id, players[id].x, players[id].y, players[id].angle);
                         }
@@ -658,7 +660,8 @@ export class gameScene extends Phaser.Scene {
                             x: this.playerShip.x,
                             y: this.playerShip.y,
                             pointerX: this.input.activePointer.worldX,
-                            pointerY: this.input.activePointer.worldY
+                            pointerY: this.input.activePointer.worldY,
+                            owner: 'bismarck'
                         };
                         // Emitir el disparo al servidor para sincronizarlo con otros clientes
                         this.socket.emit('shoot_bullet_bismarck', shootData_bismarck);
@@ -735,7 +738,8 @@ export class gameScene extends Phaser.Scene {
                         x: this.playerShip.x,
                         y: this.playerShip.y,
                         spriteKey: 'torpedo',
-                        rotation: this.playerShip.rotation
+                        rotation: this.playerShip.rotation,
+                        owner: 'avion'
                     };
                     // Emitir el disparo al servidor para sincronizarlo con otros clientes
                     this.socket.emit('shoot_bullet_avion', shootData_avion);
@@ -882,13 +886,13 @@ export class gameScene extends Phaser.Scene {
      * @param {number} x - Posición X.
      * @param {number} y - Posición Y.
      */
-    createBismarck(playerId, x, y) {
+    createBismarck(game, playerId, x, y) {
         console.log(`creando Bismarck para ${playerId} en(${x}, ${y})`);
 
         let bismarck = this.matter.add.sprite(x, y, 'bismarck');
         bismarck.setScale(0.10).setOrigin(0.5, 0.5);
         bismarck.velocity = settings.bismarckVelocity;
-        bismarck.vida = 4;
+        bismarck.vida = game.reanudo ? game.partida.bismarck.vida : settings.bismarckVida;;
         bismarck.destroyed = false;
         bismarck.body.label = 'bismarck'
 
