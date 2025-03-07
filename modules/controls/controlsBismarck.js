@@ -71,7 +71,6 @@ export function checkControlsBismarck({ bismarck, keys, anyKeyDown }) {
 
             if (bismarck.angle > -90)
                 bismarck.angle -= 1;
-            //            if (bismarck.angle >= -95 && bismarck.angle <= -85)
             bismarck.setVelocityX(-speed);
         } else if (keys.D.isDown) {
             if (bismarck.angle < 90)
@@ -79,6 +78,7 @@ export function checkControlsBismarck({ bismarck, keys, anyKeyDown }) {
 
             bismarck.setVelocityX(speed);
         } else {
+            bismarck.setVelocityY(0);
             bismarck.setVelocityX(0);
         }
     }

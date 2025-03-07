@@ -3,8 +3,9 @@
 export function creacionAvion(game, posX, posY, settings) {
     let avion = game.matter.add.sprite(posX, posY, 'avion0');
     avion.setScale(0.15).setOrigin(0.5, 0.5).setVelocityX(1);
-    avion.label = 'avion' 
-    avion.body.label = 'avion' 
+    avion.label = 'avion'
+    avion.body.label = 'avion'
+    avion.municion = (game.reanudo && game.avionReanudado) ? game.partida.arkRoyal.avionActual.municion : settings.avionMunicion;
     avion.anims.play('despegue');
     return avion;
 }
@@ -32,7 +33,7 @@ export function checkControlsAvion({ avion, keys }) {
         if (avion.body.velocity.y > 0) {
             speedY -= 0.01;
         } else {
-            if ((Math.abs(speedY)) < topeVelocidad){
+            if ((Math.abs(speedY)) < topeVelocidad) {
                 speedY -= acceleration;
             }
         }
@@ -40,26 +41,26 @@ export function checkControlsAvion({ avion, keys }) {
         if (avion.body.velocity.y < 0) {
             speedY += 0.01;
         } else {
-            if ((Math.abs(speedY)) < topeVelocidad){
+            if ((Math.abs(speedY)) < topeVelocidad) {
                 speedY += acceleration;
-            } 
+            }
         }
     }
     if (keys.LEFT.isDown) {
         if (avion.body.velocity.x > 0) {
             speedX -= 0.01;
         } else {
-            if ((Math.abs(speedX)) < topeVelocidad){
+            if ((Math.abs(speedX)) < topeVelocidad) {
                 speedX -= acceleration;
-            } 
+            }
         }
     } else if (keys.RIGHT.isDown) {
         if (avion.body.velocity.x < 0) {
             speedX += 0.01;
         } else {
-            if ((Math.abs(speedX)) < topeVelocidad){
+            if ((Math.abs(speedX)) < topeVelocidad) {
                 speedX += acceleration;
-            } 
+            }
         }
     }
 

@@ -35,7 +35,7 @@ export function checkControlsArkRoyale({ ArkRoyale, keys }) {
         }
     }
 
-    let speedX = ArkRoyale.body.velocity.x;
+    // let speedX = ArkRoyale.body.velocity.x;
     let speedY = ArkRoyale.body.velocity.y;
 
     if (keys.UP.isDown) {
