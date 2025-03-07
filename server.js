@@ -179,8 +179,12 @@ io.on('connection', (socket) => {
         io.emit('newPlane', player);
     });
 
-    socket.on('deletPlane', (player) => {
-        io.emit('deletPlane', player);
+    socket.on('deletPlane', () => {
+        io.emit('deletPlane');
+    });
+
+    socket.on('aterrizaje', () => {
+        io.emit('aterrizaje');
     });
 
     socket.on('rojoCargado', () => {

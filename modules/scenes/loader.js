@@ -72,6 +72,9 @@ export class loaderScene extends Phaser.Scene {
         for (let i = 0; i < 10; i++) {
             this.load.image(`avion${i}`, `./assets/imgs/sprites/despegue/avion${i}.png`);
         };
+        for (let i = 0; i < 10; i++) {
+            this.load.image(`atAvion${i}`, `./assets/imgs/sprites/aterrizaje/avion${i}.png`);
+        };
         this.load.image('piloto', './assets/imgs/sprites/piloto.png');
         this.load.image('observador', './assets/imgs/sprites/observador.png');
         this.load.image('operador', './assets/imgs/sprites/operador.png');

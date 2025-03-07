@@ -326,25 +326,36 @@ export class gameScene extends Phaser.Scene {
                     (bodyA.label === 'avion' && bodyB.label === 'arkroyal') ||
                     (bodyA.label === 'arkroyal' && bodyB.label === 'avion')
                 ) {
-                    if (this.team === 'blue') {
+                    if (this.team === 'blue' && !this.aterrizando) {
+                        this.aterrizando = true;
+                        this.playerShip.setVelocityX(0);
+                        this.playerShip.setVelocityY(0);
+                        this.portaAviones.setVelocityX(0);
+                        this.portaAviones.setVelocityY(0);
+                        this.socket.emit('aterrizaje');
+                        this.playerShip.anims.play('aterrizaje');
                         clearInterval(this.intervaloTiempo); // Detiene el intervalo
-                        this.barraFondo.destroy(); // Destruye la barra de fondo
-                        this.barraRelleno.destroy(); // Destruye la barra de relleno
-                        this.avionDesplegado = false;
+                        this.barraFondo.destroy();
+                        this.barraRelleno.destroy();
                         this.tiempoRestante = 0;
-                        this.playerShip.destroy();
-                        this.playerShip = this.portaAviones;
-                        this.portaAvionesIcon.destroy();
-                        //this.playerShip.avionesRestantes += 1;
-                        this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
-                        this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
-                        this.visionObjets = 210; // Radio para objetos
-                        this.visionRadius = 200;  // Radio de visión
+                        // Escucha el evento 'animationcomplete' para la animación 'aterrizaje'
+                        this.playerShip.on('animationcomplete-aterrizaje', function () {
+                            clearInterval(this.intervaloTiempo);
+                            this.barraFondo.destroy();
+                            this.barraRelleno.destroy();
+                            this.avionDesplegado = false;
+                            this.tiempoRestante = 0;
+                            this.playerShip.destroy(); // Destruye el playerShip DESPUÉS de la animación
+                            this.playerShip = this.portaAviones;
+                            this.portaAvionesIcon.destroy();
+                            this.cameras.main.startFollow(this.playerShip, true, 0.1, 0.1);
+                            this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
+                            this.visionObjets = 210;
+                            this.visionRadius = 200;
+                            this.socket.emit('deletPlane');
+                            this.aterrizando = false;
+                        }, this); // El 'this' final asegura que el contexto sea el correcto
                     }
-                    this.socket.emit('deletPlane', {
-                        team: this.team,
-                    });
-
                 }
 
             });
@@ -380,6 +391,7 @@ export class gameScene extends Phaser.Scene {
         graphics.generateTexture('blueParticle', 10, 10);
         graphics.destroy();
 
+        this.aterrizando = false; //defino flag para animacion de aterrizaje
         // Array de objetos para controlar la visibilidad según la distancia
         this.objects = [];
 
@@ -573,10 +585,8 @@ export class gameScene extends Phaser.Scene {
             }
         });
 
-        this.socket.on('deletPlane', (player) => {
-            console.log(`Avion fuera de escena: ${player.team}`);
+        this.socket.on('deletPlane', () => {
             if (this.team === 'red') {
-                console.log('DESTROY AVION EQUIPO RED ORDEN DEL SERVIDOR');
                 let indice = this.objects.findIndex(obj => obj.body && obj.body.label === 'avion');
                 if (indice !== -1) {
                     let avionEncontrado = this.objects[indice];
@@ -584,6 +594,12 @@ export class gameScene extends Phaser.Scene {
                     avionEncontrado.destroy();
                 }
                 this.avion.destroy();
+            }
+        });
+
+        this.socket.on('aterrizaje', () => {
+            if (this.team === 'red') {
+                this.avion.anims.play('aterrizaje');
             }
         });
 
@@ -716,7 +732,7 @@ export class gameScene extends Phaser.Scene {
         if (this.playerShip.label === 'bismarck') {
             // Controles bismarck
             checkControlsBismarck({ bismarck: this.playerShip, keys: this.keys });
-        } else if (this.playerShip.label === 'avion') {
+        } else if (this.playerShip.label === 'avion' && !this.aterrizando) {
             // Controles y disparo para Avión
             checkControlsAvion({ avion: this.playerShip, keys: this.keys });
             if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
@@ -788,17 +804,19 @@ export class gameScene extends Phaser.Scene {
 
             // Emitir la posición actualizada del jugador al servidor
             if (this.avionDesplegado) {
-                this.socket.emit('playerMove', {
-                    id: this.socket.id,
-                    x: this.playerShip.x,
-                    y: this.playerShip.y,
-                    angle: this.playerShip.angle,
-                    team: this.team,
-                    label: this.playerShip.label,
-                    Px: this.portaAviones.x,
-                    Py: this.portaAviones.y,
-                    Pangle: this.portaAviones.angle
-                });
+                if (!this.aterrizando){
+                    this.socket.emit('playerMove', {
+                        id: this.socket.id,
+                        x: this.playerShip.x,
+                        y: this.playerShip.y,
+                        angle: this.playerShip.angle,
+                        team: this.team,
+                        label: this.playerShip.label,
+                        Px: this.portaAviones.x,
+                        Py: this.portaAviones.y,
+                        Pangle: this.portaAviones.angle
+                    });
+                }
             } else {
                 this.socket.emit('playerMove', {
                     id: this.socket.id,
@@ -910,8 +928,8 @@ export class gameScene extends Phaser.Scene {
         avion.velocity = settings.avionVelocity;
         avion.vida = 2
         avion.body.label = 'avion'
+        avion.anims.play('despegue');
         this.avion = avion
-
         //this.players[playerId] = avion;
         this.objects.push(avion);
     }
@@ -1098,30 +1116,37 @@ export class gameScene extends Phaser.Scene {
         
                 if (tiempoRestante <= 0) {
                     // Destruye el avión y la barra
-                    this.avionDesplegado = false;
+                    this.aterrizando = true;
+                    this.playerShip.setVelocityX(0);
+                    this.playerShip.setVelocityY(0);
+                    this.socket.emit('aterrizaje');
+                    this.playerShip.anims.play('aterrizaje');
+                    // Escucha el evento 'animationcomplete' para la animación 'aterrizaje'
                     clearInterval(this.intervaloTiempo); // Detiene el intervalo
                     this.barraFondo.destroy();
                     this.barraRelleno.destroy();
                     this.tiempoRestante = 0;
-                    this.playerShip.destroy();
-                    this.playerShip = this.portaAviones;
-                    this.portaAvionesIcon.destroy();
-                    this.socket.emit('deletPlane', {
-                        team: this.team,
-                    });
-                    this.playerShip.avionesRestantes -= 1;
-                    if (this.playerShip.avionesRestantes <= 0){
-                        this.socket.emit('ganaBismarck')
-                    }
-                    this.dispCantAviones.setText(`Aviones disponibles: ${this.playerShip.avionesRestantes}`);
-                    this.cameras.main.startFollow(this.portaAviones, true, 0.1, 0.1);
-                    this.minimapCamera.startFollow(this.portaAviones, true, 0.1, 0.1);
-                    this.visionObjets = 210; // Radio para objetos
-                    this.visionRadius = 200;  // Radio de visión
+                    this.playerShip.on('animationcomplete-aterrizaje', function () {
+                        this.avionDesplegado = false;
+                        this.playerShip.destroy();
+                        this.playerShip = this.portaAviones;
+                        this.portaAvionesIcon.destroy();
+                        this.socket.emit('deletPlane');
+                        this.playerShip.avionesRestantes -= 1;
+                        if (this.playerShip.avionesRestantes <= 0){
+                            this.socket.emit('ganaBismarck')
+                        }
+                        this.dispCantAviones.setText(`Aviones disponibles: ${this.playerShip.avionesRestantes}`);
+                        this.cameras.main.startFollow(this.portaAviones, true, 0.1, 0.1);
+                        this.minimapCamera.startFollow(this.portaAviones, true, 0.1, 0.1);
+                        this.visionObjets = 210; // Radio para objetos
+                        this.visionRadius = 200;  // Radio de visión
+                        this.aterrizando = false;
+                    }, this); // El 'this' final asegura que el contexto sea el correcto
                 }
             };
 
-            // Actualiza la barra cada segundo
+            // Actualiza la barra cada 250 milisegundos
             this.intervaloTiempo = setInterval(actualizarBarra, 250); // Guarda el intervalo en una variable
 
             this.barraFondo = barraFondo; // Guarda la barra de fondo
