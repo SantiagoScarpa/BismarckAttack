@@ -6,6 +6,8 @@ export function creacionAvion(game, posX, posY, settings) {
     avion.label = 'avion'
     avion.body.label = 'avion'
     avion.municion = (game.reanudo && game.avionReanudado) ? game.partida.arkRoyal.avionActual.municion : settings.avionMunicion;
+    avion.observador = false;
+    avion.observadorMarco = false;
     avion.anims.play('despegue');
     return avion;
 }

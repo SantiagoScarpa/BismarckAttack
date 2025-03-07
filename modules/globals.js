@@ -39,6 +39,13 @@ export function createAnimations(game) {
         repeat: 0
     });
 
+    game.anims.create({
+        key: 'aterrizaje',
+        frames: Array.from({ length: 10 }, (_, i) => ({ key: `atAvion${i}` })),
+        frameRate: 10,
+        repeat: 0
+    });
+
 }
 
 export async function generarCodigoPartida() {
