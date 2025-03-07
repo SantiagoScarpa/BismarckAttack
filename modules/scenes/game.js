@@ -105,6 +105,7 @@ export class gameScene extends Phaser.Scene {
     }
 
     //Crea el misil en cada cliente recibido por el sv
+
     createBulletFromData(data) {
         let spriteKey = data.spriteKey || 'bismarckMisil';
         let bullet = this.matter.add.sprite(data.x, data.y - 40, spriteKey);
@@ -139,7 +140,7 @@ export class gameScene extends Phaser.Scene {
             bullet.setRotation(angle + Math.PI / 2);
         }
         bullet.body.label = 'bullet';
-
+        bullet.owner = data.owner;
         // Crear la cola del misil
         let bulletTail = this.add.image(data.x, data.y - 56, 'bismarckMisilCola');
         bulletTail.setScale(0.5);
@@ -306,6 +307,7 @@ export class gameScene extends Phaser.Scene {
                 ) {
                     const bullet = bodyA.label === 'bullet' ? bodyA.gameObject : bodyB.gameObject;
                     const bismarck = bodyA.label === 'bismarck' ? bodyA.gameObject : bodyB.gameObject;
+                    console.log(`Bullet owner: ${bullet.owner}`);
                     if (bullet.owner === 'bismarck') return;
                     if (bullet && bismarck) {
                         this.onBulletHit(bismarck, bullet);
@@ -413,18 +415,34 @@ export class gameScene extends Phaser.Scene {
                 }
             });
         }
-        const homeBtn = this.add.sprite(1120, 250, 'home')
+        const homeBtn = this.add.sprite(1120, 240, 'home')
         homeBtn.setScrollFactor(0)
             .setOrigin(0.5, 0.5)
             .setInteractive()
             .setDepth(2)
             .setScale(0.3)
 
-        const save = this.add.sprite(1150, 250, 'save')
+        const save = this.add.sprite(1150, 240, 'save')
         save.setScrollFactor(0)
             .setOrigin(0.5, 0.5)
             .setInteractive()
             .setDepth(2)
+
+        //cartel de municion de avion
+        if (this.team === 'blue') {
+            this.avionMunicion = this.add.text(1045, 240, ' ', {
+                fontFamily: 'Rockwell',
+                fontSize: 24,
+                color: '#ffffff'
+            });
+            this.avionMunicion.setScrollFactor(0)
+                .setOrigin(0.5, 0.5)
+                .setInteractive()
+                .setDepth(11)
+                .setScale(0.5)
+
+        }
+
 
         save.on('pointerdown', () => {
             save.play('saving')
@@ -588,7 +606,7 @@ export class gameScene extends Phaser.Scene {
                     if (!this.players[id]) {
                         // Crear nave según el team
                         if (players[id].team === 'red') {
-                            this.createBismarck(id, players[id].x, players[id].y, players[id].angle);
+                            this.createBismarck(game, id, players[id].x, players[id].y, players[id].angle);
                         } else if (players[id].team === 'blue') {
                             this.createArkRoyal(id, players[id].x, players[id].y, players[id].angle);
                         }
@@ -634,7 +652,6 @@ export class gameScene extends Phaser.Scene {
             this.createBulletFromData(data);
         });
 
-        //if (!this.playerShip) return;
         if (this.playerShip.label === 'bismarck') {
             this.input.on('pointerdown', (pointer) => {
                 if (pointer.leftButtonDown()) {
@@ -643,7 +660,8 @@ export class gameScene extends Phaser.Scene {
                             x: this.playerShip.x,
                             y: this.playerShip.y,
                             pointerX: this.input.activePointer.worldX,
-                            pointerY: this.input.activePointer.worldY
+                            pointerY: this.input.activePointer.worldY,
+                            owner: 'bismarck'
                         };
                         // Emitir el disparo al servidor para sincronizarlo con otros clientes
                         this.socket.emit('shoot_bullet_bismarck', shootData_bismarck);
@@ -688,12 +706,11 @@ export class gameScene extends Phaser.Scene {
             this.socket.emit('rojoCargado') //tengo que avisar que el rojo ya cargo si hay un avion para que no den error los controles
         }
         if (this.reanudo && this.partida.arkRoyal.avionActual !== null && this.team === 'blue') {
-            console.log('game / aviso que azul cargo')
             this.socket.emit('azulCargado')
             this.socket.on('listoTodos', () => {
-                console.log('listo todos ')
                 this.avionReanudado = true
-                this.despegueAvion(this.partida.arkRoyal.avionActual.opcion, this.partida.arkRoyal.avionActual.x, this.partida.arkRoyal.avionActual.y);
+                this.avionOpcion = this.partida.arkRoyal.avionActual.opcion
+                this.despegueAvion(this.avionOpcion, this.partida.arkRoyal.avionActual.x, this.partida.arkRoyal.avionActual.y);
             })
 
         }
@@ -713,15 +730,20 @@ export class gameScene extends Phaser.Scene {
             // Controles y disparo para Avión
             checkControlsAvion({ avion: this.playerShip, keys: this.keys });
             if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
-                this.shoot_bullet_avion();
-                const shootData_avion = {
-                    x: this.playerShip.x,
-                    y: this.playerShip.y,
-                    spriteKey: 'torpedo',
-                    rotation: this.playerShip.rotation
-                };
-                // Emitir el disparo al servidor para sincronizarlo con otros clientes
-                this.socket.emit('shoot_bullet_avion', shootData_avion);
+                if (this.playerShip.municion > 0) {
+                    this.playerShip.municion--;
+                    this.avionMunicion.setText('Munición de avión: ' + this.playerShip.municion);
+                    this.shoot_bullet_avion();
+                    const shootData_avion = {
+                        x: this.playerShip.x,
+                        y: this.playerShip.y,
+                        spriteKey: 'torpedo',
+                        rotation: this.playerShip.rotation,
+                        owner: 'avion'
+                    };
+                    // Emitir el disparo al servidor para sincronizarlo con otros clientes
+                    this.socket.emit('shoot_bullet_avion', shootData_avion);
+                }
             }
         } else if (this.playerShip.label === 'arkroyal') {
             // Si el avión ya fue desplegado, se usan controles de avión; de lo contrario, controles de ArkRoyal.
@@ -864,13 +886,13 @@ export class gameScene extends Phaser.Scene {
      * @param {number} x - Posición X.
      * @param {number} y - Posición Y.
      */
-    createBismarck(playerId, x, y) {
+    createBismarck(game, playerId, x, y) {
         console.log(`creando Bismarck para ${playerId} en(${x}, ${y})`);
 
         let bismarck = this.matter.add.sprite(x, y, 'bismarck');
         bismarck.setScale(0.10).setOrigin(0.5, 0.5);
         bismarck.velocity = settings.bismarckVelocity;
-        bismarck.vida = 4;
+        bismarck.vida = game.reanudo ? game.partida.bismarck.vida : settings.bismarckVida;;
         bismarck.destroyed = false;
         bismarck.body.label = 'bismarck'
 
@@ -1027,8 +1049,8 @@ export class gameScene extends Phaser.Scene {
                 despegoX = despegoX + 80
             }
             this.playerShip = creacionAvion(this, despegoX, despegoY, settings);
-            this.avionReanudado = false
             this.avionDesplegado = true;
+            this.avionMunicion.setText('Munición de avión: ' + this.playerShip.municion);
             this.portaAviones.avionesRestantes -= 1;
             this.socket.emit('newPlane', {
                 x: this.playerShip.x,
@@ -1065,7 +1087,8 @@ export class gameScene extends Phaser.Scene {
             }
 
             // Tiempo de vida del avión en milisegundos (ejemplo: 30 segundos)
-            let tiempoRestante = tiempoDeVida;
+            let tiempoRestante = (this.reanudo && this.avionReanudado) ? this.partida.arkRoyal.avionActual.tiempoAvion : tiempoDeVida;
+            this.tiempoAvion = tiempoRestante;
 
             // Crea la barra de tiempo
             const barraAncho = 100;
@@ -1083,11 +1106,12 @@ export class gameScene extends Phaser.Scene {
             barraRelleno.setOrigin(0, 0);
             barraRelleno.setScrollFactor(0);
             barraRelleno.setDepth(2);
-
+            this.avionReanudado = false
             // Función para actualizar la barra de tiempo
             const actualizarBarra = () => {
                 tiempoRestante -= 1000;
                 const porcentaje = tiempoRestante / tiempoDeVida;
+                this.tiempoAvion = tiempoRestante;
                 barraRelleno.width = barraAncho * porcentaje;
                 barraRelleno.x = barraX;
                 barraRelleno.y = barraY;
@@ -1100,6 +1124,7 @@ export class gameScene extends Phaser.Scene {
                     });
                     // Destruye el avión y la barra
                     clearInterval(this.intervaloTiempo); // Detiene el intervalo
+                    this.avionMunicion.setText(' ');
                     this.barraFondo.destroy();
                     this.barraRelleno.destroy();
                     this.avionDesplegado = false;
