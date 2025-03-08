@@ -791,7 +791,8 @@ export class gameScene extends Phaser.Scene {
 
         if (this.playerShip?.destroyed) {
             this.playerDestroyed = true;
-            this.scene.start('ganaArkRoyal');
+            this.socket.emit('ganaArkRoyal')
+            //this.scene.start('ganaArkRoyal');
             return;
         }
 

@@ -1,9 +1,9 @@
 {
-  "volumeMenu": 0,
+  "volumeMenu": 0.4,
   "volumeBismarckShoot": "0.5",
   "volumeExplotion": "1.6",
   "volumeAvionShoot": "0.3",
-  "bismarckVelocity": 1,
+  "bismarckVelocity": 4,
   "arkRoyaleVelocity": 3,
   "serverPort": 3000,
   "dbInfo": {
