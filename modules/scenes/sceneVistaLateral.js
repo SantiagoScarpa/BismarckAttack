@@ -44,36 +44,58 @@ export class sceneVistaLateral extends Phaser.Scene {
     const jugadorConsola = this.players[this.playerId];
 
     const distance = Phaser.Math.Distance.Between(xBLUE, yBLUE, xRED, yRED);
+    let profundidadAzul = 0;
+    let profundidadRojo = 0
+    let ejeyAzul = 0;
+    let ejeyRojo = 0;
+
+      if(yBLUE < yRED){
+        profundidadAzul = 1;
+        profundidadRojo = 2;
+        ejeyAzul = 110;
+        ejeyRojo = 80;
+      }
+      else{
+        profundidadAzul = 2
+        profundidadRojo = 1
+        ejeyAzul = 80;
+        ejeyRojo = 110;
+      }
+
     if (distance <= visionObjets) {
-      let lateralArk = this.matter.add.sprite(xBLUE, yBLUE, "lateralArkRoyale");
-      lateralArk.setScale(0.85).setOrigin(0.5, 0.5);
-      let lateralBismark = this.matter.add.sprite(xRED, yRED, "lateralBismark");
-      lateralBismark.setScale(0.8).setOrigin(0.5, 0.5);
+      let lateralArk = this.add.sprite(xBLUE, this.game.config.height - ejeyAzul, "lateralArkRoyale");
+      lateralArk.setScale(1).setOrigin(0.5, 0.5).setDepth(profundidadAzul);;
+      let lateralBismark = this.add.sprite(xRED, this.game.config.height - ejeyRojo, "lateralBismark");
+      lateralBismark.setScale(1).setOrigin(0.5, 0.5).setDepth(profundidadRojo);
     } else {
       if (jugadorConsola.team == "red") {
-        let lateralBismark = this.matter.add.sprite(
+        let lateralBismark = this.add.sprite(
           xRED,
-          yRED,
+          this.game.config.height - ejeyRojo,
           "lateralBismark"
         );
-        lateralBismark.setScale(0.6).setOrigin(0.5, 0.5);
+        lateralBismark.setScale(1).setOrigin(0.5, 0.5).setDepth(profundidadRojo);;
       } else {
-        let lateralArk = this.matter.add.sprite(
+        let lateralArk = this.add.sprite(
           xBLUE,
-          yBLUE,
+          this.game.config.height - ejeyAzul,
           "lateralArkRoyale"
         );
-        lateralArk.setScale(0.65).setOrigin(0.5, 0.5);
+        lateralArk.setScale(1).setOrigin(0.5, 0.5).setDepth(profundidadAzul);
       }
     }
     const distanceFranceArkRoyale = Phaser.Math.Distance.Between(xBLUE, yBLUE, xFrancia, yFrancia);
     if (distanceFranceArkRoyale <= visionObjets && jugadorConsola.team == "blue") {
-      this.francia = this.matter.add.image(xFrancia, yFrancia, 'francia');
+      this.francia = this.add.image(this.game.config.width / 2, this.game.config.height / 2, 'franciaLateral');
+      this.francia.setScale(2.5)
+      this.francia.setDepth(0)
     }
 
     const distanceFranceBismark = Phaser.Math.Distance.Between(xRED, yRED, xFrancia, yFrancia);
     if (distanceFranceBismark <= visionObjets && jugadorConsola.team == "red") {
-      this.francia = this.matter.add.image(xFrancia, yFrancia, 'francia');
+      this.francia = this.add.image(this.game.config.width / 2, this.game.config.height / 2, 'franciaLateral');
+      this.francia.setScale(2.5)
+      this.francia.setDepth(0)
     }
 
 

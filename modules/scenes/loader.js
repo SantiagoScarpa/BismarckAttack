@@ -29,6 +29,7 @@ export class loaderScene extends Phaser.Scene {
         this.load.image('radar', './assets/imgs/sprites/radar1.png');
         this.load.image('fog', './assets/imgs/tiles/fog.png');
         this.load.image('francia', './assets/imgs/sprites/franciaTransparente.png');
+        this.load.image('franciaLateral', './assets/imgs/lateralViews/lateralFrancia.png');
         this.load.image('bismarckGana', './assets/imgs/bismarckGana.png');
         this.load.image('crosshair', 'assets/imgs/sprites/crosshair.png');
         this.load.image('torpedo', 'assets/imgs/sprites/torpedo.png');
