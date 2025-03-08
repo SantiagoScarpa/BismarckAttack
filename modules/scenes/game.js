@@ -338,6 +338,7 @@ export class gameScene extends Phaser.Scene {
                         this.portaAviones.setVelocityX(0);
                         this.portaAviones.setVelocityY(0);
                         this.socket.emit('aterrizaje');
+                        stopAudios('avionAire', this);
                         this.playerShip.anims.play('aterrizaje');
                         clearInterval(this.intervaloTiempo); // Detiene el intervalo
                         this.barraFondo.destroy();
@@ -548,7 +549,7 @@ export class gameScene extends Phaser.Scene {
         // Reprodusco musica de fondo si no se esta reproduciendo
         if (!this.musicFondoOn){
             this.musicFondoOn = true;
-            playAudios('musicfondo', this, 0.05);
+            playAudios('musicfondo', this, settings.volumeMusicFondo);
         }
 
         // Imagen del radar
@@ -569,7 +570,7 @@ export class gameScene extends Phaser.Scene {
             .add(1300, 695, 320, 180, false, 'minimap')
             .setOrigin(0.5, 0.5)
             .setZoom(0.05);
-        this.minimapCamera.ignore([this.playerShip, radar, overlay, this.dispTextCodigoPartida]); //
+        this.minimapCamera.ignore([this.playerShip, radar, overlay, this.dispTextCodigoPartida, homeBtn, save]); //
         this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1063,6 +1064,12 @@ export class gameScene extends Phaser.Scene {
             this.portaAvionesIcon = this.add.circle(this.portaAviones.x, this.portaAviones.y, 60, 0x0000ff, 1).setOrigin(0.5, 0.5);
             this.cameras.main.ignore([this.portaAvionesIcon]);
             this.portaAviones.setVelocity(0);
+            // Variable para almacenar la instancia del sonido
+            this.avionDespegueSound = playAudios('avionDespegue', this,settings.volumenavionDespegue);
+            // Escucha el evento 'complete' para reproducir el segundo sonido
+            this.avionDespegueSound.on('complete', () => {
+                playAudios('avionAire', this, settings.volumenavionAire);
+            });
             let despegoX = (this.reanudo && this.avionReanudado) ? reanudoX : this.playerShip.x
             let despegoY = (this.reanudo && this.avionReanudado) ? reanudoY : this.playerShip.y
             if (this.playerShip.angle > -10 && this.playerShip.angle < 10 && !this.avionReanudado) {
@@ -1155,6 +1162,7 @@ export class gameScene extends Phaser.Scene {
                     this.aterrizando = true;
                     this.playerShip.setVelocityX(0);
                     this.playerShip.setVelocityY(0);
+                    stopAudios('avionAire', this);
                     this.socket.emit('aterrizaje');
                     this.playerShip.anims.play('aterrizaje');
                     // Escucha el evento 'animationcomplete' para la animación 'aterrizaje'
