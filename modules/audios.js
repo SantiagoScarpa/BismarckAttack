@@ -4,6 +4,9 @@ export const loadAudios = ({ load }) => {
     load.audio('explotion', './assets/sounds/torpedo_explotion.mp3')
     load.audio('bismarckShoot', './assets/sounds/bismarckShoot.wav')
     load.audio('avion_shoot', './assets/sounds/torpedo2Cut.mp3')
+    load.audio('music', './assets/sounds/Sink The Bismarck - Johnny Horton.mp3')
+    load.audio('musicfondo', './assets/sounds/MÚSICA ÉPICA SIN COPYRIGHT 1 - GUERRA MUNDIAL (I).mp3')
+    
 }
 
 export const playAudios = (id, { sound }, volume) => {

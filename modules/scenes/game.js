@@ -542,7 +542,11 @@ export class gameScene extends Phaser.Scene {
         this.mask.invertAlpha = true;
         overlay.setMask(this.mask);
 
-
+        // Reprodusco musica de fondo si no se esta reproduciendo
+        if (!this.musicFondoOn){
+            this.musicFondoOn = true;
+            playAudios('musicfondo', this, 0.05);
+        }
 
         // Imagen del radar
         const radar = this.add.image(1130, 615, 'radar');

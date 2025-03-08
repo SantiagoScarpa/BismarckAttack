@@ -1,4 +1,4 @@
-import { loadAudios, playAudios } from "../audios.js";
+import { loadAudios, playAudios, stopAudios } from "../audios.js";
 import { obtenerVolumenMenu, obtenerBismarckVelocidad, obtenerDuracionPartida } from "../persistencia/consumoServiciosSettings.js";
 import { retomarPartida } from "../persistencia/obtengoPersistencia.js";
 
@@ -36,6 +36,13 @@ export class menuScene extends Phaser.Scene {
             .setScale(0.75)
             .setAlpha(0.20)
             .setDepth(0);
+        
+        // Reprodusco musica de menu si no se esta reproduciendo
+        if (!this.musicOn){
+            this.musicOn = true;
+            playAudios('music', this, this.volumeMenu);
+        }
+        
 
         // Botón de inicio de partida
         this.playBtn = this.add.sprite(width / 3, height / 2, 'PlayBtn').setInteractive().setDepth(1);
@@ -67,6 +74,8 @@ export class menuScene extends Phaser.Scene {
         this.playWaiting = false
         this.replayWaiting = false
         await agregoFuncionalidadBotones(this)
+        
+        
     }
 
     async getPlayersCount() {
@@ -194,6 +203,7 @@ export class menuScene extends Phaser.Scene {
     }
 
     startGame(team, socket, reanudo, partida) {
+        stopAudios('music', this);
         this.scene.start('gameScene', { team, socket, reanudo, partida });
     }
 }
