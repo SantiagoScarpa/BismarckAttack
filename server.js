@@ -95,6 +95,8 @@ io.on('connection', (socket) => {
             players[socket.id].Px = player.Px;
             players[socket.id].Py = player.Py;
             players[socket.id].Pangle = player.Pangle;
+            players[socket.id].fireActive = player.fireActive || false;
+            players[socket.id].fireOffset = player.fireOffset || { x: 0, y: 0 }
         }
         io.emit('updatePlayers', players);
     });
