@@ -74,7 +74,7 @@ export class gameScene extends Phaser.Scene {
 
     shoot_bullet_avion() {
         if (this.playerShip.label === 'avion') {
-            let bullet = this.matter.add.sprite(this.playerShip.x, this.playerShip.y - 40, 'torpedo');
+            let bullet = this.matter.add.sprite(this.playerShip.x, this.playerShip.y, 'torpedo');
             bullet.owner = 'avion'
             bullet.setScale(0.02);
             bullet.setCircle(3);
@@ -698,7 +698,7 @@ export class gameScene extends Phaser.Scene {
         if (this.team === 'red') {
             //this.input.setDefaultCursor('none');
         } else {
-            this.minimapCamera.ignore([this.dispCantAviones]);
+            this.minimapCamera.ignore([this.dispCantAviones, this.avionMunicion]);
         }
 
         // Crear las animaciones definidas globalmente        
@@ -1071,8 +1071,8 @@ export class gameScene extends Phaser.Scene {
             let tiempoDeVida = 0;
             switch (opcion) {
                 case 1:
-                    this.visionObjets = 50; // Radio para objetos
-                    this.visionRadius = 45;  // Radio de visión
+                    this.visionObjets = 100; // Radio para objetos
+                    this.visionRadius = 95;  // Radio de visión
                     tiempoDeVida = 30000;
                     break;
                 case 2:
@@ -1082,8 +1082,8 @@ export class gameScene extends Phaser.Scene {
                     break;
 
                 case 3:
-                    this.visionObjets = 50; // Radio para objetos
-                    this.visionRadius = 45;  // Radio de visión
+                    this.visionObjets = 100; // Radio para objetos
+                    this.visionRadius = 95;  // Radio de visión
                     tiempoDeVida = 20000;
                     this.playerShip.observador = true;
                     break;
@@ -1120,7 +1120,7 @@ export class gameScene extends Phaser.Scene {
             this.avionReanudado = false
             // Función para actualizar la barra de tiempo
             const actualizarBarra = () => {
-                tiempoRestante -= 1000;
+                tiempoRestante -= 250;
                 let porcentaje = tiempoRestante / tiempoDeVida;
                 porcentaje = Math.max(0, Math.min(1, porcentaje));
                 this.tiempoAvion = tiempoRestante;
