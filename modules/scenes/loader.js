@@ -31,6 +31,7 @@ export class loaderScene extends Phaser.Scene {
         this.load.image('francia', './assets/imgs/sprites/franciaTransparente.png');
         this.load.image('bismarckGana', './assets/imgs/bismarckGana.png');
         this.load.image('crosshair', 'assets/imgs/sprites/crosshair.png');
+        this.load.image('hearth', 'assets/imgs/sprites/heart_metal.png');
         this.load.image('torpedo', 'assets/imgs/sprites/torpedo.png');
         this.load.image('arkRoyalGana', './assets/imgs/ganaArkRoyal.webp');
         this.load.spritesheet('save', './assets/imgs/sprites/save.png',

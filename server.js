@@ -107,10 +107,9 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('shoot_bullet_avion', data);
     });
 
-    socket.on('shipDestroyed', (data) => {
-        data.shipType = 'bismarck';
-        data.team = 'red';
-        io.emit('destroyShip', data);
+    socket.on('shipFire', (data) => {
+        // Retransmitir a todos los clientes excepto al emisor
+        socket.broadcast.emit('shipFire', data);
     });
 
     socket.on('disconnect', () => {
@@ -164,7 +163,7 @@ io.on('connection', (socket) => {
         }
 
     })
-
+    
     socket.on('vistaLateral', () => {
         io.emit('muestroVistaLateral', players,)
     })

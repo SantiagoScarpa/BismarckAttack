@@ -6,6 +6,7 @@ export function creacionBismarck(game, posX, posY, angle, settings) {
         if (!vel)
             vel = settings.bismarckVelocity
         let bismarck = game.matter.add.sprite(posX, posY, 'bismarck', null, { label: 'bismarck' });
+        //bismarck.id = Phaser.Utils.String.UUID();
         bismarck.setScale(0.10).setOrigin(0.5, 0.5);
         bismarck.vida = game.reanudo ? game.partida.bismarck.vida : settings.bismarckVida;
         bismarck.isOnFire = false;
