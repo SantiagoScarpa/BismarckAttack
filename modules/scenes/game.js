@@ -264,7 +264,7 @@ export class gameScene extends Phaser.Scene {
                         (bodyA === this.francia.body && bodyB === this.playerShip.body)
                     )
                 ) {
-                    this.socket.emit('ganaBismarck',{
+                    this.socket.emit('hayGanador',{
                         teamGanador: 'red',
                         motivo: 'Bismarck llego a Francia'
                     })

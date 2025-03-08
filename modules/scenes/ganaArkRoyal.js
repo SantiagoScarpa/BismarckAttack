@@ -6,11 +6,14 @@ export class ganaArkRoyal extends Phaser.Scene {
     }
     preload() { }
 
+    init(data) {
+        this.motivo = data.motivo;
+      }
+
     create() {
         this.volMenu = sessionStorage.getItem('volMenu')
         const width = this.game.config.width;
         const height = this.game.config.height;
-        const motivo = this.data.get('motivo');
 
         this.add.image(width / 2, height / 2, 'arkRoyalGana')
             .setScale(0.75)
@@ -23,7 +26,7 @@ export class ganaArkRoyal extends Phaser.Scene {
         )
         .setOrigin(0.5, 0.5)
 
-        this.add.text(width / 2, 70, motivo,
+        this.add.text(width / 2, 120, this.motivo,
             {
                 fontFamily: 'Rockwell',
                 fontSize: 30,
