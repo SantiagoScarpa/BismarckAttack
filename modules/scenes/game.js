@@ -170,9 +170,6 @@ export class gameScene extends Phaser.Scene {
             Nave.isOnFire = true
             Nave.fireSprite.setDepth(1);
         }
-        else if (Nave.vida === 1 && Nave.fireSprite) {
-            Nave.fireSprite.setScale(1.5);
-        }
         else if (Nave.vida === 0) {
             let explotion_ark = this.add.sprite(Nave.x, Nave.y - 40, 'explotion_ark1').setScale(1);
             explotion_ark.play('explode_arkRoyal');
@@ -742,6 +739,22 @@ export class gameScene extends Phaser.Scene {
         if (this.playerDestroyed) return;
         if (!this.playerShip) return;
 
+        if (this.playerShip?.fireSprite) {
+            // Calcular offset basado en la altura de la nave
+            const offsetY = this.playerShip.displayHeight * 0.3; // 30% de la altura de la nave
+            
+            // Aplicar posición relativa a la rotación
+            const fireOffset = new Phaser.Math.Vector2(0, -offsetY)
+                .rotate(this.playerShip.rotation);
+            
+            this.playerShip.fireSprite.setPosition(
+                this.playerShip.x + fireOffset.x,
+                this.playerShip.y + fireOffset.y
+            );
+            
+            // Rotar el fuego junto con la nave
+            this.playerShip.fireSprite.setRotation(this.playerShip.rotation);
+        }
 
         if (this.playerShip.label === 'bismarck') {
             // Controles bismarck
