@@ -15,8 +15,8 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
     const avionSchema = new mongoose.Schema({
         x: Number,
         y: Number,
-        municion: Boolean,
-        tiempoVida: Number,
+        municion: Number,
+        tiempoAvion: Number,
         opcion: Number
     })
 

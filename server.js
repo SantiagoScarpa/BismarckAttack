@@ -108,8 +108,8 @@ io.on('connection', (socket) => {
     });
 
     socket.on('shipDestroyed', (data) => {
-        data.shipType = 'bismarck'; 
-        data.team = 'red'; 
+        data.shipType = 'bismarck';
+        data.team = 'red';
         io.emit('destroyShip', data);
     });
 
@@ -141,6 +141,9 @@ io.on('connection', (socket) => {
     socket.on('ganaBismarck', () => {
         io.emit('finalizacionPartida', 'red');
     })
+    socket.on('ganaArkRoyal', () => {
+        io.emit('finalizacionPartida', 'blue');
+    })
 
     socket.on('respuestaRojo', (respuesta) => {
         respuestaRojo = respuesta
@@ -163,7 +166,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on('vistaLateral', () => {
-        io.emit('muestroVistaLateral', players, )
+        io.emit('muestroVistaLateral', players,)
     })
 
     socket.on('esperoCodigo', (codigo) => {
@@ -179,8 +182,12 @@ io.on('connection', (socket) => {
         io.emit('newPlane', player);
     });
 
-    socket.on('deletPlane', (player) => {
-        io.emit('deletPlane', player);
+    socket.on('deletPlane', () => {
+        io.emit('deletPlane');
+    });
+
+    socket.on('aterrizaje', () => {
+        io.emit('aterrizaje');
     });
 
     socket.on('rojoCargado', () => {

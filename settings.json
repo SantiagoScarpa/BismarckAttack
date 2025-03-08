@@ -1,9 +1,9 @@
 {
-  "volumeMenu": 0,
-  "volumeBismarckShoot": "0.7",
+  "volumeMenu": 0.4,
+  "volumeBismarckShoot": "0.5",
   "volumeExplotion": "1.6",
-  "volumeAvionShoot": "0.5",
-  "bismarckVelocity": 3,
+  "volumeAvionShoot": "0.3",
+  "bismarckVelocity": 4,
   "arkRoyaleVelocity": 3,
   "serverPort": 3000,
   "dbInfo": {
@@ -12,5 +12,7 @@
     "dbName": "bismarckAttack"
   },
   "avionVelocity": 1,
-  "duracionPartida": 9
+  "duracionPartida": 9,
+  "avionMunicion": 9,
+  "bismarckVida": 3
 }

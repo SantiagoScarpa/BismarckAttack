@@ -7,7 +7,7 @@ export function creacionBismarck(game, posX, posY, angle, settings) {
             vel = settings.bismarckVelocity
         let bismarck = game.matter.add.sprite(posX, posY, 'bismarck', null, { label: 'bismarck' });
         bismarck.setScale(0.10).setOrigin(0.5, 0.5);
-        bismarck.vida = 3;
+        bismarck.vida = game.reanudo ? game.partida.bismarck.vida : settings.bismarckVida;
         bismarck.isOnFire = false;
         bismarck.label = 'bismarck'
         bismarck.angle = angle
@@ -71,7 +71,6 @@ export function checkControlsBismarck({ bismarck, keys, anyKeyDown }) {
 
             if (bismarck.angle > -90)
                 bismarck.angle -= 1;
-            //            if (bismarck.angle >= -95 && bismarck.angle <= -85)
             bismarck.setVelocityX(-speed);
         } else if (keys.D.isDown) {
             if (bismarck.angle < 90)
@@ -79,6 +78,7 @@ export function checkControlsBismarck({ bismarck, keys, anyKeyDown }) {
 
             bismarck.setVelocityX(speed);
         } else {
+            bismarck.setVelocityY(0);
             bismarck.setVelocityX(0);
         }
     }
