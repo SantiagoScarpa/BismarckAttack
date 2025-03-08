@@ -2,7 +2,7 @@ import { playAudios } from "../audios.js";
 
 export class ganaBismarck extends Phaser.Scene {
     constructor() {
-        super("ganaBismarck")
+        super("pierdeBismarck")
     }
     preload() { }
 
@@ -14,7 +14,7 @@ export class ganaBismarck extends Phaser.Scene {
 
         this.add.image(width / 2, height / 2, 'bismarckGana')
             .setScale(0.5)
-        this.add.text(width / 2, 50, 'FELICITACIONES, ERES EL GANADOR !!',
+        this.add.text(width / 2, 50, 'HAS PERDIDO !',
             {
                 fontFamily: 'Rockwell',
                 fontSize: 64,
@@ -37,8 +37,8 @@ export class ganaBismarck extends Phaser.Scene {
             .setInteractive()
 
         returnBtn.on('pointerdown', () => {
-            this.scene.start('menuScene')
             playAudios('return', this, this.volMenu)
+            location.reload();
         })
 
     }

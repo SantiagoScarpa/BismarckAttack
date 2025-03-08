@@ -264,7 +264,10 @@ export class gameScene extends Phaser.Scene {
                         (bodyA === this.francia.body && bodyB === this.playerShip.body)
                     )
                 ) {
-                    this.socket.emit('ganaBismarck')
+                    this.socket.emit('ganaBismarck',{
+                        teamGanador: 'red',
+                        motivo: 'Bismarck llego a Francia'
+                    })
                 }
                 // Colisión entre bala y ArkRoyal
                 else if (
@@ -710,15 +713,22 @@ export class gameScene extends Phaser.Scene {
 
         this.socket.on('finalizacionPartida', (ganador) => {
             this.socket.disconnect()
-            if (ganador === 'blue') {
-                this.scene.start('ganaArkRoyal');
-            }
-            else if (ganador === 'red') {
-
-                this.scene.start('ganaBismarck');
-            }
-            else {
+            if (ganador.teamGanador === 'none'){
                 this.scene.start('menuScene');
+            }
+            else if (ganador.teamGanador === 'red') {
+                if(this.team === 'red'){
+                    this.scene.start('ganaBismarck', {motivo: ganador.motivo});
+                } else{
+                    this.scene.start('pierdeArkRoyal', {motivo: ganador.motivo});
+                }
+            }
+            else if (ganador.teamGanador === 'blue') {
+                if(this.team === 'blue'){
+                    this.scene.start('ganaArkRoyal', {motivo: ganador.motivo});
+                } else {
+                    this.scene.start('pierdeBismarck', {motivo: ganador.motivo});
+                }
             }
         })
 
@@ -1098,7 +1108,6 @@ export class gameScene extends Phaser.Scene {
                     this.playerShip.observador = true;
                     break;
             }
-
             // Tiempo de vida del avión en milisegundos (ejemplo: 30 segundos)
             let tiempoRestante = (this.reanudo && this.avionReanudado) ? this.partida.arkRoyal.avionActual.tiempoAvion : tiempoDeVida;
             this.tiempoAvion = tiempoRestante;
@@ -1162,7 +1171,10 @@ export class gameScene extends Phaser.Scene {
                         this.socket.emit('deletPlane');
                         this.playerShip.avionesRestantes -= 1;
                         if (this.playerShip.avionesRestantes <= 0) {
-                            this.socket.emit('ganaBismarck')
+                            this.socket.emit('hayGanador',{
+                                teamGanador: 'red',
+                                motivo: 'Todos los aviones fueron derribados'
+                            })
                         }
                         this.dispCantAviones.setText(`Aviones disponibles: ${this.playerShip.avionesRestantes}`);
                         this.cameras.main.startFollow(this.portaAviones, true, 0.1, 0.1);
