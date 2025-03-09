@@ -366,13 +366,12 @@ export class gameScene extends Phaser.Scene {
                             let heartToRemove = this.bismarckHearts.pop();
                             heartToRemove.destroy();
                         }
-                        if (bismarck.vida === 0 && !bismarck.destroyed) {
+                        if (bismarck.vida === 0) {
                             bismarck.destroyed = true;
-                            this.socket.emit('shipDestroyed', {
-                                shipId: this.socket.id,
-                                shipType: 'bismarck',
-                                team: this.team
-                            });
+                            this.socket.emit('hayGanador', {
+                                teamGanador: 'blue',
+                                motivo: 'El bismarck fue destruido'
+                            })
                         }
                     }
                 }
@@ -800,7 +799,7 @@ export class gameScene extends Phaser.Scene {
 
         this.socket.on('muestroVistaLateral', (players) => {
             const franciaPosition = { x: this.francia.x, y: this.francia.y }
-            this.scene.start('sceneVistaLateral', { players, socketId: this.socket.id, franciaPosition: franciaPosition,visionDelAvion: this.playerShip.visionDelAvion })
+            this.scene.start('sceneVistaLateral', { players, socketId: this.socket.id, franciaPosition: franciaPosition, visionDelAvion: this.playerShip.visionDelAvion })
 
         })
 
@@ -1060,7 +1059,7 @@ export class gameScene extends Phaser.Scene {
         let avion = this.matter.add.sprite(x, y, 'avion');
         avion.setScale(0.15).setOrigin(0.5, 0.5);
         //avion.velocity = settings.avionVelocity;
-        avion.vida = 2
+        avion.vida = 1
         avion.body.label = 'avion'
         avion.anims.play('despegue');
         this.avion = avion
@@ -1212,7 +1211,7 @@ export class gameScene extends Phaser.Scene {
                     this.playerShip.observador = true;
                     break;
             }
-            this.playerShip.visionDelAvion =  this.visionObjets;
+            this.playerShip.visionDelAvion = this.visionObjets;
             // Tiempo de vida del avión en milisegundos (ejemplo: 30 segundos)
             let tiempoRestante = (this.reanudo && this.avionReanudado) ? this.partida.arkRoyal.avionActual.tiempoAvion : tiempoDeVida;
             this.tiempoAvion = tiempoRestante;
