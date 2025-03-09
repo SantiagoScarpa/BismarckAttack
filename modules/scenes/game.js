@@ -231,7 +231,7 @@ export class gameScene extends Phaser.Scene {
         // Conexión y manejo de jugadores vía socket
 
         this.players = {};
-
+        this.jugadorDesconectado = false;
         // Inicializar balas y fuego
         this.bullets = [];
         this.fireSprite = null;
@@ -463,7 +463,6 @@ export class gameScene extends Phaser.Scene {
         if (this.team === 'red') {
             this.socket.on('pidoRojo', () => {
                 let respuesta = armoRespuestaRojo(this)
-                console.log(respuesta.codigoRojo)
                 this.socket.emit('respuestaRojo', respuesta)
                 mostrarTextoTemporal(this, 'Partida guardada', 3000)
             })
@@ -478,8 +477,11 @@ export class gameScene extends Phaser.Scene {
         save.on('animationcomplete', () => { save.setFrame(0) });
 
         homeBtn.on('pointerdown', () => {
-            this.socket.emit('saleDePartida');
-            //location.reload();
+            mostrarTextoTemporal(this, 'El otro jugador se ha desconectado, se cerrara la partida', 3000)
+            setTimeout(() => {
+                this.socket.emit('saleDePartida');
+            }, 3000);
+
         })
 
         // Definir posición inicial aleatoria
@@ -650,11 +652,15 @@ export class gameScene extends Phaser.Scene {
 
         // Manejar la desconexión de jugadores
         this.socket.on('playerDisconnected', (id) => {
-            console.log(`Jugador ${id} se desconectó`);
+            this.jugadorDesconectado = true
+            mostrarTextoTemporal(this, 'El otro jugador se ha desconectado, se cerrara la partida', 3000)
             if (this.players[id]) {
                 this.players[id].destroy();
                 delete this.players[id];
             }
+            setTimeout(() => {
+                this.socket.emit('saleDePartida');
+            }, 3000);
         });
 
         // Mostrar el número de jugadores conectados (evento duplicado en el ejemplo original)
@@ -705,7 +711,6 @@ export class gameScene extends Phaser.Scene {
         createAnimations(this);
 
         this.socket.on('finalizacionPartida', (ganador) => {
-            this.socket.disconnect()
             if (ganador === 'blue') {
                 this.scene.start('ganaArkRoyal');
             }
@@ -714,7 +719,7 @@ export class gameScene extends Phaser.Scene {
                 this.scene.start('ganaBismarck');
             }
             else {
-                this.scene.start('menuScene');
+                location.reload();
             }
         })
 
@@ -745,7 +750,7 @@ export class gameScene extends Phaser.Scene {
 
         if (this.playerDestroyed) return;
         if (!this.playerShip) return;
-
+        if (this.jugadorDesconectado) return;
         if (this.playerShip.label === 'bismarck') {
             // Controles bismarck
             checkControlsBismarck({ bismarck: this.playerShip, keys: this.keys });
@@ -792,7 +797,6 @@ export class gameScene extends Phaser.Scene {
         if (this.playerShip?.destroyed) {
             this.playerDestroyed = true;
             this.socket.emit('ganaArkRoyal')
-            //this.scene.start('ganaArkRoyal');
             return;
         }
 
