@@ -216,11 +216,11 @@ export class gameScene extends Phaser.Scene {
             color: '#ffffff'
         }).setOrigin(0.5).setDepth(11).setScrollFactor(0).setScale(0.5);
 
-        // Imagen del radar
+        // // Imagen del radar
         const radar = this.add.image(1130, 615, 'radar');
         radar.setScrollFactor(0);
         radar.setScale(0.09);
-        radar.setDepth(2);
+        radar.setDepth(11);
         radar.setAlpha(0.6);
 
         const heartSpacing = 25;
@@ -235,7 +235,7 @@ export class gameScene extends Phaser.Scene {
                 let hearth = this.add.image(startX + i * heartSpacing, startY, 'hearth')
                 hearth.setScrollFactor(0);
                 hearth.setScale(0.04);
-                hearth.setDepth(2);
+                hearth.setDepth(11);
                 this.bismarckHearts.push(hearth);
             }
         }
@@ -246,7 +246,7 @@ export class gameScene extends Phaser.Scene {
                 let hearth = this.add.image(startX + i * heartSpacing, startY, 'hearth')
                 hearth.setScrollFactor(0);
                 hearth.setScale(0.04);
-                hearth.setDepth(2);
+                hearth.setDepth(11);
                 this.arkRoyalHearts.push(hearth);
             }
         }
@@ -472,7 +472,7 @@ export class gameScene extends Phaser.Scene {
 
         //cartel de municion de avion
         if (this.team === 'blue') {
-            this.avionMunicion = this.add.text(1130, 540, ' ', {
+            this.avionMunicion = this.add.text(1130, 510, ' ', {
                 fontFamily: 'Rockwell',
                 fontSize: 19,
                 color: '#ffffff'
@@ -578,11 +578,11 @@ export class gameScene extends Phaser.Scene {
         }
 
         // Imagen del radar
-        const radar = this.add.image(1130, 615, 'radar');
-        radar.setScrollFactor(0);
-        radar.setScale(0.09);
-        radar.setDepth(4);
-        radar.setAlpha(0.6);
+        // const radar = this.add.image(1130, 615, 'radar');
+        // radar.setScrollFactor(0);
+        // radar.setScale(0.09);
+        // radar.setDepth(4);
+        // radar.setAlpha(0.6);
 
         // Configuración de límites y cámara
         this.matter.world.setBounds(0, 0, 1920, 1080);
@@ -1221,7 +1221,7 @@ export class gameScene extends Phaser.Scene {
             const barraAncho = 100;
             const barraAlto = 10;
             const barraX = 1080;
-            const barraY = 555;
+            const barraY = 525;
 
             const barraFondo = this.add.rectangle(barraX, barraY, barraAncho, barraAlto, 0x666666);
             barraFondo.setOrigin(0, 0);
