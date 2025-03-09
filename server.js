@@ -120,11 +120,15 @@ io.on('connection', (socket) => {
         esperoNuevaPartida = false
         console.log(`Jugadores restantes: ${Object.keys(players).length}`);
         io.emit('playerCount', Object.keys(players).length);
+        io.emit('playerDisconnected', socket.id);
     });
 
     socket.on('tiempoPartida', () => {
         console.log(`Partida terminada por tiempo`);
-        io.emit('finalizacionPartida', 'blue');
+        io.emit('finalizacionPartida', {
+            teamGanador: 'blue',
+            motivo: 'El tiempo de la partida llego a su fin'
+        });
 
     });
 
@@ -136,14 +140,15 @@ io.on('connection', (socket) => {
     })
 
     socket.on('saleDePartida', () => {
-        io.emit('finalizacionPartida', 'none');
+        io.emit('finalizacionPartida', {
+            teamGanador: 'none',
+            motivo: '...'
+        });
     })
-    socket.on('ganaBismarck', () => {
-        io.emit('finalizacionPartida', 'red');
+    socket.on('hayGanador', (infoGanador) => {
+        io.emit('finalizacionPartida', infoGanador);
     })
-    socket.on('ganaArkRoyal', () => {
-        io.emit('finalizacionPartida', 'blue');
-    })
+
 
     socket.on('respuestaRojo', (respuesta) => {
         respuestaRojo = respuesta
@@ -166,6 +171,10 @@ io.on('connection', (socket) => {
     })
 
     socket.on('vistaLateral', () => {
+        updateDB = true;
+        io.emit('pidoRojo')
+        io.emit('pidoAzul')
+
         io.emit('muestroVistaLateral', players )
     })
 
