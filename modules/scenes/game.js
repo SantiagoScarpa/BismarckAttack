@@ -22,20 +22,7 @@ export class gameScene extends Phaser.Scene {
         this.playerDestroyed = false;
     }
 
-    activateFire(x, y, scale) {
-        //if (!this.playerShip) return;
-        if (this.playerShip.label === 'arkroyal') {
-            if (this.playerShip.isOnFire) return;
-
-            this.playerShip.isOnFire = true;
-            this.fireSprite = this.add.sprite(x, y, 'fire0').setScale(scale);
-            this.fireSprite.play('fire');
-            this.fireSprite.setDepth(1);
-
-            this.fireSprite.setPosition(this.playerShip.x, this.playerShip.y);
-        }
-    }
-
+    //si soy el bismarck veo una vida mas de el ark royal que en el cliente del ark royal
     shoot_bullet_bismarck() {
         //if (!this.playerShip) return;
         if (this.playerShip.label === 'bismarck') {
@@ -174,6 +161,7 @@ export class gameScene extends Phaser.Scene {
 
         stopAudios('avion_shoot', this);
         playAudios('explotion', this, settings.volumeExplotion);
+        console.log("Nave vida", Nave.vida)
 
         if (Nave.vida === 2 && !Nave.isOnFire) {
             // Usamos la posición del impacto para activar el fuego
@@ -181,9 +169,6 @@ export class gameScene extends Phaser.Scene {
             Nave.fireSprite.play('fire');
             Nave.isOnFire = true
             Nave.fireSprite.setDepth(1);
-        }
-        else if (Nave.vida === 1 && Nave.fireSprite) {
-            Nave.fireSprite.setScale(1.5);
         }
         else if (Nave.vida === 0) {
             let explotion_ark = this.add.sprite(Nave.x, Nave.y - 40, 'explotion_ark1').setScale(1);
@@ -230,6 +215,41 @@ export class gameScene extends Phaser.Scene {
             fontSize: 24,
             color: '#ffffff'
         }).setOrigin(0.5).setDepth(11).setScrollFactor(0).setScale(0.5);
+
+        // Imagen del radar
+        const radar = this.add.image(1130, 615, 'radar');
+        radar.setScrollFactor(0);
+        radar.setScale(0.09);
+        radar.setDepth(2);
+        radar.setAlpha(0.6);
+
+        const heartSpacing = 25;
+        const heartsTotalWidth = (4 - 1) * heartSpacing;
+        const startX = 1138 - heartsTotalWidth / 2;
+        const startY = 615 - (radar.displayHeight / 2) - 20;
+
+        if (this.team === 'red') {
+            // Agregar los sprites de vida (corazones) sobre el radar
+            this.bismarckHearts = [];
+            for (let i = 0; i < 3; i++) {
+                let hearth = this.add.image(startX + i * heartSpacing, startY, 'hearth')
+                hearth.setScrollFactor(0);
+                hearth.setScale(0.04);
+                hearth.setDepth(2);
+                this.bismarckHearts.push(hearth);
+            }
+        }
+
+        if (this.team === 'blue') {
+            this.arkRoyalHearts = [];
+            for (let i = 0; i < 3; i++) {
+                let hearth = this.add.image(startX + i * heartSpacing, startY, 'hearth')
+                hearth.setScrollFactor(0);
+                hearth.setScale(0.04);
+                hearth.setDepth(2);
+                this.arkRoyalHearts.push(hearth);
+            }
+        }
 
         // Conexión y manejo de jugadores vía socket
 
@@ -301,8 +321,12 @@ export class gameScene extends Phaser.Scene {
                     const bullet = bodyA.label === 'bullet' ? bodyA.gameObject : bodyB.gameObject;
                     const arkroyal = bodyA.label === 'arkroyal' ? bodyA.gameObject : bodyB.gameObject;
                     if (bullet && arkroyal) {
-                        this.onBulletHit(arkroyal, bullet);
                         arkroyal.vida--;
+                        this.onBulletHit(arkroyal, bullet);
+                        if (this.team === 'blue' && this.arkRoyalHearts.length > 0) {
+                            let heartToRemove = this.arkRoyalHearts.pop();
+                            heartToRemove.destroy();
+                        }
                         //if (arkroyal.vida === 0){
                         //    arkroyal.destroy()
                         //}
@@ -317,8 +341,8 @@ export class gameScene extends Phaser.Scene {
                     const avion = bodyA.label === 'avion' ? bodyA.gameObject : bodyB.gameObject;
                     if (bullet.owner === 'avion') return;
                     if (bullet && avion) {
-                        this.onBulletHit(avion, bullet);
                         avion.vida--;
+                        this.onBulletHit(avion, bullet);
                         console.log("Vida avion : ", avion.vida)
                         //if (avion.vida === 0){
                         //    avion.destroy()
@@ -333,12 +357,15 @@ export class gameScene extends Phaser.Scene {
                 ) {
                     const bullet = bodyA.label === 'bullet' ? bodyA.gameObject : bodyB.gameObject;
                     const bismarck = bodyA.label === 'bismarck' ? bodyA.gameObject : bodyB.gameObject;
-                    console.log(`Bullet owner: ${bullet.owner}`);
                     if (bullet.owner === 'bismarck') return;
                     if (bullet && bismarck) {
-                        this.onBulletHit(bismarck, bullet);
                         bismarck.vida--;
+                        this.onBulletHit(bismarck, bullet);
                         console.log("Vida bismarck : ", bismarck.vida)
+                        if (this.team === 'red' && this.bismarckHearts.length > 0) {
+                            let heartToRemove = this.bismarckHearts.pop();
+                            heartToRemove.destroy();
+                        }
                         if (bismarck.vida === 0 && !bismarck.destroyed) {
                             bismarck.destroyed = true;
                             this.socket.emit('shipDestroyed', {
@@ -389,26 +416,6 @@ export class gameScene extends Phaser.Scene {
                 }
 
             });
-        });
-
-        this.socket.on('destroyShip', (data) => {
-            const ship = this.players[data.shipId];
-            if (ship && !ship.destroyed) {
-                ship.destroy();
-                delete this.players[data.shipId];
-                ship.destroyed = true;
-
-                // Determinar qué escena mostrar según el team del jugador
-                if (data.shipType === 'bismarck') {
-                    this.socket.emit('hayGanador', {
-                        teamGanador: 'blue',
-                        motivo: 'El bismarck fue destruido'
-                    });
-                }
-
-                // Limpieza adicional
-                if (ship.fireSprite) ship.fireSprite.destroy();
-            }
         });
 
         const graphics = this.make.graphics();
@@ -650,23 +657,58 @@ export class gameScene extends Phaser.Scene {
         this.socket.on('updatePlayers', (players) => {
             Object.keys(players).forEach((id) => {
                 if (id !== this.socket.id) {
+                    const playerData = players[id];
                     if (!this.players[id]) {
-                        // Crear nave según el team
-                        if (players[id].team === 'red') {
-                            this.createBismarck(game, id, players[id].x, players[id].y, players[id].angle);
-                        } else if (players[id].team === 'blue') {
-                            this.createArkRoyal(id, players[id].x, players[id].y, players[id].angle);
+                        // Crear nave según el equipo
+                        if (playerData.team === 'red') {
+                            this.createBismarck(game, id, playerData.x, playerData.y, playerData.angle);
+                        } else if (playerData.team === 'blue') {
+                            this.createArkRoyal(id, playerData.x, playerData.y, playerData.angle);
                         }
                     } else {
                         // Actualizar posición y ángulo
-                        if (players[id].label === 'avion' && this.avion) {
-                            this.avion.setPosition(players[id].x, players[id].y);
-                            this.avion.setAngle(players[id].angle);
-                            this.players[id].setPosition(players[id].Px, players[id].Py);
-                            this.players[id].setAngle(players[id].Pangle);
+                        if (playerData.label === 'avion' && this.avion) {
+                            this.avion.setPosition(playerData.x, playerData.y);
+                            this.avion.setAngle(playerData.angle);
+                            this.players[id].setPosition(playerData.Px, playerData.Py);
+                            this.players[id].setAngle(playerData.Pangle);
                         } else {
-                            this.players[id].setPosition(players[id].x, players[id].y);
-                            this.players[id].setAngle(players[id].angle);
+                            this.players[id].setPosition(playerData.x, playerData.y);
+                            this.players[id].setAngle(playerData.angle);
+                        }
+
+                        // Manejo del sprite de fuego para el jugador remoto
+                        if (playerData.fireActive) {
+                            // Crear el sprite de fuego si aún no existe
+                            if (!this.players[id].fireSprite) {
+                                this.players[id].fireSprite = this.add.sprite(
+                                    playerData.x,
+                                    playerData.y,
+                                    'fire0'
+                                )
+                                    .setOrigin(0.5, 0.5)
+                                    .play('fire')
+                                    .setDepth(1);
+                            }
+
+                            // Calcular offset basado en la altura de la nave
+                            const offsetY = this.players[id].displayHeight * 0.3;
+                            // Convertir el ángulo (en grados) a radianes
+                            const radAngle = Phaser.Math.DegToRad(playerData.angle);
+                            // Calcular el offset aplicando la rotación
+                            const fireOffset = new Phaser.Math.Vector2(0, -offsetY).rotate(radAngle);
+
+                            // Actualizar posición y rotación del sprite de fuego
+                            this.players[id].fireSprite.setPosition(
+                                playerData.x + fireOffset.x,
+                                playerData.y + fireOffset.y
+                            );
+                            this.players[id].fireSprite.setRotation(radAngle);
+
+                        } else if (this.players[id].fireSprite) {
+                            // Destruir el sprite de fuego si no está activo
+                            this.players[id].fireSprite.destroy();
+                            this.players[id].fireSprite = null;
                         }
                     }
                 }
@@ -784,6 +826,24 @@ export class gameScene extends Phaser.Scene {
         if (this.playerDestroyed) return;
         if (!this.playerShip) return;
         if (this.jugadorDesconectado) return;
+
+        if (this.playerShip?.fireSprite) {
+            // Calcular offset basado en la altura de la nave
+            const offsetY = this.playerShip.displayHeight * 0.3; // 30% de la altura de la nave
+
+            // Aplicar posición relativa a la rotación
+            const fireOffset = new Phaser.Math.Vector2(0, -offsetY)
+                .rotate(this.playerShip.rotation);
+
+            this.playerShip.fireSprite.setPosition(
+                this.playerShip.x + fireOffset.x,
+                this.playerShip.y + fireOffset.y
+            );
+
+            // Rotar el fuego junto con la nave
+            this.playerShip.fireSprite.setRotation(this.playerShip.rotation);
+        }
+
         if (this.playerShip.label === 'bismarck') {
             // Controles bismarck
             checkControlsBismarck({ bismarck: this.playerShip, keys: this.keys });
@@ -880,6 +940,11 @@ export class gameScene extends Phaser.Scene {
                         Px: this.portaAviones.x,
                         Py: this.portaAviones.y,
                         Pangle: this.portaAviones.angle
+                        //fireActive: this.playerShip.isOnFire || false,
+                        //fireOffset: {
+                        //    x: 0,  // Offset horizontal relativo (ajustar según nave)
+                        //    y: -20 // Offset vertical fijo
+                        //}
                     });
                 }
             } else {
@@ -889,7 +954,12 @@ export class gameScene extends Phaser.Scene {
                     y: this.playerShip.y,
                     angle: this.playerShip.angle,
                     team: this.team,
-                    label: this.playerShip.label
+                    label: this.playerShip.label,
+                    fireActive: this.playerShip.isOnFire || false,
+                    fireOffset: {
+                        x: 0,  // Offset horizontal relativo (ajustar según nave)
+                        y: -20 // Offset vertical fijo
+                    }
                 });
             }
 
@@ -977,8 +1047,7 @@ export class gameScene extends Phaser.Scene {
 
         let arkroyal = this.matter.add.sprite(x, y, 'portaAviones');
         arkroyal.setScale(0.15).setOrigin(0.5, 0.5);
-        arkroyal.vida = 4;
-        //arkroyal.velocity = settings.arkRoyaleVelocity;
+        arkroyal.vida = 3;
         arkroyal.body.label = 'arkroyal';
         arkroyal.isOnFire = false;
 

@@ -95,6 +95,8 @@ io.on('connection', (socket) => {
             players[socket.id].Px = player.Px;
             players[socket.id].Py = player.Py;
             players[socket.id].Pangle = player.Pangle;
+            players[socket.id].fireActive = player.fireActive || false;
+            players[socket.id].fireOffset = player.fireOffset || { x: 0, y: 0 }
         }
         io.emit('updatePlayers', players);
     });
@@ -107,10 +109,9 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('shoot_bullet_avion', data);
     });
 
-    socket.on('shipDestroyed', (data) => {
-        data.shipType = 'bismarck';
-        data.team = 'red';
-        io.emit('destroyShip', data);
+    socket.on('shipFire', (data) => {
+        // Retransmitir a todos los clientes excepto al emisor
+        socket.broadcast.emit('shipFire', data);
     });
 
     socket.on('disconnect', () => {
@@ -169,7 +170,7 @@ io.on('connection', (socket) => {
         }
 
     })
-
+    
     socket.on('vistaLateral', () => {
         updateDB = true;
         io.emit('pidoRojo')
