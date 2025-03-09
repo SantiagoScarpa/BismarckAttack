@@ -89,7 +89,7 @@ export class gameScene extends Phaser.Scene {
             bullet.setRotation(angle + Math.PI / 2);
             bullet.body.label = 'bullet';
 
-            let bulletTail = this.add.image(this.playerShip.x, this.playerShip.y , 'bismarckMisilCola')
+            let bulletTail = this.add.image(this.playerShip.x, this.playerShip.y, 'bismarckMisilCola')
             bulletTail.setScale(0.5)
 
             playAudios('avion_shoot', this, settings.volumneAvion_shoot)
@@ -400,14 +400,10 @@ export class gameScene extends Phaser.Scene {
 
                 // Determinar qué escena mostrar según el team del jugador
                 if (data.shipType === 'bismarck') {
-                    // Si soy del equipo AZUL y se destruyó un Bismarck
-                    if (this.team === 'blue') {
-                        this.scene.start('ganaArkRoyal'); // Escena victoria azul
-                    }
-                    // Si soy del equipo ROJO y es MI Bismarck
-                    else if (ship === this.playerShip) {
-                        this.scene.start('ganaArkRoyal'); // Escena derrota rojo
-                    }
+                    this.socket.emit('hayGanador', {
+                        teamGanador: 'blue',
+                        motivo: 'El bismarck fue destruido'
+                    });
                 }
 
                 // Limpieza adicional
@@ -857,7 +853,7 @@ export class gameScene extends Phaser.Scene {
             this.waterTrail.setPosition(this.playerShip.x + rotatedOffsetX, this.playerShip.y + rotatedOffsetY);
 
             // Activa o desactiva el efecto en función de la velocidad
-            if (this.playerShip.body.velocity.x > 0.05 || this.playerShip.body.velocity.x < -0.05 || 
+            if (this.playerShip.body.velocity.x > 0.05 || this.playerShip.body.velocity.x < -0.05 ||
                 this.playerShip.body.velocity.y > 0.05 || this.playerShip.body.velocity.y < -0.05) {
                 this.waterTrail.active = true;
             } else {
