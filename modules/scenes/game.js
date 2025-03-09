@@ -809,7 +809,10 @@ export class gameScene extends Phaser.Scene {
 
         if (this.playerShip?.destroyed) {
             this.playerDestroyed = true;
-            this.socket.emit('ganaArkRoyal')
+            this.socket.emit('hayGanador', {
+                teamGanador: 'blue',
+                motivo: 'El bismarck fue destruido'
+            })
             return;
         }
 
