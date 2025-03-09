@@ -231,7 +231,7 @@ export class gameScene extends Phaser.Scene {
         // Conexión y manejo de jugadores vía socket
 
         this.players = {};
-
+        this.jugadorDesconectado = false;
         // Inicializar balas y fuego
         this.bullets = [];
         this.fireSprite = null;
@@ -264,7 +264,7 @@ export class gameScene extends Phaser.Scene {
                         (bodyA === this.francia.body && bodyB === this.playerShip.body)
                     )
                 ) {
-                    this.socket.emit('hayGanador',{
+                    this.socket.emit('hayGanador', {
                         teamGanador: 'red',
                         motivo: 'Bismarck llego a Francia'
                     })
@@ -467,7 +467,6 @@ export class gameScene extends Phaser.Scene {
         if (this.team === 'red') {
             this.socket.on('pidoRojo', () => {
                 let respuesta = armoRespuestaRojo(this)
-                console.log(respuesta.codigoRojo)
                 this.socket.emit('respuestaRojo', respuesta)
                 mostrarTextoTemporal(this, 'Partida guardada', 3000)
             })
@@ -483,7 +482,6 @@ export class gameScene extends Phaser.Scene {
 
         homeBtn.on('pointerdown', () => {
             this.socket.emit('saleDePartida');
-            //location.reload();
         })
 
         // Definir posición inicial aleatoria
@@ -547,7 +545,7 @@ export class gameScene extends Phaser.Scene {
         overlay.setMask(this.mask);
 
         // Reprodusco musica de fondo si no se esta reproduciendo
-        if (!this.musicFondoOn){
+        if (!this.musicFondoOn) {
             this.musicFondoOn = true;
             playAudios('musicfondo', this, settings.volumeMusicFondo);
         }
@@ -658,11 +656,13 @@ export class gameScene extends Phaser.Scene {
 
         // Manejar la desconexión de jugadores
         this.socket.on('playerDisconnected', (id) => {
-            console.log(`Jugador ${id} se desconectó`);
+            this.jugadorDesconectado = true
             if (this.players[id]) {
                 this.players[id].destroy();
                 delete this.players[id];
             }
+
+            this.socket.emit('saleDePartida');
         });
 
         // Mostrar el número de jugadores conectados (evento duplicado en el ejemplo original)
@@ -714,21 +714,24 @@ export class gameScene extends Phaser.Scene {
 
         this.socket.on('finalizacionPartida', (ganador) => {
             this.socket.disconnect()
-            if (ganador.teamGanador === 'none'){
-                this.scene.start('menuScene');
+            if (ganador.teamGanador === 'none') {
+                mostrarTextoTemporal(this, 'El otro jugador se ha desconectado, se cerrara la partida', 3000)
+                setTimeout(() => {
+                    location.reload();
+                }, 3000);
             }
             else if (ganador.teamGanador === 'red') {
-                if(this.team === 'red'){
-                    this.scene.start('ganaBismarck', {motivo: ganador.motivo});
-                } else{
-                    this.scene.start('pierdeArkRoyal', {motivo: ganador.motivo});
+                if (this.team === 'red') {
+                    this.scene.start('ganaBismarck', { motivo: ganador.motivo });
+                } else {
+                    this.scene.start('pierdeArkRoyal', { motivo: ganador.motivo });
                 }
             }
             else if (ganador.teamGanador === 'blue') {
-                if(this.team === 'blue'){
-                    this.scene.start('ganaArkRoyal', {motivo: ganador.motivo});
+                if (this.team === 'blue') {
+                    this.scene.start('ganaArkRoyal', { motivo: ganador.motivo });
                 } else {
-                    this.scene.start('pierdeBismarck', {motivo: ganador.motivo});
+                    this.scene.start('pierdeBismarck', { motivo: ganador.motivo });
                 }
             }
         })
@@ -760,7 +763,7 @@ export class gameScene extends Phaser.Scene {
 
         if (this.playerDestroyed) return;
         if (!this.playerShip) return;
-
+        if (this.jugadorDesconectado) return;
         if (this.playerShip.label === 'bismarck') {
             // Controles bismarck
             checkControlsBismarck({ bismarck: this.playerShip, keys: this.keys });
@@ -806,7 +809,7 @@ export class gameScene extends Phaser.Scene {
 
         if (this.playerShip?.destroyed) {
             this.playerDestroyed = true;
-            this.scene.start('ganaArkRoyal');
+            this.socket.emit('ganaArkRoyal')
             return;
         }
 
@@ -1065,7 +1068,7 @@ export class gameScene extends Phaser.Scene {
             this.cameras.main.ignore([this.portaAvionesIcon]);
             this.portaAviones.setVelocity(0);
             // Variable para almacenar la instancia del sonido
-            this.avionDespegueSound = playAudios('avionDespegue', this,settings.volumenavionDespegue);
+            this.avionDespegueSound = playAudios('avionDespegue', this, settings.volumenavionDespegue);
             // Escucha el evento 'complete' para reproducir el segundo sonido
             this.avionDespegueSound.on('complete', () => {
                 playAudios('avionAire', this, settings.volumenavionAire);
@@ -1179,7 +1182,7 @@ export class gameScene extends Phaser.Scene {
                         this.socket.emit('deletPlane');
                         this.playerShip.avionesRestantes -= 1;
                         if (this.playerShip.avionesRestantes <= 0) {
-                            this.socket.emit('hayGanador',{
+                            this.socket.emit('hayGanador', {
                                 teamGanador: 'red',
                                 motivo: 'Todos los aviones fueron derribados'
                             })

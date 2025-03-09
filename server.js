@@ -108,8 +108,8 @@ io.on('connection', (socket) => {
     });
 
     socket.on('shipDestroyed', (data) => {
-        data.shipType = 'bismarck'; 
-        data.team = 'red'; 
+        data.shipType = 'bismarck';
+        data.team = 'red';
         io.emit('destroyShip', data);
     });
 
@@ -120,11 +120,12 @@ io.on('connection', (socket) => {
         esperoNuevaPartida = false
         console.log(`Jugadores restantes: ${Object.keys(players).length}`);
         io.emit('playerCount', Object.keys(players).length);
+        io.emit('playerDisconnected', socket.id);
     });
 
     socket.on('tiempoPartida', () => {
         console.log(`Partida terminada por tiempo`);
-        io.emit('finalizacionPartida',{
+        io.emit('finalizacionPartida', {
             teamGanador: 'blue',
             motivo: 'El tiempo de la partida llego a su fin'
         });
@@ -147,7 +148,7 @@ io.on('connection', (socket) => {
     socket.on('hayGanador', (infoGanador) => {
         io.emit('finalizacionPartida', infoGanador);
     })
-  
+
 
     socket.on('respuestaRojo', (respuesta) => {
         respuestaRojo = respuesta
@@ -170,7 +171,11 @@ io.on('connection', (socket) => {
     })
 
     socket.on('vistaLateral', () => {
-        io.emit('muestroVistaLateral', players, )
+        updateDB = true;
+        io.emit('pidoRojo')
+        io.emit('pidoAzul')
+
+        io.emit('muestroVistaLateral', players,)
     })
 
     socket.on('esperoCodigo', (codigo) => {

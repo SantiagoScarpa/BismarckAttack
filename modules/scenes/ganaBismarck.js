@@ -40,8 +40,8 @@ export class ganaBismarck extends Phaser.Scene {
             .setInteractive()
 
         returnBtn.on('pointerdown', () => {
-            this.scene.start('menuScene')
             playAudios('return', this, this.volMenu)
+            location.reload();
         })
 
     }
