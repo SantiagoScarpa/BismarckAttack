@@ -181,7 +181,6 @@ export class gameScene extends Phaser.Scene {
             Nave.fireSprite.play('fire');
             Nave.isOnFire = true
             Nave.fireSprite.setDepth(1);
-            //this.activateFire(bullet.x, bullet.y, 0.9);
         }
         else if (Nave.vida === 1 && Nave.fireSprite) {
             Nave.fireSprite.setScale(1.5);
@@ -206,10 +205,14 @@ export class gameScene extends Phaser.Scene {
         if (!durPartida)
             durPartida = 2
         this.duracionPartida = this.reanudo ? this.partida.tiempoPartida : durPartida * 60 * 1000
-        this.inicioPartida = Date.now()
-        this.time.delayedCall(this.duracionPartida, () => {
-            this.socket.emit('tiempoPartida')
-        }, [], this);
+
+        this.timerText = this.add.text(431, 260, '', {
+            fontFamily: 'Rockwell',
+            fontSize: 24,
+            color: '#ffffff'
+        }).setOrigin(0.5).setDepth(11).setScrollFactor(0).setScale(0.5);
+
+
 
         if (!this.reanudo) {
             try {
@@ -247,6 +250,27 @@ export class gameScene extends Phaser.Scene {
 
         this.socket.emit("empiezaPartida", this.reanudo)
 
+        this.inicioPartida = Date.now()
+        this.updateTimer = () => {
+            let tiempoFaltante = this.duracionPartida - (Date.now() - this.inicioPartida);
+            if (tiempoFaltante <= 0) {
+                this.timerText.setText('00:00');
+                this.socket.emit('tiempoPartida');
+            } else {
+                let minutes = Math.floor(tiempoFaltante / 60000);
+                let seconds = Math.floor((tiempoFaltante % 60000) / 1000);
+                this.timerText.setText(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+            }
+        };
+
+        this.time.addEvent({
+            delay: 1000,
+            callback: this.updateTimer,
+            callbackScope: this,
+            loop: true
+        });
+
+
         // Configurar controles
         this.keys = this.input.keyboard.addKeys('UP,DOWN,LEFT,RIGHT,W,A,S,D,SPACE,P');
 
@@ -279,7 +303,6 @@ export class gameScene extends Phaser.Scene {
                         //if (arkroyal.vida === 0){
                         //    arkroyal.destroy()
                         //}
-                        console.log("Vida arkroyal: ", arkroyal.vida);
                     }
                 }
                 // Colisión entre bala y avión
