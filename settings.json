@@ -16,6 +16,6 @@
     "dbName": "bismarckAttack"
   },
   "duracionPartida": 2,
-  "avionMunicion": 9,
+  "avionMunicion": 1,
   "bismarckVida": 3
 }
