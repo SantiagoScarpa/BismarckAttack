@@ -125,7 +125,10 @@ io.on('connection', (socket) => {
 
     socket.on('tiempoPartida', () => {
         console.log(`Partida terminada por tiempo`);
-        io.emit('finalizacionPartida', 'blue');
+        io.emit('finalizacionPartida', {
+            teamGanador: 'blue',
+            motivo: 'El tiempo de la partida llego a su fin'
+        });
 
     });
 
@@ -137,14 +140,15 @@ io.on('connection', (socket) => {
     })
 
     socket.on('saleDePartida', () => {
-        io.emit('finalizacionPartida', 'none');
+        io.emit('finalizacionPartida', {
+            teamGanador: 'none',
+            motivo: '...'
+        });
     })
-    socket.on('ganaBismarck', () => {
-        io.emit('finalizacionPartida', 'red');
+    socket.on('hayGanador', (infoGanador) => {
+        io.emit('finalizacionPartida', infoGanador);
     })
-    socket.on('ganaArkRoyal', () => {
-        io.emit('finalizacionPartida', 'blue');
-    })
+
 
     socket.on('respuestaRojo', (respuesta) => {
         respuestaRojo = respuesta
