@@ -435,14 +435,14 @@ export class gameScene extends Phaser.Scene {
         homeBtn.setScrollFactor(0)
             .setOrigin(0.5, 0.5)
             .setInteractive()
-            .setDepth(2)
+            .setDepth(5)
             .setScale(0.3)
 
         const save = this.add.sprite(1150, 240, 'save')
         save.setScrollFactor(0)
             .setOrigin(0.5, 0.5)
             .setInteractive()
-            .setDepth(2)
+            .setDepth(5)
 
         //cartel de municion de avion
         if (this.team === 'blue') {
@@ -532,7 +532,7 @@ export class gameScene extends Phaser.Scene {
 
         // Campo de visión: Se añade la niebla sobre el mapa
         const overlay = this.add.graphics();
-        overlay.fillStyle(0x000000, 0.8).fillRect(0, 0, 1920, 1080).setDepth(1);
+        overlay.fillStyle(0x000000, 0.8).fillRect(0, 0, 1920, 1080).setDepth(4);
 
         // Configuración de la zona de visión
         this.visionObjets = 210; // Radio para objetos
@@ -555,7 +555,7 @@ export class gameScene extends Phaser.Scene {
         const radar = this.add.image(1130, 615, 'radar');
         radar.setScrollFactor(0);
         radar.setScale(0.09);
-        radar.setDepth(2);
+        radar.setDepth(4);
         radar.setAlpha(0.6);
 
         // Configuración de límites y cámara
@@ -945,7 +945,7 @@ export class gameScene extends Phaser.Scene {
 
         let bismarck = this.matter.add.sprite(x, y, 'bismarck');
         bismarck.setScale(0.10).setOrigin(0.5, 0.5);
-        bismarck.velocity = settings.bismarckVelocity;
+        //bismarck.velocity = settings.bismarckVelocity;
         bismarck.vida = game.reanudo ? game.partida.bismarck.vida : settings.bismarckVida;;
         bismarck.destroyed = false;
         bismarck.body.label = 'bismarck'
@@ -959,7 +959,7 @@ export class gameScene extends Phaser.Scene {
         let arkroyal = this.matter.add.sprite(x, y, 'portaAviones');
         arkroyal.setScale(0.15).setOrigin(0.5, 0.5);
         arkroyal.vida = 4;
-        arkroyal.velocity = settings.arkRoyaleVelocity;
+        //arkroyal.velocity = settings.arkRoyaleVelocity;
         arkroyal.body.label = 'arkroyal';
         arkroyal.isOnFire = false;
 
@@ -971,7 +971,7 @@ export class gameScene extends Phaser.Scene {
 
         let avion = this.matter.add.sprite(x, y, 'avion');
         avion.setScale(0.15).setOrigin(0.5, 0.5);
-        avion.velocity = settings.avionVelocity;
+        //avion.velocity = settings.avionVelocity;
         avion.vida = 2
         avion.body.label = 'avion'
         avion.anims.play('despegue');
@@ -1137,14 +1137,14 @@ export class gameScene extends Phaser.Scene {
             const barraFondo = this.add.rectangle(barraX, barraY, barraAncho, barraAlto, 0x666666);
             barraFondo.setOrigin(0, 0);
             barraFondo.setScrollFactor(0);
-            barraFondo.setDepth(2);
+            barraFondo.setDepth(4);
             this.cameras.main.ignore([barraFondo]);
             this.minimapCamera.ignore([barraFondo]);
 
             const barraRelleno = this.add.rectangle(barraX, barraY, barraAncho, barraAlto, 0x00ff00);
             barraRelleno.setOrigin(0, 0);
             barraRelleno.setScrollFactor(0);
-            barraRelleno.setDepth(2);
+            barraRelleno.setDepth(4);
             this.minimapCamera.ignore([barraRelleno]);
             this.avionReanudado = false
             // Función para actualizar la barra de tiempo

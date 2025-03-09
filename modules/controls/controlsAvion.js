@@ -9,14 +9,16 @@ export function creacionAvion(game, posX, posY, settings) {
     avion.observador = false;
     avion.observadorMarco = false;
     avion.anims.play('despegue');
+    avion.velocity = settings.avionVelocity;
     return avion;
 }
 
 export function checkControlsAvion({ avion, keys }) {
-    let rotationSpeed = 0.4;
+    let multiVelocidad = 0.5 * avion.velocity;
+    let rotationSpeed = 0.4 * multiVelocidad;
     let maxRotationDelta = 180;
-    let topeVelocidad = 2;
-    let acceleration = 0.012;
+    let topeVelocidad = 2 * multiVelocidad;
+    let acceleration = 0.012 * multiVelocidad;
     let targetAngle = Math.atan2(avion.body.velocity.y, avion.body.velocity.x);
     targetAngle = Phaser.Math.RadToDeg(targetAngle);
 

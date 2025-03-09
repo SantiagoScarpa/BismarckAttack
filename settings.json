@@ -6,15 +6,15 @@
   "volumeAvionShoot": "0.3",
   "volumenavionDespegue": "0.5",
   "volumenavionAire": "0.8",
-  "bismarckVelocity": 1,
-  "arkRoyaleVelocity": 3,
+  "bismarckVelocity": 2,
+  "arkRoyaleVelocity": 1,
+  "avionVelocity": 1,
   "serverPort": 3000,
   "dbInfo": {
     "dbIp": "127.0.0.1",
     "dbPort": 27017,
     "dbName": "bismarckAttack"
   },
-  "avionVelocity": 1,
   "duracionPartida": 9,
   "avionMunicion": 9,
   "bismarckVida": 3

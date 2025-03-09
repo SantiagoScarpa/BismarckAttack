@@ -91,10 +91,11 @@ function setVelocidadDiagonal(bismarck, velX, velY) {
 }*/
 
 export function checkControlsBismarck({ bismarck, keys }) {
-    let rotationSpeed = 0.4;
+    let multiVelocidad = 0.5 * bismarck.velocity;
+    let rotationSpeed = 0.4 * multiVelocidad;
     let maxRotationDelta = 180;
-    let topeVelocidad = 2;
-    let acceleration = 0.012;
+    let topeVelocidad = 2 * multiVelocidad;
+    let acceleration = 0.012 * multiVelocidad;
     let targetAngle = Math.atan2(bismarck.body.velocity.y, bismarck.body.velocity.x);
     targetAngle = Phaser.Math.RadToDeg(targetAngle);
 

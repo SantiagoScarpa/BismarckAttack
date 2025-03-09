@@ -8,15 +8,16 @@ export function creacionArkRoyale(game, posX, posY, angle, avionesRestantes, set
     arkRoyal.label = 'arkroyal'
     arkRoyal.body.label = 'arkroyal'
     arkRoyal.angle = angle
-    arkRoyal.velocity = settings.arkRoyalVelocity;
+    arkRoyal.velocity = settings.arkRoyaleVelocity;
     return arkRoyal
 }
 
 export function checkControlsArkRoyale({ ArkRoyale, keys }) {
-    let rotationSpeed = 0.4;
+    let multiVelocidad = 0.5 * ArkRoyale.velocity;
+    let rotationSpeed = 0.4 * multiVelocidad;
     let maxRotationDelta = 180;
-    let topeVelocidad = 2;
-    let acceleration = 0.012;
+    let topeVelocidad = 2 * multiVelocidad;
+    let acceleration = 0.012 * multiVelocidad;
     let targetAngle = Math.atan2(ArkRoyale.body.velocity.y, ArkRoyale.body.velocity.x);
     targetAngle = Phaser.Math.RadToDeg(targetAngle);
 
