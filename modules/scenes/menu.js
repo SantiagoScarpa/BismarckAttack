@@ -290,7 +290,7 @@ async function agregoFuncionalidadBotones(game) {
 
 
 function showReanudarPartida(game) {
-    const { width, height } = game.game.config
+    const { width, height } = game.game.config;
     const group = game.add.group();
     const modalBackground = game.add.rectangle(width / 2, height / 2, 400, 200, 0x000000, 0.9).setDepth(3);
     let text = game.add.text(width / 2, height / 2 - 60, 'Ingresa el codigo de partida', {
@@ -305,9 +305,19 @@ function showReanudarPartida(game) {
     let inputRectangle = game.add.rectangle(width / 2, height / 2 - 10, 300, 32, 0xFFFFFF, 0.8).setDepth(10);
 
     game.input.keyboard.on('keydown', event => {
-        if (event.keyCode === 8 && txtCodigo.text.length > 0) {
+        // Detectar Ctrl + V para pegar texto
+        if (event.ctrlKey && event.keyCode === 86) { // 86 es el código para 'V'
+            navigator.clipboard.readText().then(text => {
+                txtCodigo.text += text;
+            }).catch(err => {
+                console.error('Error al pegar texto: ', err);
+            });
+        }
+        // Manejar la tecla de retroceso (backspace)
+        else if (event.keyCode === 8 && txtCodigo.text.length > 0) {
             txtCodigo.text = txtCodigo.text.substr(0, txtCodigo.text.length - 1);
         }
+        // Permitir la entrada de caracteres alfanuméricos y espacios
         else if (event.keyCode === 32 || (event.keyCode >= 48 && event.keyCode <= 90)) {
             txtCodigo.text += event.key;
         }
@@ -322,19 +332,17 @@ function showReanudarPartida(game) {
     }).setOrigin(0.5).setInteractive().setDepth(11);
 
     retomarBtn.on('pointerdown', () => {
-        let codigo = txtCodigo.text.trim().toUpperCase()
+        let codigo = txtCodigo.text.trim().toUpperCase();
 
         if (game.codigoEspera === null || codigo === game.codigoEspera) {
             retomarPartida(codigo)
                 .then((partida) => esperoJugador(game, codigo, partida))
-                .catch((e) => alert(e))
+                .catch((e) => alert(e));
         } else {
-            alert('Un jugador se encuentra esperando continuar otra partida')
+            alert('Un jugador se encuentra esperando continuar otra partida');
             txtCodigo.setText('');
         }
-
     });
-
 
     const cancelarBtn = game.add.text(width / 2 + 100, height / 2 + 50, 'CANCELAR', {
         fontFamily: 'Rockwell',
@@ -347,18 +355,17 @@ function showReanudarPartida(game) {
     cancelarBtn.on('pointerdown', () => {
         txtCodigo.setText('');
 
-        game.input.keyboard.removeListener('keydown')
-        group.destroy(true)
+        game.input.keyboard.removeListener('keydown');
+        group.destroy(true);
 
-        agregoFuncionalidadBotones(game)
+        agregoFuncionalidadBotones(game);
     });
 
-    group.add(modalBackground)
-    group.add(text)
-    group.add(inputRectangle)
-    group.add(cancelarBtn)
-    group.add(retomarBtn)
-
+    group.add(modalBackground);
+    group.add(text);
+    group.add(inputRectangle);
+    group.add(cancelarBtn);
+    group.add(retomarBtn);
 }
 
 function cargoValoresEnSession() {

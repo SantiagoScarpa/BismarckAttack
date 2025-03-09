@@ -29,6 +29,7 @@ export class loaderScene extends Phaser.Scene {
         this.load.image('radar', './assets/imgs/sprites/radar1.png');
         this.load.image('fog', './assets/imgs/tiles/fog.png');
         this.load.image('francia', './assets/imgs/sprites/franciaTransparente.png');
+        this.load.image('franciaLateral', './assets/imgs/lateralViews/lateralFrancia.png');
         this.load.image('bismarckGana', './assets/imgs/bismarckGana.png');
         this.load.image('crosshair', 'assets/imgs/sprites/crosshair.png');
         this.load.image('hearth', 'assets/imgs/sprites/heart_metal.png');
@@ -81,11 +82,13 @@ export class loaderScene extends Phaser.Scene {
         this.load.image('operador', './assets/imgs/sprites/operador.png');
         this.load.image('cancelar', './assets/imgs/sprites/cancelar.png');
         this.load.image('fondo_menu', './assets/imgs/sprites/fondomenuavion.png');
+        this.load.image('lateralAvion', './assets/imgs/lateralViews/LateralAvion.png')
         this.load.image('fondo_menu0', './assets/imgs/sprites/fondomenuavion1.png');
         this.load.image('fondo_menu1', './assets/imgs/sprites/fondomenuavion2.png');
         this.load.image('fondo_menu2', './assets/imgs/sprites/fondomenuavion3.png');
         this.load.image('fondo_menu3', './assets/imgs/sprites/fondomenuavion4.png');
         this.load.image('fondo_menu5', './assets/imgs/sprites/fondomenuavion5.png');
+        this.load.image('lateralAvion', './assets/imgs/lateralViews/LateralAvion.png')
         this.load.spritesheet('numeros', './assets/imgs/sprites/numbers.png',
             { frameWidth: 128, frameHeight: 192 });
 

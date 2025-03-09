@@ -176,7 +176,7 @@ io.on('connection', (socket) => {
         io.emit('pidoRojo')
         io.emit('pidoAzul')
 
-        io.emit('muestroVistaLateral', players,)
+        io.emit('muestroVistaLateral', players )
     })
 
     socket.on('esperoCodigo', (codigo) => {
