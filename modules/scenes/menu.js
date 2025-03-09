@@ -93,7 +93,7 @@ export class menuScene extends Phaser.Scene {
             color: '#ffffff'
         }).setOrigin(0.5).setDepth(11);
 
-        const playersData = await this.getPlayers();
+        let playersData = await this.getPlayers();
         console.log("Información de jugadores:", playersData);
 
         const blueAgarrado = Object.values(playersData).some(p => p.team === 'blue');
@@ -109,8 +109,13 @@ export class menuScene extends Phaser.Scene {
                 backgroundColor: '#333',
                 padding: { left: 10, right: 10, top: 5, bottom: 5 }
             }).setOrigin(0.5).setInteractive().setDepth(11);
-            blueBtn.on('pointerdown', () => {
+            blueBtn.on('pointerdown', async () => {
                 console.log("🔵 Jugador seleccionó el BANDO AZUL");
+                playersData = await this.getPlayers(); //valido de nuevo por si otro jugador ya seleccionó el equipo
+                if (Object.values(playersData).some(p => p.team === 'blue')) {
+                    alert("El equipo azul ya ha sido seleccionado por otro jugador.");
+                    return;
+                }
                 this.selectedTeam = 'blue';
                 this.socket = io();
                 this.socket.emit('setPlayerTeam', 'blue')
@@ -129,8 +134,13 @@ export class menuScene extends Phaser.Scene {
                 backgroundColor: '#333',
                 padding: { left: 10, right: 10, top: 5, bottom: 5 }
             }).setOrigin(0.5).setInteractive().setDepth(11);
-            redBtn.on('pointerdown', () => {
+            redBtn.on('pointerdown', async () => {
                 console.log("🔴 Jugador seleccionó el BANDO ROJO");
+                playersData = await this.getPlayers(); //valido de nuevo por si otro jugador ya seleccionó el equipo
+                if (Object.values(playersData).some(p => p.team === 'red')) {
+                    alert("El equipo rojo ya ha sido seleccionado por otro jugador.");
+                    return;
+                }
                 this.selectedTeam = 'red';
                 this.socket = io();
                 this.socket.emit('setPlayerTeam', 'red')
@@ -215,6 +225,7 @@ async function agregoFuncionalidadBotones(game) {
         game.reanudo = false
         playBtn.setFrame(2);
         playAudios('menuSelection', game, game.volumeMenu);
+        deshabilitoBotones(game)
         game.codigoEspera = await esperoCodigo();
         if (game.codigoEspera == null) {
             if (cantidadJugadores < 2) {
@@ -258,15 +269,7 @@ async function agregoFuncionalidadBotones(game) {
             replayBtn.setFrame(0)
             game.reanudo = true
             playAudios('menuSelection', game, game.volumeMenu)
-            playBtn.setInteractive(false);
-            replayBtn.setInteractive(false);
-            configBtn.setInteractive(false);
-            playBtn.removeListener('pointerdown');
-            replayBtn.removeListener('pointerdown');
-            configBtn.removeListener('pointerdown');
-            playBtn.removeListener('pointerover');
-            replayBtn.removeListener('pointerover');
-            configBtn.removeListener('pointerover');
+            deshabilitoBotones(game)
             showReanudarPartida(game)
         } else {
             alert('Un usuario se encuentra iniciando una partida nueva, no se puede reanudar otra')
@@ -380,4 +383,17 @@ async function esperoCodigo() {
     let res = await fetch('/getCodigoEspera')
     let resJson = await res.json();
     return resJson;
+}
+
+function deshabilitoBotones(game) {
+    const { playBtn, configBtn, replayBtn } = game;
+    playBtn.setInteractive(false);
+    replayBtn.setInteractive(false);
+    configBtn.setInteractive(false);
+    playBtn.removeListener('pointerdown');
+    replayBtn.removeListener('pointerdown');
+    configBtn.removeListener('pointerdown');
+    playBtn.removeListener('pointerover');
+    replayBtn.removeListener('pointerover');
+    configBtn.removeListener('pointerover');
 }

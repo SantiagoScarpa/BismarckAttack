@@ -120,6 +120,7 @@ io.on('connection', (socket) => {
         esperoNuevaPartida = false
         console.log(`Jugadores restantes: ${Object.keys(players).length}`);
         io.emit('playerCount', Object.keys(players).length);
+        io.emit('playerDisconnected', socket.id);
     });
 
     socket.on('tiempoPartida', () => {
@@ -166,6 +167,10 @@ io.on('connection', (socket) => {
     })
 
     socket.on('vistaLateral', () => {
+        updateDB = true;
+        io.emit('pidoRojo')
+        io.emit('pidoAzul')
+
         io.emit('muestroVistaLateral', players,)
     })
 
