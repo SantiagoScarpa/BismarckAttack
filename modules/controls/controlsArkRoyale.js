@@ -28,7 +28,7 @@ export function checkControlsArkRoyale({ ArkRoyale, keys }) {
             let newAngle = Phaser.Math.Angle.RotateTo(currentAngle, targetAngle, rotationSpeed);
             ArkRoyale.angle = newAngle + 90;
         }
-    } else if (keys.RIGHT.isDown) {
+    } else if (keys.RIGHT.isDown || keys.D.isDown) {
         if (Math.abs(deltaAngle) <= maxRotationDelta) {
             let newAngle = Phaser.Math.Angle.RotateTo(currentAngle, targetAngle, rotationSpeed);
             ArkRoyale.angle = newAngle + 90;
@@ -38,7 +38,7 @@ export function checkControlsArkRoyale({ ArkRoyale, keys }) {
     let speedX = ArkRoyale.body.velocity.x;
     let speedY = ArkRoyale.body.velocity.y;
 
-    if (keys.UP.isDown) {
+    if (keys.UP.isDown || keys.W.isDown) {
         if (ArkRoyale.body.velocity.y > 0) {
             speedY -= 0.01;
         } else {
@@ -46,7 +46,7 @@ export function checkControlsArkRoyale({ ArkRoyale, keys }) {
                 speedY -= acceleration;
             }
         }
-    } else if (keys.DOWN.isDown) {
+    } else if (keys.DOWN.isDown || keys.S.isDown) {
         if (ArkRoyale.body.velocity.y < 0) {
             speedY += 0.01;
         } else {
@@ -55,7 +55,7 @@ export function checkControlsArkRoyale({ ArkRoyale, keys }) {
             }
         }
     }
-    if (keys.LEFT.isDown) {
+    if (keys.LEFT.isDown || keys.A.isDown) {
         if (ArkRoyale.body.velocity.x > 0) {
             speedX -= 0.01;
         } else {
@@ -63,7 +63,7 @@ export function checkControlsArkRoyale({ ArkRoyale, keys }) {
                 speedX -= acceleration;
             }
         }
-    } else if (keys.RIGHT.isDown) {
+    } else if (keys.RIGHT.isDown || keys.D.isDown) {
         if (ArkRoyale.body.velocity.x < 0) {
             speedX += 0.01;
         } else {

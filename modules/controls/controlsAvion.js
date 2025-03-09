@@ -31,7 +31,7 @@ export function checkControlsAvion({ avion, keys }) {
     let speedX = avion.body.velocity.x;
     let speedY = avion.body.velocity.y;
 
-    if (keys.UP.isDown) {
+    if (keys.UP.isDown || keys.W.isDown) {
         if (avion.body.velocity.y > 0) {
             speedY -= 0.01;
         } else {
@@ -39,7 +39,7 @@ export function checkControlsAvion({ avion, keys }) {
                 speedY -= acceleration;
             }
         }
-    } else if (keys.DOWN.isDown) {
+    } else if (keys.DOWN.isDown || keys.S.isDown) {
         if (avion.body.velocity.y < 0) {
             speedY += 0.01;
         } else {
@@ -48,7 +48,7 @@ export function checkControlsAvion({ avion, keys }) {
             }
         }
     }
-    if (keys.LEFT.isDown) {
+    if (keys.LEFT.isDown || keys.A.isDown) {
         if (avion.body.velocity.x > 0) {
             speedX -= 0.01;
         } else {
@@ -56,7 +56,7 @@ export function checkControlsAvion({ avion, keys }) {
                 speedX -= acceleration;
             }
         }
-    } else if (keys.RIGHT.isDown) {
+    } else if (keys.RIGHT.isDown || keys.D.isDown) {
         if (avion.body.velocity.x < 0) {
             speedX += 0.01;
         } else {

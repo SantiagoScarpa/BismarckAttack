@@ -39,13 +39,13 @@ export class gameScene extends Phaser.Scene {
     shoot_bullet_bismarck() {
         //if (!this.playerShip) return;
         if (this.playerShip.label === 'bismarck') {
-            let bullet = this.matter.add.sprite(this.playerShip.x, this.playerShip.y - 40, 'bismarckMisil');
+            let bullet = this.matter.add.sprite(this.playerShip.x, this.playerShip.y, 'bismarckMisil').setDepth(3);;
             bullet.owner = 'bismarck'
             bullet.setScale(0.3);
             bullet.setCircle(3);
 
             let dx = this.crosshair.x - this.playerShip.x;
-            let dy = this.crosshair.y - this.playerShip.y + 40;
+            let dy = this.crosshair.y - this.playerShip.y;
             let angle = Math.atan2(dy, dx);
 
             // Definir la velocidad del misil (puedes ajustar este valor)
@@ -58,7 +58,7 @@ export class gameScene extends Phaser.Scene {
 
             bullet.body.label = 'bullet';
 
-            let bulletTail = this.add.image(this.playerShip.x, this.playerShip.y - 56, 'bismarckMisilCola')
+            let bulletTail = this.add.image(this.playerShip.x, this.playerShip.y, 'bismarckMisilCola').setDepth(3);
             bulletTail.setScale(0.5)
 
             playAudios('bismarckShoot', this, settings.volumeBismarckShoot)
@@ -89,7 +89,7 @@ export class gameScene extends Phaser.Scene {
             bullet.setRotation(angle + Math.PI / 2);
             bullet.body.label = 'bullet';
 
-            let bulletTail = this.add.image(this.playerShip.x, this.playerShip.y - 56, 'bismarckMisilCola')
+            let bulletTail = this.add.image(this.playerShip.x, this.playerShip.y , 'bismarckMisilCola')
             bulletTail.setScale(0.5)
 
             playAudios('avion_shoot', this, settings.volumneAvion_shoot)
@@ -108,7 +108,7 @@ export class gameScene extends Phaser.Scene {
 
     createBulletFromData(data) {
         let spriteKey = data.spriteKey || 'bismarckMisil';
-        let bullet = this.matter.add.sprite(data.x, data.y - 40, spriteKey);
+        let bullet = this.matter.add.sprite(data.x, data.y, spriteKey);
         bullet.setScale(0.3);
         console.log("SpriteKEY : ", spriteKey);
 
@@ -128,7 +128,7 @@ export class gameScene extends Phaser.Scene {
         } else {
             // Calcular la dirección utilizando las coordenadas del puntero enviadas
             let dx = data.pointerX - data.x;
-            let dy = data.pointerY - data.y + 40;
+            let dy = data.pointerY - data.y;
             let angle = Math.atan2(dy, dx);
 
             // Definir la velocidad del misil
@@ -142,7 +142,7 @@ export class gameScene extends Phaser.Scene {
         bullet.body.label = 'bullet';
         bullet.owner = data.owner;
         // Crear la cola del misil
-        let bulletTail = this.add.image(data.x, data.y - 56, 'bismarckMisilCola');
+        let bulletTail = this.add.image(data.x, data.y, 'bismarckMisilCola');
         bulletTail.setScale(0.5);
 
         // Reproducir el audio correspondiente según el spriteKey
@@ -343,6 +343,7 @@ export class gameScene extends Phaser.Scene {
                         clearInterval(this.intervaloTiempo); // Detiene el intervalo
                         this.barraFondo.destroy();
                         this.barraRelleno.destroy();
+                        this.avionMunicion.setText(' ');
                         this.tiempoRestante = 0;
                         // Escucha el evento 'animationcomplete' para la animación 'aterrizaje'
                         this.playerShip.on('animationcomplete-aterrizaje', function () {
@@ -403,7 +404,7 @@ export class gameScene extends Phaser.Scene {
 
         this.waterTrail = this.add.particles(0, 0, 'blueParticle', {
             speed: { min: 20, max: 50 },  // Velocidad de las partículas
-            scale: { start: 0.5, end: 0 },  // Se hacen más pequeñas con el tiempo
+            scale: { start: 0.3, end: 0 },  // Se hacen más pequeñas con el tiempo
             alpha: { start: 1, end: 0 }, // Se desvanecen
             lifespan: 800, // Duración en ms
             blendMode: 'ADD', // Efecto de fusión para más realismo
@@ -445,9 +446,9 @@ export class gameScene extends Phaser.Scene {
 
         //cartel de municion de avion
         if (this.team === 'blue') {
-            this.avionMunicion = this.add.text(1045, 240, ' ', {
+            this.avionMunicion = this.add.text(1130, 540, ' ', {
                 fontFamily: 'Rockwell',
-                fontSize: 24,
+                fontSize: 19,
                 color: '#ffffff'
             });
             this.avionMunicion.setScrollFactor(0)
@@ -830,10 +831,12 @@ export class gameScene extends Phaser.Scene {
             this.waterTrail.setPosition(this.playerShip.x + rotatedOffsetX, this.playerShip.y + rotatedOffsetY);
 
             // Activa o desactiva el efecto en función de la velocidad
-            if (this.playerShip.body.velocity.x !== 0 || this.playerShip.body.velocity.y !== 0) {
+            if (this.playerShip.body.velocity.x > 0.05 || this.playerShip.body.velocity.x < -0.05 || 
+                this.playerShip.body.velocity.y > 0.05 || this.playerShip.body.velocity.y < -0.05) {
                 this.waterTrail.active = true;
             } else {
                 this.waterTrail.active = false;
+                this.waterTrail.killAll();
             }
         }
         // Actualiza el campo de visión y emite la posición del jugador
