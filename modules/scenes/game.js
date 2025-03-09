@@ -720,7 +720,7 @@ export class gameScene extends Phaser.Scene {
 
         this.socket.on('muestroVistaLateral', (players) => {
             const franciaPosition = { x: this.francia.x, y: this.francia.y }
-            this.scene.start('sceneVistaLateral', { players, socketId: this.socket.id, franciaPosition: franciaPosition, })
+            this.scene.start('sceneVistaLateral', { players, socketId: this.socket.id, franciaPosition: franciaPosition,visionDelAvion: this.playerShip.visionDelAvion })
 
         })
 
@@ -1095,7 +1095,7 @@ export class gameScene extends Phaser.Scene {
                     this.playerShip.observador = true;
                     break;
             }
-
+            this.playerShip.visionDelAvion =  this.visionObjets;
             // Tiempo de vida del avión en milisegundos (ejemplo: 30 segundos)
             let tiempoRestante = (this.reanudo && this.avionReanudado) ? this.partida.arkRoyal.avionActual.tiempoAvion : tiempoDeVida;
             this.tiempoAvion = tiempoRestante;

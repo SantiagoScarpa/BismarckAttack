@@ -9,6 +9,7 @@ export function creacionAvion(game, posX, posY, settings) {
     avion.observador = false;
     avion.observadorMarco = false;
     avion.anims.play('despegue');
+    avion.visionDelAvion = 0;
     return avion;
 }
 
