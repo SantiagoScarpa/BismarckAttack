@@ -1,9 +1,11 @@
 import { gameScene } from './modules/scenes/game.js';
 import { ganaBismarck } from './modules/scenes/ganaBismarck.js';
 import { ganaArkRoyal } from './modules/scenes/ganaArkRoyal.js';
+import { pierdeArkRoyal } from './modules/scenes/pierdeArkRoyal.js';
+import { pierdeBismarck } from './modules/scenes/pierdeBismarck.js';
 import { menuScene } from './modules/scenes/menu.js';
 import { settingsScene } from './modules/scenes/settings.js';
-import { loaderScene } from './modules/scenes/loader.js'
+import { loaderScene } from './modules/scenes/loader.js';
 import { sceneVistaLateral } from './modules/scenes/sceneVistaLateral.js';
 
 const config = {
@@ -33,7 +35,7 @@ const config = {
             height: 900,
         }
     },
-    scene: [loaderScene, menuScene, gameScene, ganaBismarck, settingsScene, ganaArkRoyal, sceneVistaLateral]
+    scene: [loaderScene, menuScene, gameScene, ganaBismarck, settingsScene, ganaArkRoyal, sceneVistaLateral, pierdeBismarck, pierdeArkRoyal]
 };
 
 const game = new Phaser.Game(config);

@@ -1,9 +1,12 @@
 {
-  "volumeMenu": 0.4,
+  "volumeMenu": 0.1,
+  "volumeMusicFondo": "0.05",
   "volumeBismarckShoot": "0.5",
   "volumeExplotion": "1.6",
   "volumeAvionShoot": "0.3",
-  "bismarckVelocity": 4,
+  "volumenavionDespegue": "0.5",
+  "volumenavionAire": "0.8",
+  "bismarckVelocity": 1,
   "arkRoyaleVelocity": 3,
   "serverPort": 3000,
   "dbInfo": {

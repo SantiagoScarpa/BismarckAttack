@@ -264,7 +264,10 @@ export class gameScene extends Phaser.Scene {
                         (bodyA === this.francia.body && bodyB === this.playerShip.body)
                     )
                 ) {
-                    this.socket.emit('ganaBismarck')
+                    this.socket.emit('hayGanador', {
+                        teamGanador: 'red',
+                        motivo: 'Bismarck llego a Francia'
+                    })
                 }
                 // Colisión entre bala y ArkRoyal
                 else if (
@@ -335,6 +338,7 @@ export class gameScene extends Phaser.Scene {
                         this.portaAviones.setVelocityX(0);
                         this.portaAviones.setVelocityY(0);
                         this.socket.emit('aterrizaje');
+                        stopAudios('avionAire', this);
                         this.playerShip.anims.play('aterrizaje');
                         clearInterval(this.intervaloTiempo); // Detiene el intervalo
                         this.barraFondo.destroy();
@@ -540,7 +544,11 @@ export class gameScene extends Phaser.Scene {
         this.mask.invertAlpha = true;
         overlay.setMask(this.mask);
 
-
+        // Reprodusco musica de fondo si no se esta reproduciendo
+        if (!this.musicFondoOn) {
+            this.musicFondoOn = true;
+            playAudios('musicfondo', this, settings.volumeMusicFondo);
+        }
 
         // Imagen del radar
         const radar = this.add.image(1130, 615, 'radar');
@@ -560,7 +568,7 @@ export class gameScene extends Phaser.Scene {
             .add(1300, 695, 320, 180, false, 'minimap')
             .setOrigin(0.5, 0.5)
             .setZoom(0.05);
-        this.minimapCamera.ignore([this.playerShip, radar, overlay, this.dispTextCodigoPartida]); //
+        this.minimapCamera.ignore([this.playerShip, radar, overlay, this.dispTextCodigoPartida, homeBtn, save]); //
         this.minimapCamera.startFollow(this.playerShip, true, 0.1, 0.1);
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -705,19 +713,26 @@ export class gameScene extends Phaser.Scene {
         createAnimations(this);
 
         this.socket.on('finalizacionPartida', (ganador) => {
-            if (ganador === 'blue') {
-                this.scene.start('ganaArkRoyal');
-            }
-            else if (ganador === 'red') {
-
-                this.scene.start('ganaBismarck');
-            }
-            else {
+            this.socket.disconnect()
+            if (ganador.teamGanador === 'none') {
                 mostrarTextoTemporal(this, 'El otro jugador se ha desconectado, se cerrara la partida', 3000)
                 setTimeout(() => {
                     location.reload();
                 }, 3000);
-
+            }
+            else if (ganador.teamGanador === 'red') {
+                if (this.team === 'red') {
+                    this.scene.start('ganaBismarck', { motivo: ganador.motivo });
+                } else {
+                    this.scene.start('pierdeArkRoyal', { motivo: ganador.motivo });
+                }
+            }
+            else if (ganador.teamGanador === 'blue') {
+                if (this.team === 'blue') {
+                    this.scene.start('ganaArkRoyal', { motivo: ganador.motivo });
+                } else {
+                    this.scene.start('pierdeBismarck', { motivo: ganador.motivo });
+                }
             }
         })
 
@@ -1052,6 +1067,12 @@ export class gameScene extends Phaser.Scene {
             this.portaAvionesIcon = this.add.circle(this.portaAviones.x, this.portaAviones.y, 60, 0x0000ff, 1).setOrigin(0.5, 0.5);
             this.cameras.main.ignore([this.portaAvionesIcon]);
             this.portaAviones.setVelocity(0);
+            // Variable para almacenar la instancia del sonido
+            this.avionDespegueSound = playAudios('avionDespegue', this, settings.volumenavionDespegue);
+            // Escucha el evento 'complete' para reproducir el segundo sonido
+            this.avionDespegueSound.on('complete', () => {
+                playAudios('avionAire', this, settings.volumenavionAire);
+            });
             let despegoX = (this.reanudo && this.avionReanudado) ? reanudoX : this.playerShip.x
             let despegoY = (this.reanudo && this.avionReanudado) ? reanudoY : this.playerShip.y
             if (this.playerShip.angle > -10 && this.playerShip.angle < 10 && !this.avionReanudado) {
@@ -1097,7 +1118,6 @@ export class gameScene extends Phaser.Scene {
                     this.playerShip.observador = true;
                     break;
             }
-
             // Tiempo de vida del avión en milisegundos (ejemplo: 30 segundos)
             let tiempoRestante = (this.reanudo && this.avionReanudado) ? this.partida.arkRoyal.avionActual.tiempoAvion : tiempoDeVida;
             this.tiempoAvion = tiempoRestante;
@@ -1145,6 +1165,7 @@ export class gameScene extends Phaser.Scene {
                     this.aterrizando = true;
                     this.playerShip.setVelocityX(0);
                     this.playerShip.setVelocityY(0);
+                    stopAudios('avionAire', this);
                     this.socket.emit('aterrizaje');
                     this.playerShip.anims.play('aterrizaje');
                     // Escucha el evento 'animationcomplete' para la animación 'aterrizaje'
@@ -1161,7 +1182,10 @@ export class gameScene extends Phaser.Scene {
                         this.socket.emit('deletPlane');
                         this.playerShip.avionesRestantes -= 1;
                         if (this.playerShip.avionesRestantes <= 0) {
-                            this.socket.emit('ganaBismarck')
+                            this.socket.emit('hayGanador', {
+                                teamGanador: 'red',
+                                motivo: 'Todos los aviones fueron derribados'
+                            })
                         }
                         this.dispCantAviones.setText(`Aviones disponibles: ${this.playerShip.avionesRestantes}`);
                         this.cameras.main.startFollow(this.portaAviones, true, 0.1, 0.1);
