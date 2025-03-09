@@ -477,11 +477,7 @@ export class gameScene extends Phaser.Scene {
         save.on('animationcomplete', () => { save.setFrame(0) });
 
         homeBtn.on('pointerdown', () => {
-            mostrarTextoTemporal(this, 'El otro jugador se ha desconectado, se cerrara la partida', 3000)
-            setTimeout(() => {
-                this.socket.emit('saleDePartida');
-            }, 3000);
-
+            this.socket.emit('saleDePartida');
         })
 
         // Definir posición inicial aleatoria
@@ -653,14 +649,12 @@ export class gameScene extends Phaser.Scene {
         // Manejar la desconexión de jugadores
         this.socket.on('playerDisconnected', (id) => {
             this.jugadorDesconectado = true
-            mostrarTextoTemporal(this, 'El otro jugador se ha desconectado, se cerrara la partida', 3000)
             if (this.players[id]) {
                 this.players[id].destroy();
                 delete this.players[id];
             }
-            setTimeout(() => {
-                this.socket.emit('saleDePartida');
-            }, 3000);
+
+            this.socket.emit('saleDePartida');
         });
 
         // Mostrar el número de jugadores conectados (evento duplicado en el ejemplo original)
@@ -719,7 +713,11 @@ export class gameScene extends Phaser.Scene {
                 this.scene.start('ganaBismarck');
             }
             else {
-                location.reload();
+                mostrarTextoTemporal(this, 'El otro jugador se ha desconectado, se cerrara la partida', 3000)
+                setTimeout(() => {
+                    location.reload();
+                }, 3000);
+
             }
         })
 
