@@ -2,25 +2,18 @@ export class sceneVistaLateral extends Phaser.Scene {
   constructor() {
     super("sceneVistaLateral");
   }
-  preload() {}
+  preload() { }
 
   init(data) {
     this.players = data.players;
     this.playerId = data.socketId;
     this.franciaPosition = data.franciaPosition
     this.visionDelAvion = data.visionDelAvion
+    this.codigo = data.codigo
   }
 
   create() {
-    const visionObjets = 210; 
-    this.time.delayedCall(
-      5000,
-      () => {
-        console.log("VOLVERIA");
-      },
-      [],
-      this
-    );
+    const visionObjets = 210;
 
     const width = this.game.config.width;
     const height = this.game.config.height;
@@ -37,9 +30,9 @@ export class sceneVistaLateral extends Phaser.Scene {
     console.log(this.playerId);
     console.log(this.franciaPosition);
     const arrayJugadores = Object.values(this.players);
-    
+
     const { x: xRED, y: yRED } = arrayJugadores.find((x) => x.team == "red");//solo barco
-    
+
     let xAvion, yAVion, xBLUE, yBLUE;
 
     if (arrayJugadores.some((x) => x.team === "blue" && x.label === "avion")) {
@@ -48,58 +41,58 @@ export class sceneVistaLateral extends Phaser.Scene {
     } else {
       ({ x: xBLUE, y: yBLUE } = arrayJugadores.find((x) => x.team === "blue")); // solo barco
     }
-  
-    
+
+
 
     const { x: xFrancia, y: yFrancia } = this.franciaPosition
-    
+
 
     const jugadorConsola = this.players[this.playerId];
     const avionActivo = !!this.visionDelAvion
     const distanciaEntreBarcos = Phaser.Math.Distance.Between(xBLUE, yBLUE, xRED, yRED);
-    const distanciaAvionBismark = Phaser.Math.Distance.Between(xAvion, yAVion, xRED, yRED)|| null;
-    const distanciaAvionArkRoyale = Phaser.Math.Distance.Between(xBLUE, yBLUE, xAvion, yAVion)|| null;
-    const distanciaAvionFrancia = Phaser.Math.Distance.Between(xFrancia, yFrancia, xAvion, yAVion)|| null;
-    
+    const distanciaAvionBismark = Phaser.Math.Distance.Between(xAvion, yAVion, xRED, yRED) || null;
+    const distanciaAvionArkRoyale = Phaser.Math.Distance.Between(xBLUE, yBLUE, xAvion, yAVion) || null;
+    const distanciaAvionFrancia = Phaser.Math.Distance.Between(xFrancia, yFrancia, xAvion, yAVion) || null;
+
     let profundidadAzul = 0;
     let profundidadRojo = 0
     let ejeyAzul = 0;
     let ejeyRojo = 0;
 
-    if(yBLUE < yRED){
+    if (yBLUE < yRED) {
       profundidadAzul = 1;
       profundidadRojo = 2;
       ejeyAzul = 110;
       ejeyRojo = 80;
     }
-    else{
+    else {
       profundidadAzul = 2
       profundidadRojo = 1
       ejeyAzul = 80;
       ejeyRojo = 110;
     }
 
-    if(!!avionActivo){
+    if (!!avionActivo) {
       let avion = this.add.sprite(xAvion, 200, "lateralAvion");
-        avion.setScale(1).setOrigin(0.5, 0.5).setDepth(2);
+      avion.setScale(1).setOrigin(0.5, 0.5).setDepth(2);
 
-      if(distanciaAvionBismark <= this.visionDelAvion){
-       let lateralBismark = this.add.sprite(xRED, this.game.config.height - ejeyRojo, "lateralBismark");
+      if (distanciaAvionBismark <= this.visionDelAvion) {
+        let lateralBismark = this.add.sprite(xRED, this.game.config.height - ejeyRojo, "lateralBismark");
         lateralBismark.setScale(1).setOrigin(0.5, 0.5).setDepth(profundidadRojo);
       }
-  
-      if(distanciaAvionArkRoyale <= this.visionDelAvion){
+
+      if (distanciaAvionArkRoyale <= this.visionDelAvion) {
         let lateralArk = this.add.sprite(xBLUE, this.game.config.height - ejeyAzul, "lateralArkRoyale");
         lateralArk.setScale(1).setOrigin(0.5, 0.5).setDepth(profundidadAzul);
       }
-  
-      if(distanciaAvionFrancia <= this.visionDelAvion){
+
+      if (distanciaAvionFrancia <= this.visionDelAvion) {
         this.francia = this.add.image(this.game.config.width / 2, this.game.config.height / 2, 'franciaLateral');
         this.francia.setScale(2.5)
         this.francia.setDepth(0)
       }
     }
-    else{
+    else {
       if (distanciaEntreBarcos <= visionObjets) {
         let lateralArk = this.add.sprite(xBLUE, this.game.config.height - ejeyAzul, "lateralArkRoyale");
         lateralArk.setScale(1).setOrigin(0.5, 0.5).setDepth(profundidadAzul);;
@@ -113,7 +106,7 @@ export class sceneVistaLateral extends Phaser.Scene {
             this.francia.setDepth(0)
           }
         }
-        else{
+        else {
           const distanceFranceArkRoyale = Phaser.Math.Distance.Between(xBLUE, yBLUE, xFrancia, yFrancia);
           if (distanceFranceArkRoyale <= visionObjets && jugadorConsola.team == "blue") {
             this.francia = this.add.image(this.game.config.width / 2, this.game.config.height / 2, 'franciaLateral');
@@ -121,15 +114,16 @@ export class sceneVistaLateral extends Phaser.Scene {
             this.francia.setDepth(0)
           }
         }
-      
-        
-        if(xAvion && yAVion){
-          if(distanciaAvionBismark <= visionObjets){
+
+
+        if (xAvion && yAVion) {
+          if (distanciaAvionBismark <= visionObjets) {
             let avion = this.add.sprite(xAvion, 200, "lateralAvion");
             avion.setScale(1).setOrigin(0.5, 0.5).setDepth(2);
-          }}
-          if(xAvion && yAVion){
-          if(distanciaAvionArkRoyale <= visionObjets){
+          }
+        }
+        if (xAvion && yAVion) {
+          if (distanciaAvionArkRoyale <= visionObjets) {
             let avion = this.add.sprite(xAvion, 200, "lateralAvion");
             avion.setScale(1).setOrigin(0.5, 0.5).setDepth(2);
           }
@@ -168,16 +162,16 @@ export class sceneVistaLateral extends Phaser.Scene {
       }
     }
 
-
-
-
-
-
-
-
-
-
+    this.time.delayedCall(
+      2000,
+      () => {
+        this.scene.wake('gameScene')
+        this.scene.stop()
+      },
+      [],
+    );
   }
 
-  update() {}
+  update() {
+  }
 }

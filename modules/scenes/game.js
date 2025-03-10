@@ -227,11 +227,12 @@ export class gameScene extends Phaser.Scene {
         const heartsTotalWidth = (4 - 1) * heartSpacing;
         const startX = 1138 - heartsTotalWidth / 2;
         const startY = 615 - (radar.displayHeight / 2) - 20;
-
+        let vidaBismarck = this.reanudo ? this.partida.bismarck.vida : settings.bismarckVida;
+        let vidaArkRoyal = this.reanudo ? this.partida.arkRoyal.vida : settings.arkRoyalVida;
         if (this.team === 'red') {
             // Agregar los sprites de vida (corazones) sobre el radar
             this.bismarckHearts = [];
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < vidaBismarck; i++) {
                 let hearth = this.add.image(startX + i * heartSpacing, startY, 'hearth')
                 hearth.setScrollFactor(0);
                 hearth.setScale(0.04);
@@ -242,7 +243,7 @@ export class gameScene extends Phaser.Scene {
 
         if (this.team === 'blue') {
             this.arkRoyalHearts = [];
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < vidaArkRoyal; i++) {
                 let hearth = this.add.image(startX + i * heartSpacing, startY, 'hearth')
                 hearth.setScrollFactor(0);
                 hearth.setScale(0.04);
@@ -530,8 +531,9 @@ export class gameScene extends Phaser.Scene {
             posY = this.reanudo ? this.partida.arkRoyal.y : (100 + coordenadaInicioLocalY);
             angle = this.reanudo ? this.partida.arkRoyal.angle : 0;
             let avionesRestantes = this.reanudo ? this.partida.arkRoyal.avionesRestantes : 10;
+            vidaArkRoyal = this.reanudo ? this.partida.arkRoyal.vida : settings.arkRoyalVida;
             // Jugador azul obtiene el ArkRoyale
-            this.playerShip = creacionArkRoyale(this, posX, posY, angle, avionesRestantes, settings);
+            this.playerShip = creacionArkRoyale(this, posX, posY, angle, avionesRestantes, vidaArkRoyal, settings);
             this.avionDesplegado = false;
             this.dispCantAviones = this.add.text(1130, 661, `Aviones disponibles: ${this.playerShip.avionesRestantes}`, {
                 fontFamily: 'Rockwell',
@@ -799,7 +801,8 @@ export class gameScene extends Phaser.Scene {
 
         this.socket.on('muestroVistaLateral', (players) => {
             const franciaPosition = { x: this.francia.x, y: this.francia.y }
-            this.scene.start('sceneVistaLateral', { players, socketId: this.socket.id, franciaPosition: franciaPosition, visionDelAvion: this.playerShip.visionDelAvion })
+            this.scene.launch('sceneVistaLateral', { players, socketId: this.socket.id, franciaPosition: franciaPosition, visionDelAvion: this.playerShip.visionDelAvionm, codigo: this.codigoPartida })
+            this.scene.sleep();
 
         })
 
@@ -1168,10 +1171,12 @@ export class gameScene extends Phaser.Scene {
             });
             let despegoX = (this.reanudo && this.avionReanudado) ? reanudoX : this.playerShip.x
             let despegoY = (this.reanudo && this.avionReanudado) ? reanudoY : this.playerShip.y
-            if (this.playerShip.angle > -10 && this.playerShip.angle < 10 && !this.avionReanudado) {
-                despegoX = despegoX + 50
-            } else {
-                despegoX = despegoX + 80
+            if ((!this.reanudo) || !this.avionReanudado) {
+                if (this.playerShip.angle > -10 && this.playerShip.angle < 10) {
+                    despegoX = despegoX + 50
+                } else {
+                    despegoX = despegoX + 80
+                }
             }
             this.playerShip = creacionAvion(this, despegoX, despegoY, settings);
             this.avionDesplegado = true;
