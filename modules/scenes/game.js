@@ -801,9 +801,8 @@ export class gameScene extends Phaser.Scene {
 
         this.socket.on('muestroVistaLateral', (players) => {
             const franciaPosition = { x: this.francia.x, y: this.francia.y }
-            this.scene.launch('sceneVistaLateral', { players, socketId: this.socket.id, franciaPosition: franciaPosition, visionDelAvion: this.playerShip.visionDelAvionm, codigo: this.codigoPartida })
             this.scene.sleep();
-
+            this.scene.launch('sceneVistaLateral', { players, socketId: this.socket.id, franciaPosition: franciaPosition, visionDelAvion: this.playerShip.visionDelAvion })
         })
 
         if (this.team === 'red' && this.reanudo && this.partida.arkRoyal.avionActual !== null) {
