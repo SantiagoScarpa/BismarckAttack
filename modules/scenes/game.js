@@ -414,6 +414,14 @@ export class gameScene extends Phaser.Scene {
                     }
                 }
 
+
+                else if ((bodyA.label === 'avion' && bodyB.label === 'bismarck') ||
+                    (bodyA.label === 'bismarck' && bodyB.label === 'avion')) {
+                    const avionBody = bodyA.label === 'avion' ? bodyA : bodyB;
+                    avionBody.isSensor = true;
+                }
+
+
             });
         });
 
