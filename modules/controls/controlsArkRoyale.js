@@ -1,10 +1,10 @@
 //ARCHIVO PARA CREACION DE ARK ROYALE Y SUS CONTROLES
-export function creacionArkRoyale(game, posX, posY, angle, avionesRestantes, settings) {
+export function creacionArkRoyale(game, posX, posY, angle, avionesRestantes, vidaArkRoyal, settings) {
     let arkRoyal = game.matter.add.sprite(posX, posY, 'portaAviones', null, { label: 'arkroyal' });
     //arkroyal.id = Phaser.Utils.String.UUID();
     arkRoyal.setScale(0.15).setOrigin(0.5, 0.5);
     arkRoyal.avionesRestantes = avionesRestantes;
-    arkRoyal.vida = 3
+    arkRoyal.vida = vidaArkRoyal;
     arkRoyal.isOnFire = false
     arkRoyal.label = 'arkroyal'
     arkRoyal.body.label = 'arkroyal'

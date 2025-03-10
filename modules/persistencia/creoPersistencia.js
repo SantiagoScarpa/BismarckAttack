@@ -24,6 +24,7 @@ export function inicioConexionDB(app, { dbIp, dbPort, dbName }) {
         x: Number,
         y: Number,
         angle: Number,
+        vida: Number,
         avionesRestantes: Number,
         avionActual: avionSchema
     })
@@ -90,6 +91,7 @@ export async function persistoPartida(respuestaAzul, respuestaRojo, updateDB) {
                 y: respuestaAzul.arkRoyal.y,
                 angle: respuestaAzul.arkRoyal.angle,
                 avionesRestantes: respuestaAzul.arkRoyal.avionesRestantes,
+                vida: respuestaAzul.arkRoyal.vida,
                 avionActual: respuestaAzul.arkRoyal.avionActual
             },
             francia: {
