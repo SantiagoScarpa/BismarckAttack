@@ -171,6 +171,14 @@ export class sceneVistaLateral extends Phaser.Scene {
 
     const efectoFondo = this.add.image(width / 2, height / 2, 'efectoLat').setOrigin(0.5, 0.5);
 
+    this.time.delayedCall(
+      5000,
+      () => {
+        this.scene.wake('gameScene')
+        this.scene.stop()
+      },
+      [],
+    );
   }
 
   calcularPosX(xPlayer, xObjet, ranngoVision) {
