@@ -170,13 +170,13 @@ io.on('connection', (socket) => {
         }
 
     })
-    
+
     socket.on('vistaLateral', () => {
         updateDB = true;
         io.emit('pidoRojo')
         io.emit('pidoAzul')
 
-        io.emit('muestroVistaLateral', players )
+        io.emit('muestroVistaLateral', players)
     })
 
     socket.on('esperoCodigo', (codigo) => {
@@ -204,7 +204,6 @@ io.on('connection', (socket) => {
         listoRojo = true
         console.log(`SERVER ROJO LISTO azul listo==${listoAzul}`)
         if (listoAzul) {
-            console.log('server / ROJO listo todos')
             io.emit('listoTodos')
             listoAzul = false
             listoRojo = false
@@ -215,7 +214,6 @@ io.on('connection', (socket) => {
         listoAzul = true
         console.log(`SERVER AZUL LISTO rojo listo==${listoRojo}`)
         if (listoRojo) {
-            console.log('server / AZUL listo todos')
             io.emit('listoTodos')
             listoAzul = false
             listoRojo = false

@@ -1,4 +1,6 @@
 //ARCHIVO PARA CREACION DE BISMARCK Y SUS CONTROLES 
+import { stopAudios } from './../audios.js';
+
 
 export function creacionAvion(game, posX, posY, settings) {
     let velInicial = 1;
@@ -80,3 +82,4 @@ export function checkControlsAvion({ avion, keys }) {
     avion.setVelocityX(speedX);
     avion.setVelocityY(speedY);
 }
+

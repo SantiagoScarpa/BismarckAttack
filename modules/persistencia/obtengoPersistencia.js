@@ -30,6 +30,7 @@ export function armoRespuestaAzul(game) {
                 x: game.portaAviones.x,
                 y: game.portaAviones.y,
                 angle: 0,
+                vida: game.portaAviones.vida,
                 avionesRestantes: game.portaAviones.avionesRestantes,
                 avionActual: {
                     x: game.playerShip.x,
@@ -48,6 +49,7 @@ export function armoRespuestaAzul(game) {
                 x: game.playerShip.x,
                 y: game.playerShip.y,
                 angle: game.playerShip.angle,
+                vida: game.playerShip.vida,
                 avionesRestantes: game.playerShip.avionesRestantes,
                 avionActual: null
             }

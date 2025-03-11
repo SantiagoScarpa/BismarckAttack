@@ -227,11 +227,12 @@ export class gameScene extends Phaser.Scene {
         const heartsTotalWidth = (4 - 1) * heartSpacing;
         const startX = 1138 - heartsTotalWidth / 2;
         const startY = 615 - (radar.displayHeight / 2) - 20;
-
+        let vidaBismarck = this.reanudo ? this.partida.bismarck.vida : settings.bismarckVida;
+        let vidaArkRoyal = this.reanudo ? this.partida.arkRoyal.vida : settings.arkRoyalVida;
         if (this.team === 'red') {
             // Agregar los sprites de vida (corazones) sobre el radar
             this.bismarckHearts = [];
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < vidaBismarck; i++) {
                 let hearth = this.add.image(startX + i * heartSpacing, startY, 'hearth')
                 hearth.setScrollFactor(0);
                 hearth.setScale(0.04);
@@ -242,7 +243,7 @@ export class gameScene extends Phaser.Scene {
 
         if (this.team === 'blue') {
             this.arkRoyalHearts = [];
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < vidaArkRoyal; i++) {
                 let hearth = this.add.image(startX + i * heartSpacing, startY, 'hearth')
                 hearth.setScrollFactor(0);
                 hearth.setScale(0.04);
@@ -327,9 +328,12 @@ export class gameScene extends Phaser.Scene {
                             let heartToRemove = this.arkRoyalHearts.pop();
                             heartToRemove.destroy();
                         }
-                        //if (arkroyal.vida === 0){
-                        //    arkroyal.destroy()
-                        //}
+                        if (arkroyal.vida === 0) {
+                            this.socket.emit('hayGanador', {
+                                teamGanador: 'red',
+                                motivo: 'Bismarck hundio al Ark Royal'
+                            })
+                        }
                     }
                 }
                 // Colisión entre bala y avión
@@ -343,11 +347,40 @@ export class gameScene extends Phaser.Scene {
                     if (bullet && avion) {
                         avion.vida--;
                         this.onBulletHit(avion, bullet);
-                        console.log("Vida avion : ", avion.vida)
-                        //if (avion.vida === 0){
-                        //    avion.destroy()
-                        //}
-                        console.log("Vida avion: ", avion.vida);
+                        if (this.team === 'blue') {
+                            this.aterrizando = true;
+                            this.playerShip.setVelocityX(0);
+                            this.playerShip.setVelocityY(0);
+                            stopAudios('avionAire', this);
+                            this.socket.emit('aterrizaje');
+                            this.avionMunicion.setText(' ');
+                            this.playerShip.anims.play('aterrizaje');
+                            // Escucha el evento 'animationcomplete' para la animación 'aterrizaje'
+                            clearInterval(this.intervaloTiempo); // Detiene el intervalo
+                            this.barraFondo.destroy();
+                            this.barraRelleno.destroy();
+                            this.tiempoRestante = 0;
+                            this.playerShip.on('animationcomplete-aterrizaje', function () {
+                                this.avionDesplegado = false;
+                                this.playerShip.destroy();
+                                this.playerShip = this.portaAviones;
+                                this.portaAvionesIcon.destroy();
+                                this.socket.emit('deletPlane');
+                                this.playerShip.avionesRestantes -= 1;
+                                if (this.playerShip.avionesRestantes <= 0) {
+                                    this.socket.emit('hayGanador', {
+                                        teamGanador: 'red',
+                                        motivo: 'Todos los aviones fueron derribados'
+                                    })
+                                }
+                                this.cameras.main.startFollow(this.portaAviones, true, 0.1, 0.1);
+                                this.minimapCamera.startFollow(this.portaAviones, true, 0.1, 0.1);
+                                this.visionObjets = 210; // Radio para objetos
+                                this.visionRadius = 200;  // Radio de visión
+                                this.aterrizando = false;
+                            }, this); // El 'this' final asegura que el contexto sea el correcto
+                        }
+
                     }
                 }
                 // Colisión entre bala y bismarck
@@ -386,7 +419,7 @@ export class gameScene extends Phaser.Scene {
                         this.playerShip.setVelocityY(0);
                         this.portaAviones.setVelocityX(0);
                         this.portaAviones.setVelocityY(0);
-                        this.socket.emit('aterrizaje');
+                        this.socket.emit('aterrizaje', false);
                         stopAudios('avionAire', this);
                         this.playerShip.anims.play('aterrizaje');
                         clearInterval(this.intervaloTiempo); // Detiene el intervalo
@@ -413,6 +446,14 @@ export class gameScene extends Phaser.Scene {
                         }, this); // El 'this' final asegura que el contexto sea el correcto
                     }
                 }
+
+
+                else if ((bodyA.label === 'avion' && bodyB.label === 'bismarck') ||
+                    (bodyA.label === 'bismarck' && bodyB.label === 'avion')) {
+                    const avionBody = bodyA.label === 'avion' ? bodyA : bodyB;
+                    avionBody.isSensor = true;
+                }
+
 
             });
         });
@@ -530,8 +571,9 @@ export class gameScene extends Phaser.Scene {
             posY = this.reanudo ? this.partida.arkRoyal.y : (100 + coordenadaInicioLocalY);
             angle = this.reanudo ? this.partida.arkRoyal.angle : 0;
             let avionesRestantes = this.reanudo ? this.partida.arkRoyal.avionesRestantes : 10;
+            vidaArkRoyal = this.reanudo ? this.partida.arkRoyal.vida : settings.arkRoyalVida;
             // Jugador azul obtiene el ArkRoyale
-            this.playerShip = creacionArkRoyale(this, posX, posY, angle, avionesRestantes, settings);
+            this.playerShip = creacionArkRoyale(this, posX, posY, angle, avionesRestantes, vidaArkRoyal, settings);
             this.avionDesplegado = false;
             this.dispCantAviones = this.add.text(1130, 661, `Aviones disponibles: ${this.playerShip.avionesRestantes}`, {
                 fontFamily: 'Rockwell',
@@ -799,8 +841,8 @@ export class gameScene extends Phaser.Scene {
 
         this.socket.on('muestroVistaLateral', (players) => {
             const franciaPosition = { x: this.francia.x, y: this.francia.y }
-            this.scene.start('sceneVistaLateral', { players, socketId: this.socket.id, franciaPosition: franciaPosition, visionDelAvion: this.playerShip.visionDelAvion })
-
+            this.scene.sleep();
+            this.scene.launch('sceneVistaLateral', { players, socketId: this.socket.id, franciaPosition: franciaPosition, visionDelAvion: this.playerShip.visionDelAvion })
         })
 
         if (this.team === 'red' && this.reanudo && this.partida.arkRoyal.avionActual !== null) {
@@ -1154,7 +1196,6 @@ export class gameScene extends Phaser.Scene {
     }
 
     despegueAvion(opcion, reanudoX, reanudoY) {
-        console.log('Opción seleccionada:', opcion);
         if (!this.avionDesplegado) {
             this.portaAviones = this.playerShip;
             this.portaAvionesIcon = this.add.circle(this.portaAviones.x, this.portaAviones.y, 60, 0x0000ff, 1).setOrigin(0.5, 0.5);
@@ -1168,10 +1209,12 @@ export class gameScene extends Phaser.Scene {
             });
             let despegoX = (this.reanudo && this.avionReanudado) ? reanudoX : this.playerShip.x
             let despegoY = (this.reanudo && this.avionReanudado) ? reanudoY : this.playerShip.y
-            if (this.playerShip.angle > -10 && this.playerShip.angle < 10 && !this.avionReanudado) {
-                despegoX = despegoX + 50
-            } else {
-                despegoX = despegoX + 80
+            if ((!this.reanudo) || !this.avionReanudado) {
+                if (this.playerShip.angle > -10 && this.playerShip.angle < 10) {
+                    despegoX = despegoX + 50
+                } else {
+                    despegoX = despegoX + 80
+                }
             }
             this.playerShip = creacionAvion(this, despegoX, despegoY, settings);
             this.avionDesplegado = true;
@@ -1298,6 +1341,10 @@ export class gameScene extends Phaser.Scene {
             this.barraRelleno = barraRelleno; // Guarda la barra de relleno
             this.tiempoRestante = tiempoRestante; // Guarda el tiempo restante
         }
+    }
+
+    destruirAvion() {
+
     }
 
 }
