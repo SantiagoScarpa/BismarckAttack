@@ -29,7 +29,7 @@ export class loaderScene extends Phaser.Scene {
         this.load.image('radar', './assets/imgs/sprites/radar1.png');
         this.load.image('fog', './assets/imgs/tiles/fog.png');
         this.load.image('francia', './assets/imgs/sprites/franciaTransparente.png');
-        this.load.image('franciaLateral', './assets/imgs/lateralViews/lateralFrancia.png');
+        this.load.image('franciaLateral', './assets/imgs/lateralViews/faro.png');
         this.load.image('bismarckGana', './assets/imgs/bismarckGana.png');
         this.load.image('crosshair', 'assets/imgs/sprites/crosshair.png');
         this.load.image('hearth', 'assets/imgs/sprites/heart_metal.png');
@@ -48,7 +48,7 @@ export class loaderScene extends Phaser.Scene {
         //    { frameWidth: 32, frameHeight: 72 });
         this.load.spritesheet('bismarckMisilCola', './assets/imgs/sprites/bismarckBulletTail.png',
             { frameWidth: 53, frameHeight: 71 });
-            this.load.spritesheet('lateralBismark', './assets/imgs/lateralViews/LateralBismark.png',
+            this.load.spritesheet('lateralBismark', './assets/imgs/lateralViews/bismarkLat.png',
                 { frameWidth: 828, frameHeight: 145 });
 
         for (let i = 0; i < 32; i++) {
@@ -69,7 +69,7 @@ export class loaderScene extends Phaser.Scene {
             { frameWidth: 156, frameHeight: 593 });
         this.load.spritesheet('avion', './assets/imgs/sprites/avion.png',
             { frameWidth: 447, frameHeight: 350 });
-            this.load.spritesheet('lateralArkRoyale', './assets/imgs/lateralViews/LateralArkRoyale.png',
+            this.load.spritesheet('lateralArkRoyale', './assets/imgs/lateralViews/arkLat.png',
                 { frameWidth: 156, frameHeight: 593 });
         for (let i = 0; i < 10; i++) {
             this.load.image(`avion${i}`, `./assets/imgs/sprites/despegue/avion${i}.png`);
@@ -88,7 +88,8 @@ export class loaderScene extends Phaser.Scene {
         this.load.image('fondo_menu2', './assets/imgs/sprites/fondomenuavion3.png');
         this.load.image('fondo_menu3', './assets/imgs/sprites/fondomenuavion4.png');
         this.load.image('fondo_menu5', './assets/imgs/sprites/fondomenuavion5.png');
-        this.load.image('lateralAvion', './assets/imgs/lateralViews/LateralAvion.png')
+        this.load.image('efectoLat', './assets/imgs/lateralViews/efectoLat.png')
+        this.load.image('fondoLat', './assets/imgs/lateralViews/fondoLat.png')
         this.load.spritesheet('numeros', './assets/imgs/sprites/numbers.png',
             { frameWidth: 128, frameHeight: 192 });
 

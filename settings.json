@@ -15,7 +15,7 @@
     "dbPort": 27017,
     "dbName": "bismarckAttack"
   },
-  "duracionPartida": 2,
+  "duracionPartida": 9,
   "avionMunicion": 9,
   "bismarckVida": 3
 }
