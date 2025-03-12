@@ -246,6 +246,7 @@ async function agregoFuncionalidadBotones(game) {
             }
         } else {
             alert("Otro jugador esta reanudando una partida, no se puede iniciar una nueva")
+            agregoFuncionalidadBotones(game)
         }
     });
 
@@ -331,14 +332,17 @@ function showReanudarPartida(game) {
 
     retomarBtn.on('pointerdown', () => {
         let codigo = txtCodigo.text.trim().toUpperCase();
-
-        if (game.codigoEspera === null || codigo === game.codigoEspera) {
-            retomarPartida(codigo)
-                .then((partida) => esperoJugador(game, codigo, partida))
-                .catch((e) => alert(e));
+        if (codigo === '') {
+            alert('Debe ingresar un código de partida');
         } else {
-            alert('Un jugador se encuentra esperando continuar otra partida');
-            txtCodigo.setText('');
+            if (game.codigoEspera === null || codigo === game.codigoEspera) {
+                retomarPartida(codigo)
+                    .then((partida) => esperoJugador(game, codigo, partida))
+                    .catch((e) => alert(e));
+            } else {
+                alert('Un jugador se encuentra esperando continuar otra partida');
+                txtCodigo.setText('');
+            }
         }
     });
 
