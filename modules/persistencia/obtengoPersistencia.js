@@ -23,13 +23,14 @@ export function armoRespuestaRojo(game) {
 
 export function armoRespuestaAzul(game) {
     let respuesta;
+
     if (game.avionDesplegado) {
         respuesta = {
             codigoAzul: game.codigoPartida,
             arkRoyal: {
                 x: game.portaAviones.x,
                 y: game.portaAviones.y,
-                angle: 0,
+                angle: game.portaAviones.angle,
                 vida: game.portaAviones.vida,
                 avionesRestantes: game.portaAviones.avionesRestantes,
                 avionActual: {
