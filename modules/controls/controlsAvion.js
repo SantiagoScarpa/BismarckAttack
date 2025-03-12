@@ -1,14 +1,24 @@
 //ARCHIVO PARA CREACION DE BISMARCK Y SUS CONTROLES 
+import { stopAudios } from './../audios.js';
+
 
 export function creacionAvion(game, posX, posY, settings) {
-    let avion = game.matter.add.sprite(posX, posY, 'avion0');
-    avion.setScale(0.15).setOrigin(0.5, 0.5).setVelocityX(1);
+    let velInicial = 1;
+    let imgName = 'avion0';
+    if (game.reanudo && game.avionReanudado){
+        velInicial = 0;
+        imgName = 'avion9';
+    }
+    let avion = game.matter.add.sprite(posX, posY, imgName);
+    avion.setScale(0.15).setOrigin(0.5, 0.5).setVelocityX(velInicial);
     avion.label = 'avion'
     avion.body.label = 'avion'
     avion.municion = (game.reanudo && game.avionReanudado) ? game.partida.arkRoyal.avionActual.municion : settings.avionMunicion;
     avion.observador = false;
     avion.observadorMarco = false;
-    avion.anims.play('despegue');
+    if (!(game.reanudo && game.avionReanudado)){
+        avion.anims.play('despegue');
+    }
     avion.visionDelAvion = 0;
     avion.velocity = settings.avionVelocity;
     return avion;
@@ -72,3 +82,4 @@ export function checkControlsAvion({ avion, keys }) {
     avion.setVelocityX(speedX);
     avion.setVelocityY(speedY);
 }
+

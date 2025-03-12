@@ -36,13 +36,13 @@ export class menuScene extends Phaser.Scene {
             .setScale(0.75)
             .setAlpha(0.20)
             .setDepth(0);
-        
+
         // Reprodusco musica de menu si no se esta reproduciendo
-        if (!this.musicOn){
+        if (!this.musicOn) {
             this.musicOn = true;
             playAudios('music', this, this.volumeMenu);
         }
-        
+
 
         // Botón de inicio de partida
         this.playBtn = this.add.sprite(width / 3, height / 2, 'PlayBtn').setInteractive().setDepth(1);
@@ -74,8 +74,8 @@ export class menuScene extends Phaser.Scene {
         this.playWaiting = false
         this.replayWaiting = false
         await agregoFuncionalidadBotones(this)
-        
-        
+
+
     }
 
     async getPlayersCount() {
@@ -313,11 +313,9 @@ function showReanudarPartida(game) {
                 console.error('Error al pegar texto: ', err);
             });
         }
-        // Manejar la tecla de retroceso (backspace)
         else if (event.keyCode === 8 && txtCodigo.text.length > 0) {
             txtCodigo.text = txtCodigo.text.substr(0, txtCodigo.text.length - 1);
         }
-        // Permitir la entrada de caracteres alfanuméricos y espacios
         else if (event.keyCode === 32 || (event.keyCode >= 48 && event.keyCode <= 90)) {
             txtCodigo.text += event.key;
         }
