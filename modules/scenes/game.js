@@ -165,7 +165,7 @@ export class gameScene extends Phaser.Scene {
             Nave.fireSprite = this.add.sprite(Nave.x, Nave.y - 20, 'fire0').setScale(0.9);
             Nave.fireSprite.play('fire');
             Nave.isOnFire = true
-            Nave.fireSprite.setDepth(1);
+            Nave.fireSprite.setDepth(3);
             this.objects.push(Nave.fireSprite);
         }
 
@@ -723,9 +723,11 @@ export class gameScene extends Phaser.Scene {
                                 )
                                     .setOrigin(0.5, 0.5)
                                     .play('fire')
-                                    .setDepth(1);
+                                    .setDepth(1)
+                                    .setAlpha(0);
 
                                 this.objects.push(this.players[id].fireSprite);
+                                
                             }
 
                             // Calcular offset basado en la altura de la nave
@@ -1089,10 +1091,11 @@ export class gameScene extends Phaser.Scene {
     createAvion(playerId, x, y) {
 
         let avion = this.matter.add.sprite(x, y, 'avion');
-        avion.setScale(0.15).setOrigin(0.5, 0.5);
+        avion.setScale(0.15).setOrigin(0.5, 0.5).setDepth(3);
         //avion.velocity = settings.avionVelocity;
         avion.vida = 1
         avion.body.label = 'avion'
+        avion.body.isSensor = true;
         avion.anims.play('despegue');
         this.avion = avion
         //this.players[playerId] = avion;

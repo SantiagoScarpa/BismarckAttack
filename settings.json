@@ -1,5 +1,5 @@
 {
-  "volumeMenu": 0.1,
+  "volumeMenu": 0.2,
   "volumeMusicFondo": "0.05",
   "volumeBismarckShoot": "0.5",
   "volumeExplotion": "1.6",
@@ -15,7 +15,7 @@
     "dbPort": 27017,
     "dbName": "bismarckAttack"
   },
-  "duracionPartida": 2,
+  "duracionPartida": 4,
   "avionMunicion": 1,
   "bismarckVida": 3,
   "arkRoyalVida": 3

@@ -10,7 +10,8 @@ export function creacionAvion(game, posX, posY, settings) {
         imgName = 'avion9';
     }
     let avion = game.matter.add.sprite(posX, posY, imgName);
-    avion.setScale(0.15).setOrigin(0.5, 0.5).setVelocityX(velInicial);
+    avion.setScale(0.15).setOrigin(0.5, 0.5).setVelocityX(velInicial).setDepth(3);;
+    avion.body.isSensor = true;
     avion.label = 'avion'
     avion.body.label = 'avion'
     avion.municion = (game.reanudo && game.avionReanudado) ? game.partida.arkRoyal.avionActual.municion : settings.avionMunicion;
